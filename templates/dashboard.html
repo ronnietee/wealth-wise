@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Wealth Wise{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p class="page-subtitle">Welcome back! Here's your financial overview for this month.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalIncome">$0.00</h3>
+                    <p>Total Income</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalAllocated">$0.00</h3>
+                    <p>Total Allocated</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="balanceToAllocate">$0.00</h3>
+                    <p>Balance to Allocate</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalSpent">$0.00</h3>
+                    <p>Total Spent</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="window.location.href='/breakdown'">
+                        <i class="fas fa-list"></i>
+                        <span>View Breakdown</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/income'">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Manage Income</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/transactions'">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Expense</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/transactions'">
+                        <i class="fas fa-history"></i>
+                        <span>View Transactions</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load dashboard data immediately, currency will be loaded globally
+    loadDashboardData();
+    
+    // Also listen for currency loaded event
+    window.addEventListener('currencyLoaded', function(event) {
+        userCurrency = event.detail.currency;
+        loadDashboardData();
+    });
+});
+
+function loadDashboardData() {
+    // First load user settings to get currency, then load other data
+    loadUserSettings().then(() => {
+        // Load budget summary
+        fetch('/api/budget', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const totalIncome = data.total_income + (data.balance_brought_forward || 0);
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome, userCurrency);
+            document.getElementById('balanceToAllocate').textContent = formatCurrency(data.balance_to_allocate, userCurrency);
+        })
+        .catch(error => console.error('Error loading budget:', error));
+
+        // Load categories for overview
+        loadCategoriesOverview();
+    });
+}
+
+function loadUserSettings() {
+    return fetch('/api/user/settings', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        userCurrency = data.currency || 'USD';
+        return data;
+    })
+    .catch(error => {
+        console.error('Error loading user settings:', error);
+        userCurrency = 'USD';
+        return { currency: 'USD' };
+    });
+}
+
+function loadCategoriesOverview() {
+    fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(categories => {
+        let totalAllocated = 0;
+        let totalSpent = 0;
+
+        categories.forEach(category => {
+            const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + (sub.allocated || 0), 0);
+            const categorySpent = category.subcategories.reduce((sum, sub) => sum + (sub.spent || 0), 0);
+            
+            totalAllocated += categoryAllocated;
+            totalSpent += categorySpent;
+        });
+
+        // Update totals
+        document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
+        document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+    })
+    .catch(error => console.error('Error loading categories:', error));
+}
+
+function formatCurrency(amount, currency = userCurrency || 'USD') {
+    const symbol = getCurrencySymbol(currency);
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return symbol + formatter.format(amount || 0);
+}
+</script>
+{% endblock %}

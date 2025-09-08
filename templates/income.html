@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}Income - Wealth Wise{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Income Management</h1>
+        <p class="page-subtitle">Set your monthly income and balance brought forward to start budgeting.</p>
+    </div>
+
+    <div class="income-form-container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Income Sources</h2>
+                <p>Add your income sources and balance brought forward from the previous month.</p>
+            </div>
+            <div class="card-body">
+                <div class="income-sources-section">
+                    <div class="income-sources-header">
+                        <h3>Income Sources</h3>
+                        <button class="btn btn-primary" onclick="showAddIncomeSourceModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Income Source
+                        </button>
+                    </div>
+                    
+                    <div id="incomeSourcesList" class="income-sources-list">
+                        <!-- Income sources will be loaded here -->
+                    </div>
+                </div>
+
+                <form id="balanceForm" class="balance-form">
+                    <div class="form-group">
+                        <label for="balanceBroughtForward">Balance Brought Forward</label>
+                        <div class="input-group">
+                            <span class="input-prefix" id="balanceCurrency" data-currency-symbol>$</span>
+                            <input type="number" id="balanceBroughtForward" name="balance_brought_forward" step="0.01" min="0" value="0">
+                        </div>
+                        <small class="form-help">Any remaining balance from last month</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="availableBalance">Available to Allocate</label>
+                        <div class="balance-display">
+                            <span class="balance-amount" id="availableBalance">$0.00</span>
+                        </div>
+                        <small class="form-help">This is the total amount you can allocate to your budget categories</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Save Balance
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-undo"></i>
+                            Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="window.location.href='/breakdown'">
+                        <i class="fas fa-list"></i>
+                        <span>Manage Breakdown</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/transactions'">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Expense</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/summary'">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>View Summary</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Income Source Modal -->
+<div class="modal" id="addIncomeSourceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Income Source</h2>
+            <button class="close-btn" onclick="closeModal('addIncomeSourceModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addIncomeSourceForm">
+                <div class="form-group">
+                    <label for="incomeSourceName">Source Name</label>
+                    <input type="text" id="incomeSourceName" name="name" required placeholder="e.g., Salary, Freelance, Investment">
+                </div>
+                <div class="form-group">
+                    <label for="incomeSourceAmount">Amount</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" id="incomeSourceAmount" name="amount" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Income Source</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addIncomeSourceModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Income Source Modal -->
+<div class="modal" id="editIncomeSourceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Income Source</h2>
+            <button class="close-btn" onclick="closeModal('editIncomeSourceModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editIncomeSourceForm">
+                <div class="form-group">
+                    <label for="editIncomeSourceName">Source Name</label>
+                    <input type="text" id="editIncomeSourceName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="editIncomeSourceAmount">Amount</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" id="editIncomeSourceAmount" name="amount" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <input type="hidden" id="editIncomeSourceId" name="source_id">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Income Source</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editIncomeSourceModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let incomeSources = [];
+let currentBudget = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load data immediately, currency will be loaded globally
+    loadCurrentBudget();
+    
+    // Also listen for currency loaded event
+    window.addEventListener('currencyLoaded', function(event) {
+        userCurrency = event.detail.currency;
+        loadCurrentBudget();
+    });
+    
+    setupFormListeners();
+});
+
+function updateCurrencyDisplay() {
+    // Update currency symbols
+    updateCurrencySymbols();
+    // Update all displayed amounts
+    updateAvailableBalance();
+    renderIncomeSources();
+}
+
+function updateCurrencySymbols() {
+    // Update all currency symbols on the page
+    const currencySymbol = getCurrencySymbol(userCurrency);
+    
+    // Update input prefixes
+    document.querySelectorAll('[data-currency-symbol]').forEach(element => {
+        element.textContent = currencySymbol;
+    });
+    
+    // Update balance display
+    const balanceElement = document.getElementById('availableBalance');
+    if (balanceElement) {
+        const currentAmount = parseFloat(balanceElement.textContent.replace(/[^0-9.-]/g, '')) || 0;
+        balanceElement.textContent = formatCurrency(currentAmount, userCurrency);
+    }
+}
+
+function loadCurrentBudget() {
+    fetch('/api/budget', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        currentBudget = data;
+        incomeSources = data.income_sources || [];
+        document.getElementById('balanceBroughtForward').value = data.balance_brought_forward || '';
+        updateCurrencyDisplay();
+    })
+    .catch(error => console.error('Error loading budget:', error));
+}
+
+function renderIncomeSources() {
+    const container = document.getElementById('incomeSourcesList');
+    
+    if (incomeSources.length === 0) {
+        container.innerHTML = '<p class="no-income-sources">No income sources added yet. Click "Add Income Source" to get started.</p>';
+        return;
+    }
+    
+    container.innerHTML = incomeSources.map(source => `
+        <div class="income-source-item">
+            <div class="income-source-info">
+                <span class="source-name">${source.name}</span>
+                <span class="source-amount">${formatCurrency(source.amount, userCurrency)}</span>
+            </div>
+            <div class="income-source-actions">
+                <button class="btn btn-sm btn-secondary" onclick="showEditIncomeSourceModal(${source.id}, '${source.name}', ${source.amount})" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteIncomeSource(${source.id})" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function setupFormListeners() {
+    const balanceBroughtForward = document.getElementById('balanceBroughtForward');
+    
+    balanceBroughtForward.addEventListener('input', updateAvailableBalance);
+    
+    document.getElementById('balanceForm').addEventListener('submit', handleBalanceSubmit);
+    document.getElementById('addIncomeSourceForm').addEventListener('submit', handleAddIncomeSource);
+    document.getElementById('editIncomeSourceForm').addEventListener('submit', handleEditIncomeSource);
+}
+
+function updateAvailableBalance() {
+    const totalIncome = incomeSources.reduce((sum, source) => sum + source.amount, 0);
+    const balanceBroughtForward = parseFloat(document.getElementById('balanceBroughtForward').value) || 0;
+    const availableBalance = totalIncome + balanceBroughtForward;
+    
+    document.getElementById('availableBalance').textContent = formatCurrency(availableBalance, userCurrency);
+}
+
+function handleBalanceSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        balance_brought_forward: parseFloat(formData.get('balance_brought_forward')) || 0
+    };
+    
+    fetch('/api/budget', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Balance updated successfully!', 'success');
+        updateAvailableBalance();
+    })
+    .catch(error => {
+        console.error('Error updating budget:', error);
+        showNotification('Error updating balance. Please try again.', 'error');
+    });
+}
+
+function showAddIncomeSourceModal() {
+    document.getElementById('addIncomeSourceModal').style.display = 'block';
+}
+
+function showEditIncomeSourceModal(sourceId, sourceName, sourceAmount) {
+    document.getElementById('editIncomeSourceId').value = sourceId;
+    document.getElementById('editIncomeSourceName').value = sourceName;
+    document.getElementById('editIncomeSourceAmount').value = sourceAmount;
+    document.getElementById('editIncomeSourceModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function handleAddIncomeSource(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        name: formData.get('name'),
+        amount: parseFloat(formData.get('amount'))
+    };
+    
+    fetch('/api/income-sources', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Income source added successfully!', 'success');
+        closeModal('addIncomeSourceModal');
+        e.target.reset();
+        loadCurrentBudget();
+    })
+    .catch(error => {
+        console.error('Error adding income source:', error);
+        showNotification('Error adding income source. Please try again.', 'error');
+    });
+}
+
+function handleEditIncomeSource(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const sourceId = formData.get('source_id');
+    const data = {
+        name: formData.get('name'),
+        amount: parseFloat(formData.get('amount'))
+    };
+    
+    fetch(`/api/income-sources/${sourceId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Income source updated successfully!', 'success');
+        closeModal('editIncomeSourceModal');
+        loadCurrentBudget();
+    })
+    .catch(error => {
+        console.error('Error updating income source:', error);
+        showNotification('Error updating income source. Please try again.', 'error');
+    });
+}
+
+function deleteIncomeSource(sourceId) {
+    if (confirm('Are you sure you want to delete this income source?')) {
+        fetch(`/api/income-sources/${sourceId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Income source deleted successfully!', 'success');
+            loadCurrentBudget();
+        })
+        .catch(error => {
+            console.error('Error deleting income source:', error);
+            showNotification('Error deleting income source. Please try again.', 'error');
+        });
+    }
+}
+
+function resetForm() {
+    document.getElementById('balanceForm').reset();
+    updateAvailableBalance();
+}
+
+function formatCurrency(amount, currency = userCurrency || 'USD') {
+    const symbol = getCurrencySymbol(currency);
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return symbol + formatter.format(amount || 0);
+}
+</script>
+{% endblock %}

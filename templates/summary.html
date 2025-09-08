@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Summary - Wealth Wise{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Financial Summary</h1>
+        <p class="page-subtitle">Your complete financial overview for this month.</p>
+    </div>
+
+    <div class="summary-container">
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card income">
+                <div class="metric-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 id="totalIncome">${formatCurrency(0, userCurrency)}</h3>
+                    <p>Total Income</p>
+                </div>
+            </div>
+            <div class="metric-card allocated">
+                <div class="metric-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 id="totalAllocated">${formatCurrency(0, userCurrency)}</h3>
+                    <p>Total Allocated</p>
+                </div>
+            </div>
+            <div class="metric-card available">
+                <div class="metric-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 id="balanceToAllocate">${formatCurrency(0, userCurrency)}</h3>
+                    <p>Available to Allocate</p>
+                </div>
+            </div>
+            <div class="metric-card spent">
+                <div class="metric-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <div class="metric-content">
+                    <h3 id="totalSpent">${formatCurrency(0, userCurrency)}</h3>
+                    <p>Total Spent</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget vs Actual -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Budget vs Actual Spending</h2>
+            </div>
+            <div class="card-body">
+                <div id="budgetComparison" class="budget-comparison">
+                    <!-- Budget comparison will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="window.location.href='/breakdown'">
+                        <i class="fas fa-list"></i>
+                        <span>View Detailed Breakdown</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/income'">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>Manage Income</span>
+                    </button>
+                    <button class="action-btn" onclick="window.location.href='/input'">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Expense</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spending Trends -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Recent Spending Activity</h2>
+            </div>
+            <div class="card-body">
+                <div id="recentActivity" class="recent-activity">
+                    <!-- Recent activity will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSummaryData();
+});
+
+function loadSummaryData() {
+    // Load budget summary
+    fetch('/api/budget', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('totalIncome').textContent = formatCurrency(data.total_income, userCurrency);
+        document.getElementById('balanceToAllocate').textContent = formatCurrency(data.balance_to_allocate, userCurrency);
+    })
+    .catch(error => console.error('Error loading budget:', error));
+
+    // Load categories for detailed breakdown
+    loadCategories();
+}
+
+function loadCategories() {
+    fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(categories => {
+        renderBudgetComparison(categories);
+        updateSummaryMetrics(categories);
+    })
+    .catch(error => console.error('Error loading categories:', error));
+}
+
+function renderBudgetComparison(categories) {
+    const container = document.getElementById('budgetComparison');
+    
+    let totalAllocated = 0;
+    let totalSpent = 0;
+    
+    const comparisonItems = categories.map(category => {
+        const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + sub.allocated, 0);
+        const categorySpent = category.subcategories.reduce((sum, sub) => sum + sub.spent, 0);
+        const categoryBalance = categoryAllocated - categorySpent;
+        const percentage = categoryAllocated > 0 ? (categorySpent / categoryAllocated) * 100 : 0;
+        
+        totalAllocated += categoryAllocated;
+        totalSpent += categorySpent;
+        
+        return `
+            <div class="comparison-item">
+                <div class="comparison-header">
+                    <h4>${category.name}</h4>
+                    <div class="comparison-amounts">
+                        <span class="allocated">${formatCurrency(categoryAllocated, userCurrency)}</span>
+                        <span class="spent">${formatCurrency(categorySpent, userCurrency)}</span>
+                        <span class="balance ${categoryBalance < 0 ? 'negative' : 'positive'}">${formatCurrency(categoryBalance, userCurrency)}</span>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${Math.min(percentage, 100)}%"></div>
+                </div>
+                <div class="progress-labels">
+                    <span>0%</span>
+                    <span>${percentage.toFixed(1)}%</span>
+                    <span>100%</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <div class="comparison-summary">
+            <div class="summary-item">
+                <span class="label">Total Allocated:</span>
+                <span class="value">${formatCurrency(totalAllocated, userCurrency)}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Total Spent:</span>
+                <span class="value">${formatCurrency(totalSpent, userCurrency)}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Remaining:</span>
+                <span class="value ${(totalAllocated - totalSpent) < 0 ? 'negative' : 'positive'}">${formatCurrency(totalAllocated - totalSpent, userCurrency)}</span>
+            </div>
+        </div>
+        ${comparisonItems}
+    `;
+}
+
+
+function updateSummaryMetrics(categories) {
+    const totalAllocated = categories.reduce((sum, category) => {
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.allocated, 0);
+    }, 0);
+    
+    const totalSpent = categories.reduce((sum, category) => {
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.spent, 0);
+    }, 0);
+    
+    document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
+    document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+}
+
+function formatCurrency(amount, currency = userCurrency || 'USD') {
+    const symbol = getCurrencySymbol(currency);
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return symbol + formatter.format(amount || 0);
+}
+</script>
+{% endblock %}

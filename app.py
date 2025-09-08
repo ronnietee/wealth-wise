@@ -1,0 +1,666 @@
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+import os
+from datetime import datetime, timedelta
+from functools import wraps
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///wealthwise.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+CORS(app)
+
+# Database Models
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+    currency = db.Column(db.String(10), default='USD')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    categories = db.relationship('Category', backref='user', lazy=True, cascade='all, delete-orphan')
+    transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')
+    budgets = db.relationship('Budget', backref='user', lazy=True, cascade='all, delete-orphan')
+
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_template = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    subcategories = db.relationship('Subcategory', backref='category', lazy=True, cascade='all, delete-orphan')
+
+class Subcategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(200))
+    comment = db.Column(db.Text)
+    subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    subcategory = db.relationship('Subcategory', backref='transactions')
+
+class Budget(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    month_year = db.Column(db.String(7), nullable=False)  # Format: YYYY-MM
+    total_income = db.Column(db.Float, default=0)
+    balance_brought_forward = db.Column(db.Float, default=0)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    allocations = db.relationship('BudgetAllocation', backref='budget', lazy=True, cascade='all, delete-orphan')
+    income_sources = db.relationship('IncomeSource', backref='budget', lazy=True, cascade='all, delete-orphan')
+
+class IncomeSource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    budget_id = db.Column(db.Integer, db.ForeignKey('budget.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class BudgetAllocation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    allocated_amount = db.Column(db.Float, default=0)
+    subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
+    budget_id = db.Column(db.Integer, db.ForeignKey('budget.id'), nullable=False)
+    
+    # Relationships
+    subcategory = db.relationship('Subcategory', backref='allocations')
+
+# Authentication decorator
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        try:
+            if token.startswith('Bearer '):
+                token = token[7:]
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.filter_by(id=data['user_id']).first()
+        except:
+            return jsonify({'message': 'Token is invalid!'}), 401
+        
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# Routes
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/income')
+def income():
+    return render_template('income.html')
+
+@app.route('/breakdown')
+def breakdown():
+    return render_template('breakdown.html')
+
+@app.route('/input')
+def input_page():
+    return render_template('input.html')
+
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
+@app.route('/transactions')
+def transactions():
+    return render_template('transactions.html')
+
+# API Routes
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'message': 'Username already exists'}), 400
+    
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'message': 'Email already exists'}), 400
+    
+    user = User(
+        username=data['username'],
+        email=data['email'],
+        password_hash=generate_password_hash(data['password']),
+        currency=data.get('currency', 'USD')
+    )
+    
+    db.session.add(user)
+    db.session.commit()
+    
+    # Create default categories
+    create_default_categories(user.id)
+    
+    return jsonify({'message': 'User created successfully'}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(username=data['username']).first()
+    
+    if user and check_password_hash(user.password_hash, data['password']):
+        token = jwt.encode({
+            'user_id': user.id,
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm='HS256')
+        
+        return jsonify({
+            'token': token,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'currency': user.currency
+            }
+        })
+    
+    return jsonify({'message': 'Invalid credentials'}), 401
+
+@app.route('/api/categories', methods=['GET'])
+@token_required
+def get_categories(current_user):
+    categories = Category.query.filter_by(user_id=current_user.id).all()
+    result = []
+    
+    for category in categories:
+        category_data = {
+            'id': category.id,
+            'name': category.name,
+            'subcategories': []
+        }
+        
+        for subcategory in category.subcategories:
+            # Get current month's budget allocation
+            current_month = datetime.now().strftime('%Y-%m')
+            budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+            allocated = 0
+            spent = 0
+            
+            if budget:
+                allocation = BudgetAllocation.query.filter_by(
+                    budget_id=budget.id, 
+                    subcategory_id=subcategory.id
+                ).first()
+                if allocation:
+                    allocated = allocation.allocated_amount
+                
+                # Calculate spent amount
+                spent_transactions = Transaction.query.filter_by(
+                    user_id=current_user.id,
+                    subcategory_id=subcategory.id
+                ).filter(
+                    db.extract('year', Transaction.transaction_date) == datetime.now().year,
+                    db.extract('month', Transaction.transaction_date) == datetime.now().month
+                ).all()
+                
+                spent = sum(t.amount for t in spent_transactions)
+            
+            subcategory_data = {
+                'id': subcategory.id,
+                'name': subcategory.name,
+                'allocated': allocated,
+                'spent': spent,
+                'balance': allocated - spent
+            }
+            category_data['subcategories'].append(subcategory_data)
+        
+        result.append(category_data)
+    
+    return jsonify(result)
+
+@app.route('/api/categories', methods=['POST'])
+@token_required
+def create_category(current_user):
+    data = request.get_json()
+    
+    category = Category(
+        name=data['name'],
+        user_id=current_user.id
+    )
+    
+    db.session.add(category)
+    db.session.commit()
+    
+    return jsonify({'message': 'Category created successfully', 'id': category.id}), 201
+
+@app.route('/api/subcategories', methods=['POST'])
+@token_required
+def create_subcategory(current_user):
+    data = request.get_json()
+    
+    subcategory = Subcategory(
+        name=data['name'],
+        category_id=data['category_id']
+    )
+    
+    db.session.add(subcategory)
+    db.session.commit()
+    
+    return jsonify({'message': 'Subcategory created successfully', 'id': subcategory.id}), 201
+
+@app.route('/api/categories/<int:category_id>', methods=['PUT'])
+@token_required
+def update_category(current_user, category_id):
+    data = request.get_json()
+    
+    category = Category.query.filter_by(id=category_id, user_id=current_user.id).first()
+    if not category:
+        return jsonify({'message': 'Category not found'}), 404
+    
+    category.name = data['name']
+    db.session.commit()
+    
+    return jsonify({'message': 'Category updated successfully'})
+
+@app.route('/api/categories/<int:category_id>', methods=['DELETE'])
+@token_required
+def delete_category(current_user, category_id):
+    category = Category.query.filter_by(id=category_id, user_id=current_user.id).first()
+    if not category:
+        return jsonify({'message': 'Category not found'}), 404
+    
+    db.session.delete(category)
+    db.session.commit()
+    
+    return jsonify({'message': 'Category deleted successfully'})
+
+@app.route('/api/subcategories/<int:subcategory_id>', methods=['PUT'])
+@token_required
+def update_subcategory(current_user, subcategory_id):
+    data = request.get_json()
+    
+    subcategory = Subcategory.query.get(subcategory_id)
+    if not subcategory:
+        return jsonify({'message': 'Subcategory not found'}), 404
+    
+    # Check if user owns the parent category
+    category = Category.query.filter_by(id=subcategory.category_id, user_id=current_user.id).first()
+    if not category:
+        return jsonify({'message': 'Subcategory not found'}), 404
+    
+    subcategory.name = data['name']
+    db.session.commit()
+    
+    return jsonify({'message': 'Subcategory updated successfully'})
+
+@app.route('/api/subcategories/<int:subcategory_id>', methods=['DELETE'])
+@token_required
+def delete_subcategory(current_user, subcategory_id):
+    subcategory = Subcategory.query.get(subcategory_id)
+    if not subcategory:
+        return jsonify({'message': 'Subcategory not found'}), 404
+    
+    # Check if user owns the parent category
+    category = Category.query.filter_by(id=subcategory.category_id, user_id=current_user.id).first()
+    if not category:
+        return jsonify({'message': 'Subcategory not found'}), 404
+    
+    db.session.delete(subcategory)
+    db.session.commit()
+    
+    return jsonify({'message': 'Subcategory deleted successfully'})
+
+@app.route('/api/transactions', methods=['POST'])
+@token_required
+def create_transaction(current_user):
+    data = request.get_json()
+    
+    transaction = Transaction(
+        amount=data['amount'],
+        description=data.get('description', ''),
+        comment=data.get('comment', ''),
+        subcategory_id=data['subcategory_id'],
+        user_id=current_user.id
+    )
+    
+    db.session.add(transaction)
+    db.session.commit()
+    
+    return jsonify({'message': 'Transaction created successfully', 'id': transaction.id}), 201
+
+@app.route('/api/budget', methods=['GET'])
+@token_required
+def get_budget(current_user):
+    current_month = datetime.now().strftime('%Y-%m')
+    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    
+    if not budget:
+        budget = Budget(
+            month_year=current_month,
+            user_id=current_user.id
+        )
+        db.session.add(budget)
+        db.session.commit()
+        
+        # Create default categories if this is the first budget
+        if not Category.query.filter_by(user_id=current_user.id).first():
+            create_default_categories(current_user.id)
+    
+    # Calculate total income from income sources
+    total_income_from_sources = sum(source.amount for source in budget.income_sources)
+    
+    return jsonify({
+        'budget_id': budget.id,
+        'month_year': budget.month_year,
+        'total_income': total_income_from_sources,
+        'balance_brought_forward': budget.balance_brought_forward,
+        'balance_to_allocate': total_income_from_sources + budget.balance_brought_forward - sum(a.allocated_amount for a in budget.allocations),
+        'income_sources': [{'id': source.id, 'name': source.name, 'amount': source.amount} for source in budget.income_sources]
+    })
+
+@app.route('/api/budget', methods=['PUT'])
+@token_required
+def update_budget(current_user):
+    data = request.get_json()
+    current_month = datetime.now().strftime('%Y-%m')
+    
+    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    
+    if not budget:
+        budget = Budget(
+            month_year=current_month,
+            user_id=current_user.id
+        )
+        db.session.add(budget)
+        db.session.commit()
+    
+    budget.total_income = data.get('total_income', budget.total_income)
+    budget.balance_brought_forward = data.get('balance_brought_forward', budget.balance_brought_forward)
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Budget updated successfully'})
+
+@app.route('/api/allocations', methods=['POST'])
+@token_required
+def update_allocations(current_user):
+    data = request.get_json()
+    current_month = datetime.now().strftime('%Y-%m')
+    
+    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    
+    if not budget:
+        budget = Budget(
+            month_year=current_month,
+            user_id=current_user.id
+        )
+        db.session.add(budget)
+        db.session.commit()
+    
+    # Calculate total allocation amount
+    total_allocation = sum(allocation['amount'] for allocation in data['allocations'])
+    available_amount = budget.total_income + budget.balance_brought_forward
+    
+    # Validate that total allocation doesn't exceed available amount
+    if total_allocation > available_amount:
+        return jsonify({'message': f'Total allocation (${total_allocation:.2f}) cannot exceed available amount (${available_amount:.2f})'}), 400
+    
+    # Clear existing allocations
+    BudgetAllocation.query.filter_by(budget_id=budget.id).delete()
+    
+    # Add new allocations
+    for allocation in data['allocations']:
+        if allocation['amount'] > 0:  # Only add allocations with positive amounts
+            new_allocation = BudgetAllocation(
+                allocated_amount=allocation['amount'],
+                subcategory_id=allocation['subcategory_id'],
+                budget_id=budget.id
+            )
+            db.session.add(new_allocation)
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Allocations updated successfully'})
+
+@app.route('/api/income-sources', methods=['POST'])
+@token_required
+def create_income_source(current_user):
+    data = request.get_json()
+    current_month = datetime.now().strftime('%Y-%m')
+    
+    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    
+    if not budget:
+        budget = Budget(
+            month_year=current_month,
+            user_id=current_user.id
+        )
+        db.session.add(budget)
+        db.session.commit()
+    
+    income_source = IncomeSource(
+        name=data['name'],
+        amount=data['amount'],
+        budget_id=budget.id
+    )
+    
+    db.session.add(income_source)
+    db.session.commit()
+    
+    # Update total income
+    budget.total_income = sum(source.amount for source in budget.income_sources)
+    db.session.commit()
+    
+    return jsonify({'message': 'Income source created successfully', 'id': income_source.id}), 201
+
+@app.route('/api/income-sources/<int:source_id>', methods=['PUT'])
+@token_required
+def update_income_source(current_user, source_id):
+    data = request.get_json()
+    current_month = datetime.now().strftime('%Y-%m')
+    
+    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    income_source = IncomeSource.query.filter_by(id=source_id, budget_id=budget.id).first()
+    
+    if not income_source:
+        return jsonify({'message': 'Income source not found'}), 404
+    
+    income_source.name = data['name']
+    income_source.amount = data['amount']
+    
+    db.session.commit()
+    
+    # Update total income
+    budget.total_income = sum(source.amount for source in budget.income_sources)
+    db.session.commit()
+    
+    return jsonify({'message': 'Income source updated successfully'})
+
+@app.route('/api/income-sources/<int:source_id>', methods=['DELETE'])
+@token_required
+def delete_income_source(current_user, source_id):
+    current_month = datetime.now().strftime('%Y-%m')
+    
+    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    income_source = IncomeSource.query.filter_by(id=source_id, budget_id=budget.id).first()
+    
+    if not income_source:
+        return jsonify({'message': 'Income source not found'}), 404
+    
+    db.session.delete(income_source)
+    db.session.commit()
+    
+    # Update total income
+    budget.total_income = sum(source.amount for source in budget.income_sources)
+    db.session.commit()
+    
+    return jsonify({'message': 'Income source deleted successfully'})
+
+@app.route('/api/user/settings', methods=['GET'])
+@token_required
+def get_user_settings(current_user):
+    return jsonify({
+        'username': current_user.username,
+        'email': current_user.email,
+        'currency': current_user.currency
+    })
+
+@app.route('/api/user/settings', methods=['PUT'])
+@token_required
+def update_user_settings(current_user):
+    data = request.get_json()
+    
+    if 'currency' in data:
+        current_user.currency = data['currency']
+    
+    if 'email' in data:
+        # Check if email is already taken by another user
+        existing_user = User.query.filter_by(email=data['email']).first()
+        if existing_user and existing_user.id != current_user.id:
+            return jsonify({'message': 'Email already exists'}), 400
+        current_user.email = data['email']
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Settings updated successfully'})
+
+@app.route('/api/user/change-password', methods=['POST'])
+@token_required
+def change_password(current_user):
+    data = request.get_json()
+    
+    if not check_password_hash(current_user.password_hash, data['current_password']):
+        return jsonify({'message': 'Current password is incorrect'}), 400
+    
+    current_user.password_hash = generate_password_hash(data['new_password'])
+    db.session.commit()
+    
+    return jsonify({'message': 'Password changed successfully'})
+
+@app.route('/api/transactions', methods=['GET'])
+@token_required
+def get_transactions(current_user):
+    transactions = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.transaction_date.desc()).all()
+    
+    result = []
+    for transaction in transactions:
+        subcategory = Subcategory.query.get(transaction.subcategory_id)
+        category = Category.query.get(subcategory.category_id) if subcategory else None
+        
+        result.append({
+            'id': transaction.id,
+            'amount': transaction.amount,
+            'description': transaction.description or '',
+            'comment': transaction.comment or '',
+            'subcategory_id': transaction.subcategory_id,
+            'transaction_date': transaction.transaction_date.isoformat(),
+            'category_name': category.name if category else 'Unknown',
+            'subcategory_name': subcategory.name if subcategory else 'Unknown'
+        })
+    
+    return jsonify(result)
+
+@app.route('/api/transactions/<int:transaction_id>', methods=['PUT'])
+@token_required
+def update_transaction(current_user, transaction_id):
+    transaction = Transaction.query.filter_by(id=transaction_id, user_id=current_user.id).first()
+    
+    if not transaction:
+        return jsonify({'message': 'Transaction not found'}), 404
+    
+    data = request.get_json()
+    
+    transaction.amount = data.get('amount', transaction.amount)
+    transaction.description = data.get('description', transaction.description)
+    transaction.comment = data.get('comment', transaction.comment)
+    transaction.subcategory_id = data.get('subcategory_id', transaction.subcategory_id)
+    transaction.transaction_date = datetime.fromisoformat(data.get('transaction_date', transaction.transaction_date.isoformat()))
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Transaction updated successfully'})
+
+@app.route('/api/transactions/<int:transaction_id>', methods=['DELETE'])
+@token_required
+def delete_transaction(current_user, transaction_id):
+    transaction = Transaction.query.filter_by(id=transaction_id, user_id=current_user.id).first()
+    
+    if not transaction:
+        return jsonify({'message': 'Transaction not found'}), 404
+    
+    db.session.delete(transaction)
+    db.session.commit()
+    
+    return jsonify({'message': 'Transaction deleted successfully'})
+
+
+def create_default_categories(user_id):
+    default_categories = [
+        {
+            'name': 'Church and Family',
+            'subcategories': ['Tithe', 'Offering', 'Social Responsibility']
+        },
+        {
+            'name': 'Groceries and Food',
+            'subcategories': ['Groceries', 'Dining out']
+        },
+        {
+            'name': 'Home Expenses',
+            'subcategories': ['Water bill', 'Electricity bill', 'Fibre', 'Rent/Bond repayment']
+        },
+        {
+            'name': 'Monthly Commitments',
+            'subcategories': ['Medical Aid', 'Life cover', 'Netflix', 'Education', 'Phone', 'Banking Fees']
+        },
+        {
+            'name': 'Car and Travel',
+            'subcategories': ['Car finance', 'Car insurance', 'Car Tracker', 'Fuel', 'Car wash']
+        },
+        {
+            'name': 'Personal Care',
+            'subcategories': []
+        },
+        {
+            'name': 'Leisure',
+            'subcategories': []
+        },
+        {
+            'name': 'Other',
+            'subcategories': []
+        }
+    ]
+    
+    for cat_data in default_categories:
+        category = Category(name=cat_data['name'], user_id=user_id)
+        db.session.add(category)
+        db.session.flush()  # Get the category ID
+        
+        for subcat_name in cat_data['subcategories']:
+            subcategory = Subcategory(name=subcat_name, category_id=category.id)
+            db.session.add(subcategory)
+    
+    db.session.commit()
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

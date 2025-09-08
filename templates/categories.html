@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Wealth Wise{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Budget Categories</h1>
+        <p class="page-subtitle">Manage your budget categories and allocate funds for this month.</p>
+    </div>
+
+    <div class="categories-container">
+        <!-- Budget Summary -->
+        <div class="card budget-summary">
+            <div class="card-header">
+                <h2>Budget Summary</h2>
+            </div>
+            <div class="card-body">
+                <div class="budget-stats">
+                    <div class="budget-stat">
+                        <span class="stat-label">Available to Allocate:</span>
+                        <span class="stat-value" id="availableToAllocate">$0.00</span>
+                    </div>
+                    <div class="budget-stat">
+                        <span class="stat-label">Total Allocated:</span>
+                        <span class="stat-value" id="totalAllocated">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Categories & Allocations</h2>
+                <button class="btn btn-primary" onclick="showAddCategoryModal()">
+                    <i class="fas fa-plus"></i>
+                    Add Category
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="categoriesList" class="categories-list">
+                    <!-- Categories will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal" id="addCategoryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Category</h2>
+            <button class="close-btn" onclick="closeModal('addCategoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addCategoryForm">
+                <div class="form-group">
+                    <label for="categoryName">Category Name</label>
+                    <input type="text" id="categoryName" name="name" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCategoryModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Subcategory Modal -->
+<div class="modal" id="addSubcategoryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Subcategory</h2>
+            <button class="close-btn" onclick="closeModal('addSubcategoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addSubcategoryForm">
+                <div class="form-group">
+                    <label for="subcategoryName">Subcategory Name</label>
+                    <input type="text" id="subcategoryName" name="name" required>
+                </div>
+                <input type="hidden" id="parentCategoryId" name="category_id">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Subcategory</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addSubcategoryModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let categories = [];
+let currentBudget = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Update currency symbols
+    updateCurrencySymbols();
+    
+    // Also listen for currency loaded event
+    window.addEventListener('currencyLoaded', function(event) {
+        userCurrency = event.detail.currency;
+        updateCurrencySymbols();
+    });
+    
+    loadBudgetData();
+    loadCategories();
+    setupFormListeners();
+});
+
+function updateCurrencySymbols() {
+    // Update currency symbols in input fields
+    const currencySymbol = getCurrencySymbol(userCurrency);
+    document.querySelectorAll('[data-currency-symbol]').forEach(element => {
+        element.textContent = currencySymbol;
+    });
+}
+
+function loadBudgetData() {
+    fetch('/api/budget', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        currentBudget = data;
+        document.getElementById('availableToAllocate').textContent = formatCurrency(data.balance_to_allocate, userCurrency);
+    })
+    .catch(error => console.error('Error loading budget:', error));
+}
+
+function loadCategories() {
+    fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        categories = data;
+        renderCategories();
+        updateTotalAllocated();
+    })
+    .catch(error => console.error('Error loading categories:', error));
+}
+
+function renderCategories() {
+    const categoriesList = document.getElementById('categoriesList');
+    
+    categoriesList.innerHTML = categories.map(category => {
+        const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + sub.allocated, 0);
+        const categorySpent = category.subcategories.reduce((sum, sub) => sum + sub.spent, 0);
+        const categoryBalance = categoryAllocated - categorySpent;
+        
+        return `
+            <div class="category-card">
+                <div class="category-header">
+                    <h3>${category.name}</h3>
+                    <div class="category-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="showAddSubcategoryModal(${category.id})">
+                            <i class="fas fa-plus"></i>
+                            Add Subcategory
+                        </button>
+                    </div>
+                </div>
+                <div class="category-totals">
+                    <div class="total-item">
+                        <span class="label">Allocated:</span>
+                        <span class="value">${formatCurrency(categoryAllocated, userCurrency)}</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="label">Spent:</span>
+                        <span class="value">${formatCurrency(categorySpent, userCurrency)}</span>
+                    </div>
+                    <div class="total-item">
+                        <span class="label">Balance:</span>
+                        <span class="value ${categoryBalance < 0 ? 'negative' : 'positive'}">${formatCurrency(categoryBalance, userCurrency)}</span>
+                    </div>
+                </div>
+                <div class="subcategories">
+                    ${category.subcategories.map(sub => `
+                        <div class="subcategory-item">
+                            <div class="subcategory-info">
+                                <span class="subcategory-name">${sub.name}</span>
+                                <div class="subcategory-amounts">
+                                    <span class="allocated">${formatCurrency(sub.allocated, userCurrency)}</span>
+                                    <span class="spent">${formatCurrency(sub.spent, userCurrency)}</span>
+                                    <span class="balance ${sub.balance < 0 ? 'negative' : 'positive'}">${formatCurrency(sub.balance, userCurrency)}</span>
+                                </div>
+                            </div>
+                            <div class="subcategory-actions">
+                                <div class="allocation-input">
+                                    <label>Allocate:</label>
+                                    <div class="input-group">
+                                        <span class="input-prefix" data-currency-symbol>$</span>
+                                        <input type="number" 
+                                               class="allocation-amount" 
+                                               data-subcategory-id="${sub.id}"
+                                               value="${sub.allocated}"
+                                               step="0.01" 
+                                               min="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add event listeners to allocation inputs
+    document.querySelectorAll('.allocation-amount').forEach(input => {
+        input.addEventListener('change', updateAllocation);
+        input.addEventListener('blur', updateAllocation);
+    });
+    
+    // Update currency symbols after rendering
+    updateCurrencySymbols();
+}
+
+function updateAllocation(e) {
+    const subcategoryId = parseInt(e.target.dataset.subcategoryId);
+    const amount = parseFloat(e.target.value) || 0;
+    
+    // Update the local data
+    categories.forEach(category => {
+        category.subcategories.forEach(sub => {
+            if (sub.id === subcategoryId) {
+                sub.allocated = amount;
+            }
+        });
+    });
+    
+    updateTotalAllocated();
+    saveAllocations();
+}
+
+function updateTotalAllocated() {
+    const total = categories.reduce((sum, category) => {
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.allocated, 0);
+    }, 0);
+    
+    document.getElementById('totalAllocated').textContent = formatCurrency(total, userCurrency);
+    
+    if (currentBudget) {
+        const available = currentBudget.balance_to_allocate - total;
+        document.getElementById('availableToAllocate').textContent = formatCurrency(available, userCurrency);
+        document.getElementById('availableToAllocate').className = `stat-value ${available < 0 ? 'negative' : 'positive'}`;
+    }
+}
+
+function saveAllocations() {
+    const allocations = [];
+    categories.forEach(category => {
+        category.subcategories.forEach(sub => {
+            if (sub.allocated > 0) {
+                allocations.push({
+                    subcategory_id: sub.id,
+                    amount: sub.allocated
+                });
+            }
+        });
+    });
+    
+    fetch('/api/allocations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ allocations })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Allocations saved successfully!', 'success');
+        loadBudgetData(); // Refresh budget data
+    })
+    .catch(error => {
+        console.error('Error saving allocations:', error);
+        showNotification('Error saving allocations. Please try again.', 'error');
+    });
+}
+
+function showAddCategoryModal() {
+    document.getElementById('addCategoryModal').style.display = 'block';
+}
+
+function showAddSubcategoryModal(categoryId) {
+    document.getElementById('parentCategoryId').value = categoryId;
+    document.getElementById('addSubcategoryModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function setupFormListeners() {
+    document.getElementById('addCategoryForm').addEventListener('submit', handleAddCategory);
+    document.getElementById('addSubcategoryForm').addEventListener('submit', handleAddSubcategory);
+}
+
+function handleAddCategory(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+            name: formData.get('name')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Category added successfully!', 'success');
+        closeModal('addCategoryModal');
+        e.target.reset();
+        loadCategories();
+    })
+    .catch(error => {
+        console.error('Error adding category:', error);
+        showNotification('Error adding category. Please try again.', 'error');
+    });
+}
+
+function handleAddSubcategory(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    fetch('/api/subcategories', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            category_id: parseInt(formData.get('category_id'))
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Subcategory added successfully!', 'success');
+        closeModal('addSubcategoryModal');
+        e.target.reset();
+        loadCategories();
+    })
+    .catch(error => {
+        console.error('Error adding subcategory:', error);
+        showNotification('Error adding subcategory. Please try again.', 'error');
+    });
+}
+
+function formatCurrency(amount, currency = userCurrency || 'USD') {
+    const symbol = getCurrencySymbol(currency);
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return symbol + formatter.format(amount || 0);
+}
+</script>
+{% endblock %}

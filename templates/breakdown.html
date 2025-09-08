@@ -1,0 +1,665 @@
+{% extends "base.html" %}
+
+{% block title %}Breakdown - Wealth Wise{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Budget Breakdown</h1>
+        <p class="page-subtitle">Detailed view of your budget allocations and spending by category.</p>
+    </div>
+
+    <div class="breakdown-container">
+        <!-- Budget Summary -->
+        <div class="card budget-summary" id="budgetSummary">
+            <div class="budget-summary-header" onclick="toggleBudgetSummary()">
+                <h2>Budget Summary</h2>
+                <i class="fas fa-chevron-up collapse-icon"></i>
+            </div>
+            <div class="card-body">
+                <div class="budget-stats">
+                    <div class="budget-stat">
+                        <span class="stat-label">Available to Allocate:</span>
+                        <span class="stat-value" id="availableToAllocate">$0.00</span>
+                    </div>
+                    <div class="budget-stat">
+                        <span class="stat-label">Total Allocated:</span>
+                        <span class="stat-value" id="totalAllocated">$0.00</span>
+                    </div>
+                    <div class="budget-stat">
+                        <span class="stat-label">Total Spent:</span>
+                        <span class="stat-value" id="totalSpent">$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="categories-grid" id="categoriesGrid">
+            <!-- Categories will be loaded here -->
+        </div>
+
+        <!-- Add Category Button -->
+        <div class="add-category-section">
+            <button class="btn btn-primary btn-large" onclick="showAddCategoryModal()">
+                <i class="fas fa-plus"></i>
+                Add New Category
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal" id="addCategoryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Category</h2>
+            <button class="close-btn" onclick="closeModal('addCategoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addCategoryForm">
+                <div class="form-group">
+                    <label for="categoryName">Category Name</label>
+                    <input type="text" id="categoryName" name="name" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCategoryModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Subcategory Modal -->
+<div class="modal" id="addSubcategoryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New Subcategory</h2>
+            <button class="close-btn" onclick="closeModal('addSubcategoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addSubcategoryForm">
+                <div class="form-group">
+                    <label for="subcategoryName">Subcategory Name</label>
+                    <input type="text" id="subcategoryName" name="name" required>
+                </div>
+                <input type="hidden" id="parentCategoryId" name="category_id">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Subcategory</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addSubcategoryModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal" id="editCategoryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Category</h2>
+            <button class="close-btn" onclick="closeModal('editCategoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editCategoryForm">
+                <div class="form-group">
+                    <label for="editCategoryName">Category Name</label>
+                    <input type="text" id="editCategoryName" name="name" required>
+                </div>
+                <input type="hidden" id="editCategoryId" name="category_id">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Category</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editCategoryModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Subcategory Modal -->
+<div class="modal" id="editSubcategoryModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Subcategory</h2>
+            <button class="close-btn" onclick="closeModal('editSubcategoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editSubcategoryForm">
+                <div class="form-group">
+                    <label for="editSubcategoryName">Subcategory Name</label>
+                    <input type="text" id="editSubcategoryName" name="name" required>
+                </div>
+                <input type="hidden" id="editSubcategoryId" name="subcategory_id">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Subcategory</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editSubcategoryModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let categories = [];
+let currentBudget = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load data immediately, currency will be loaded globally
+    loadBudgetData();
+    loadCategories();
+    
+    // Also listen for currency loaded event
+    window.addEventListener('currencyLoaded', function(event) {
+        userCurrency = event.detail.currency;
+        updateCurrencySymbols();
+        loadBudgetData();
+        loadCategories();
+    });
+    
+    setupFormListeners();
+    setupScrollListener();
+});
+
+function updateCurrencySymbols() {
+    // Update currency symbols in input fields
+    const currencySymbol = getCurrencySymbol(userCurrency);
+    document.querySelectorAll('[data-currency-symbol]').forEach(element => {
+        element.textContent = currencySymbol;
+    });
+}
+
+function loadBudgetData() {
+    fetch('/api/budget', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        currentBudget = data;
+        updateBudgetSummary();
+    })
+    .catch(error => console.error('Error loading budget:', error));
+}
+
+function updateBudgetSummary() {
+    if (!currentBudget) return;
+    
+    // Calculate total allocated and spent
+    let totalAllocated = 0;
+    let totalSpent = 0;
+    
+    categories.forEach(category => {
+        category.subcategories.forEach(subcategory => {
+            totalAllocated += subcategory.allocated || 0;
+            totalSpent += subcategory.spent || 0;
+        });
+    });
+    
+    const availableToAllocate = currentBudget.balance_to_allocate || 0;
+    
+    document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
+    document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
+    document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+}
+
+function toggleBudgetSummary() {
+    const summary = document.getElementById('budgetSummary');
+    summary.classList.toggle('collapsed');
+}
+
+function setupScrollListener() {
+    let isCollapsed = false;
+    let lastScrollY = window.scrollY;
+    
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        const summary = document.getElementById('budgetSummary');
+        
+        if (currentScrollY > 100 && !isCollapsed) {
+            summary.classList.add('collapsed');
+            isCollapsed = true;
+        } else if (currentScrollY <= 100 && isCollapsed) {
+            summary.classList.remove('collapsed');
+            isCollapsed = false;
+        }
+        
+        lastScrollY = currentScrollY;
+    });
+}
+
+function loadCategories() {
+    fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        categories = data;
+        renderCategories();
+        updateBudgetSummary(); // Update summary after loading categories
+    })
+    .catch(error => console.error('Error loading categories:', error));
+}
+
+function renderCategories() {
+    const grid = document.getElementById('categoriesGrid');
+    
+    grid.innerHTML = categories.map(category => {
+        const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + sub.allocated, 0);
+        const categorySpent = category.subcategories.reduce((sum, sub) => sum + sub.spent, 0);
+        const categoryBalance = categoryAllocated - categorySpent;
+        
+        return `
+            <div class="category-card">
+                <div class="category-header">
+                    <h3>${category.name}</h3>
+                    <div class="category-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="showEditCategoryModal(${category.id}, '${category.name}')" title="Edit Category">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCategory(${category.id})" title="Delete Category">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="category-totals">
+                    <div class="total-row">
+                        <span class="total-label">Allocated Fund:</span>
+                        <span class="total-value allocated">${formatCurrency(categoryAllocated)}</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Expenditure:</span>
+                        <span class="total-value spent">${formatCurrency(categorySpent)}</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Difference:</span>
+                        <span class="total-value balance ${categoryBalance < 0 ? 'negative' : 'positive'}">${formatCurrency(categoryBalance)}</span>
+                    </div>
+                </div>
+                
+                <div class="subcategories">
+                    ${category.subcategories.map(sub => `
+                        <div class="subcategory-row">
+                            <div class="subcategory-info">
+                                <span class="subcategory-name">${sub.name}</span>
+                                <div class="subcategory-actions">
+                                    <button class="btn btn-xs btn-secondary" onclick="showEditSubcategoryModal(${sub.id}, '${sub.name}')" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-danger" onclick="deleteSubcategory(${sub.id})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="subcategory-amounts">
+                                <div class="amount-group">
+                                    <span class="amount-label">Allocated:</span>
+                                    <div class="input-group">
+                                        <span class="input-prefix" data-currency-symbol>$</span>
+                                        <input type="number" 
+                                               class="allocation-amount" 
+                                               data-subcategory-id="${sub.id}"
+                                               value="${sub.allocated}"
+                                               step="0.01" 
+                                               min="0">
+                                    </div>
+                                </div>
+                                <div class="amount-group">
+                                    <span class="amount-label">Spent:</span>
+                                    <span class="amount-value spent">${formatCurrency(sub.spent)}</span>
+                                </div>
+                                <div class="amount-group">
+                                    <span class="amount-label">Balance:</span>
+                                    <span class="amount-value balance ${sub.balance < 0 ? 'negative' : 'positive'}">${formatCurrency(sub.balance)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    
+                    <div class="add-subcategory">
+                        <button class="btn btn-sm btn-outline" onclick="showAddSubcategoryModal(${category.id})">
+                            <i class="fas fa-plus"></i>
+                            Add Subcategory
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add event listeners to allocation inputs
+    document.querySelectorAll('.allocation-amount').forEach(input => {
+        input.addEventListener('input', updateAllocation);
+        input.addEventListener('change', updateAllocation);
+        input.addEventListener('blur', updateAllocation);
+    });
+    
+    // Update currency symbols after rendering
+    updateCurrencySymbols();
+}
+
+function updateAllocation(e) {
+    const subcategoryId = parseInt(e.target.dataset.subcategoryId);
+    const amount = parseFloat(e.target.value) || 0;
+    
+    // Update the local data
+    let updatedCategory = null;
+    let updatedSubcategory = null;
+    
+    categories.forEach(category => {
+        category.subcategories.forEach(sub => {
+            if (sub.id === subcategoryId) {
+                sub.allocated = amount;
+                sub.balance = sub.allocated - sub.spent;
+                updatedCategory = category;
+                updatedSubcategory = sub;
+            }
+        });
+    });
+    
+    // Update the specific subcategory balance display in real-time
+    if (updatedSubcategory) {
+        const balanceElement = e.target.closest('.subcategory-row').querySelector('.amount-value.balance');
+        if (balanceElement) {
+            balanceElement.textContent = formatCurrency(updatedSubcategory.balance, userCurrency);
+            balanceElement.className = `amount-value balance ${updatedSubcategory.balance < 0 ? 'negative' : 'positive'}`;
+        }
+    }
+    
+    // Update category totals in real-time
+    if (updatedCategory) {
+        updateCategoryTotals(updatedCategory);
+    }
+    
+    updateTotals();
+    saveAllocations();
+}
+
+function updateCategoryTotals(category) {
+    const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + sub.allocated, 0);
+    const categorySpent = category.subcategories.reduce((sum, sub) => sum + sub.spent, 0);
+    const categoryBalance = categoryAllocated - categorySpent;
+    
+    // Find the category card in the DOM
+    const categoryCards = document.querySelectorAll('.category-card');
+    let targetCard = null;
+    
+    // Find the card by looking for the category name in the header
+    categoryCards.forEach(card => {
+        const header = card.querySelector('.category-header h3');
+        if (header && header.textContent.trim() === category.name) {
+            targetCard = card;
+        }
+    });
+    
+    if (targetCard) {
+        // Update allocated fund
+        const allocatedElement = targetCard.querySelector('.total-value.allocated');
+        if (allocatedElement) {
+            allocatedElement.textContent = formatCurrency(categoryAllocated, userCurrency);
+        }
+        
+        // Update difference (balance)
+        const balanceElement = targetCard.querySelector('.total-value.balance');
+        if (balanceElement) {
+            balanceElement.textContent = formatCurrency(categoryBalance, userCurrency);
+            balanceElement.className = `total-value balance ${categoryBalance < 0 ? 'negative' : 'positive'}`;
+        }
+    }
+}
+
+function updateTotals() {
+    const totalAllocated = categories.reduce((sum, category) => {
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.allocated, 0);
+    }, 0);
+    
+    const totalSpent = categories.reduce((sum, category) => {
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.spent, 0);
+    }, 0);
+    
+    document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
+    document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+    
+    if (currentBudget) {
+        const available = currentBudget.balance_to_allocate - totalAllocated;
+        document.getElementById('availableToAllocate').textContent = formatCurrency(available, userCurrency);
+        document.getElementById('availableToAllocate').className = `stat-value ${available < 0 ? 'negative' : 'positive'}`;
+    }
+}
+
+function saveAllocations() {
+    const allocations = [];
+    categories.forEach(category => {
+        category.subcategories.forEach(sub => {
+            if (sub.allocated > 0) {
+                allocations.push({
+                    subcategory_id: sub.id,
+                    amount: sub.allocated
+                });
+            }
+        });
+    });
+    
+    fetch('/api/allocations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ allocations })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message && data.message.includes('cannot exceed')) {
+            showNotification(data.message, 'error');
+        } else {
+            showNotification('Allocations saved successfully!', 'success');
+            loadBudgetData(); // Refresh budget data
+        }
+    })
+    .catch(error => {
+        console.error('Error saving allocations:', error);
+        showNotification('Error saving allocations. Please try again.', 'error');
+    });
+}
+
+// Modal functions
+function showAddCategoryModal() {
+    document.getElementById('addCategoryModal').style.display = 'block';
+}
+
+function showAddSubcategoryModal(categoryId) {
+    document.getElementById('parentCategoryId').value = categoryId;
+    document.getElementById('addSubcategoryModal').style.display = 'block';
+}
+
+function showEditCategoryModal(categoryId, categoryName) {
+    document.getElementById('editCategoryId').value = categoryId;
+    document.getElementById('editCategoryName').value = categoryName;
+    document.getElementById('editCategoryModal').style.display = 'block';
+}
+
+function showEditSubcategoryModal(subcategoryId, subcategoryName) {
+    document.getElementById('editSubcategoryId').value = subcategoryId;
+    document.getElementById('editSubcategoryName').value = subcategoryName;
+    document.getElementById('editSubcategoryModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// CRUD operations
+function deleteCategory(categoryId) {
+    if (confirm('Are you sure you want to delete this category? This will also delete all subcategories and allocations.')) {
+        fetch(`/api/categories/${categoryId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Category deleted successfully!', 'success');
+            loadCategories();
+        })
+        .catch(error => {
+            console.error('Error deleting category:', error);
+            showNotification('Error deleting category. Please try again.', 'error');
+        });
+    }
+}
+
+function deleteSubcategory(subcategoryId) {
+    if (confirm('Are you sure you want to delete this subcategory?')) {
+        fetch(`/api/subcategories/${subcategoryId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Subcategory deleted successfully!', 'success');
+            loadCategories();
+        })
+        .catch(error => {
+            console.error('Error deleting subcategory:', error);
+            showNotification('Error deleting subcategory. Please try again.', 'error');
+        });
+    }
+}
+
+function setupFormListeners() {
+    document.getElementById('addCategoryForm').addEventListener('submit', handleAddCategory);
+    document.getElementById('addSubcategoryForm').addEventListener('submit', handleAddSubcategory);
+    document.getElementById('editCategoryForm').addEventListener('submit', handleEditCategory);
+    document.getElementById('editSubcategoryForm').addEventListener('submit', handleEditSubcategory);
+}
+
+function handleAddCategory(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+            name: formData.get('name')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Category added successfully!', 'success');
+        closeModal('addCategoryModal');
+        e.target.reset();
+        loadCategories();
+    })
+    .catch(error => {
+        console.error('Error adding category:', error);
+        showNotification('Error adding category. Please try again.', 'error');
+    });
+}
+
+function handleAddSubcategory(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    fetch('/api/subcategories', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            category_id: parseInt(formData.get('category_id'))
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Subcategory added successfully!', 'success');
+        closeModal('addSubcategoryModal');
+        e.target.reset();
+        loadCategories();
+    })
+    .catch(error => {
+        console.error('Error adding subcategory:', error);
+        showNotification('Error adding subcategory. Please try again.', 'error');
+    });
+}
+
+function handleEditCategory(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const categoryId = formData.get('category_id');
+    
+    fetch(`/api/categories/${categoryId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+            name: formData.get('name')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Category updated successfully!', 'success');
+        closeModal('editCategoryModal');
+        loadCategories();
+    })
+    .catch(error => {
+        console.error('Error updating category:', error);
+        showNotification('Error updating category. Please try again.', 'error');
+    });
+}
+
+function handleEditSubcategory(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const subcategoryId = formData.get('subcategory_id');
+    
+    fetch(`/api/subcategories/${subcategoryId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({
+            name: formData.get('name')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Subcategory updated successfully!', 'success');
+        closeModal('editSubcategoryModal');
+        loadCategories();
+    })
+    .catch(error => {
+        console.error('Error updating subcategory:', error);
+        showNotification('Error updating subcategory. Please try again.', 'error');
+    });
+}
+
+function formatCurrency(amount, currency = userCurrency || 'USD') {
+    const symbol = getCurrencySymbol(currency);
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return symbol + formatter.format(amount || 0);
+}
+</script>
+{% endblock %}
