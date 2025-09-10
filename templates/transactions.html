@@ -260,6 +260,7 @@ function loadCategories() {
 function populateCategoryFilters() {
     const categoryFilter = document.getElementById('categoryFilter');
     const editCategory = document.getElementById('editCategory');
+    const addExpenseCategory = document.getElementById('category');
     
     categories.forEach(category => {
         // For filter dropdown
@@ -274,6 +275,12 @@ function populateCategoryFilters() {
         editOption.textContent = category.name;
         editOption.dataset.subcategories = JSON.stringify(category.subcategories);
         editCategory.appendChild(editOption);
+        
+        // For add expense form dropdown
+        const addExpenseOption = document.createElement('option');
+        addExpenseOption.value = category.id;
+        addExpenseOption.textContent = category.name;
+        addExpenseCategory.appendChild(addExpenseOption);
     });
 }
 

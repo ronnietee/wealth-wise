@@ -3,6 +3,26 @@
 // Global currency variable
 let userCurrency = 'USD';
 
+// Load user settings
+async function loadUserSettings() {
+    try {
+        const response = await fetch('/api/user/settings', {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        
+        if (response.ok) {
+            const settings = await response.json();
+            userCurrency = settings.currency;
+            document.dispatchEvent(new CustomEvent('currencyLoaded', { detail: { currency: userCurrency } }));
+            return settings;
+        }
+    } catch (error) {
+        console.error('Error loading user settings:', error);
+    }
+}
+
 // Check if user is authenticated
 function checkAuth() {
     const token = localStorage.getItem('token');
