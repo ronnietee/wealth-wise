@@ -217,27 +217,28 @@ def get_categories(current_user):
         }
         
         for subcategory in category.subcategories:
-            # Get current month's budget allocation
-            current_month = datetime.now().strftime('%Y-%m')
-            budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+            # Get active budget period
+            active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
             allocated = 0
             spent = 0
             
-            if budget:
-                allocation = BudgetAllocation.query.filter_by(
-                    budget_id=budget.id, 
-                    subcategory_id=subcategory.id
-                ).first()
-                if allocation:
-                    allocated = allocation.allocated_amount
+            if active_period:
+                budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+                if budget:
+                    allocation = BudgetAllocation.query.filter_by(
+                        budget_id=budget.id, 
+                        subcategory_id=subcategory.id
+                    ).first()
+                    if allocation:
+                        allocated = allocation.allocated_amount
                 
-                # Calculate spent amount
+                # Calculate spent amount for the current period
                 spent_transactions = Transaction.query.filter_by(
                     user_id=current_user.id,
                     subcategory_id=subcategory.id
                 ).filter(
-                    db.extract('year', Transaction.transaction_date) == datetime.now().year,
-                    db.extract('month', Transaction.transaction_date) == datetime.now().month
+                    Transaction.transaction_date >= active_period.start_date,
+                    Transaction.transaction_date <= active_period.end_date
                 ).all()
                 
                 spent = sum(t.amount for t in spent_transactions)

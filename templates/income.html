@@ -102,7 +102,7 @@
                 <div class="form-group">
                     <label for="incomeSourceAmount">Amount</label>
                     <div class="input-group">
-                        <span class="input-prefix">$</span>
+                        <span class="input-prefix" data-currency-symbol>$</span>
                         <input type="number" id="incomeSourceAmount" name="amount" step="0.01" min="0.01" required>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
                 <div class="form-group">
                     <label for="editIncomeSourceAmount">Amount</label>
                     <div class="input-group">
-                        <span class="input-prefix">$</span>
+                        <span class="input-prefix" data-currency-symbol>$</span>
                         <input type="number" id="editIncomeSourceAmount" name="amount" step="0.01" min="0.01" required>
                     </div>
                 </div>
@@ -152,13 +152,17 @@ let incomeSources = [];
 let currentBudget = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Load data immediately, currency will be loaded globally
-    loadCurrentBudget();
+    // Load user settings first to get currency
+    loadUserSettings().then(() => {
+        loadCurrentBudget();
+        updateCurrencySymbols();
+    });
     
     // Also listen for currency loaded event
     window.addEventListener('currencyLoaded', function(event) {
         userCurrency = event.detail.currency;
         loadCurrentBudget();
+        updateCurrencySymbols();
     });
     
     setupFormListeners();

@@ -99,8 +99,12 @@ let categories = [];
 let currentBudget = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Update currency symbols
-    updateCurrencySymbols();
+    // Load user settings first to get currency
+    loadUserSettings().then(() => {
+        loadBudgetData();
+        loadCategories();
+        updateCurrencySymbols();
+    });
     
     // Also listen for currency loaded event
     window.addEventListener('currencyLoaded', function(event) {
@@ -108,8 +112,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCurrencySymbols();
     });
     
-    loadBudgetData();
-    loadCategories();
     setupFormListeners();
 });
 
