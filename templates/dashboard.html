@@ -114,8 +114,16 @@ function loadDashboardData() {
                 'Authorization': 'Bearer ' + getToken()
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
             const totalIncome = data.total_income + (data.balance_brought_forward || 0);
             document.getElementById('totalIncome').textContent = formatCurrency(totalIncome, userCurrency);
             document.getElementById('balanceToAllocate').textContent = formatCurrency(data.balance_to_allocate, userCurrency);
@@ -123,7 +131,11 @@ function loadDashboardData() {
             // Update budget period indicator
             document.getElementById('current-budget-name').textContent = data.period_name || 'Unknown';
         })
-        .catch(error => console.error('Error loading budget:', error));
+        .catch(error => {
+            console.error('Error loading budget:', error);
+            document.getElementById('current-budget-name').textContent = 'Error loading budget';
+            showNotification('Error loading budget: ' + error.message, 'error');
+        });
 
         // Load categories for overview
         loadCategoriesOverview();

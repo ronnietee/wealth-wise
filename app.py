@@ -370,16 +370,20 @@ def create_transaction(current_user):
 @app.route('/api/budget-periods', methods=['GET'])
 @token_required
 def get_budget_periods(current_user):
-    periods = BudgetPeriod.query.filter_by(user_id=current_user.id).order_by(BudgetPeriod.created_at.desc()).all()
-    return jsonify([{
-        'id': period.id,
-        'name': period.name,
-        'period_type': period.period_type,
-        'start_date': period.start_date.isoformat(),
-        'end_date': period.end_date.isoformat(),
-        'is_active': period.is_active,
-        'created_at': period.created_at.isoformat()
-    } for period in periods])
+    try:
+        periods = BudgetPeriod.query.filter_by(user_id=current_user.id).order_by(BudgetPeriod.created_at.desc()).all()
+        return jsonify([{
+            'id': period.id,
+            'name': period.name,
+            'period_type': period.period_type,
+            'start_date': period.start_date.isoformat(),
+            'end_date': period.end_date.isoformat(),
+            'is_active': period.is_active,
+            'created_at': period.created_at.isoformat()
+        } for period in periods])
+    except Exception as e:
+        print(f"Error in get_budget_periods: {str(e)}")
+        return jsonify({'error': f'Error loading budget periods: {str(e)}'}), 500
 
 @app.route('/api/budget-periods', methods=['POST'])
 @token_required
@@ -442,56 +446,60 @@ def activate_budget_period(current_user, period_id):
 @app.route('/api/budget', methods=['GET'])
 @token_required
 def get_budget(current_user):
-    # Get active budget period
-    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
-    
-    if not active_period:
-        # Create default monthly period for current month
-        current_date = datetime.now()
-        start_date = current_date.replace(day=1).date()
-        end_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
         
-        active_period = BudgetPeriod(
-            name=current_date.strftime('%B %Y'),
-            period_type='monthly',
-            start_date=start_date,
-            end_date=end_date,
-            user_id=current_user.id,
-            is_active=True
-        )
-        db.session.add(active_period)
-        db.session.commit()
-    
-    # Get or create budget for this period
-    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
-    
-    if not budget:
-        budget = Budget(
-            period_id=active_period.id,
-            user_id=current_user.id
-        )
-        db.session.add(budget)
-        db.session.commit()
+        if not active_period:
+            # Create default monthly period for current month
+            current_date = datetime.now()
+            start_date = current_date.replace(day=1).date()
+            end_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            
+            active_period = BudgetPeriod(
+                name=current_date.strftime('%B %Y'),
+                period_type='monthly',
+                start_date=start_date,
+                end_date=end_date,
+                user_id=current_user.id,
+                is_active=True
+            )
+            db.session.add(active_period)
+            db.session.commit()
         
-        # Create default categories if this is the first budget
-        if not Category.query.filter_by(user_id=current_user.id).first():
-            create_default_categories(current_user.id)
-    
-    # Calculate total income from income sources
-    total_income_from_sources = sum(source.amount for source in budget.income_sources)
-    
-    return jsonify({
-        'budget_id': budget.id,
-        'period_id': active_period.id,
-        'period_name': active_period.name,
-        'period_type': active_period.period_type,
-        'start_date': active_period.start_date.isoformat(),
-        'end_date': active_period.end_date.isoformat(),
-        'total_income': total_income_from_sources,
-        'balance_brought_forward': budget.balance_brought_forward,
-        'balance_to_allocate': total_income_from_sources + budget.balance_brought_forward - sum(a.allocated_amount for a in budget.allocations),
-        'income_sources': [{'id': source.id, 'name': source.name, 'amount': source.amount} for source in budget.income_sources]
-    })
+        # Get or create budget for this period
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        
+        if not budget:
+            budget = Budget(
+                period_id=active_period.id,
+                user_id=current_user.id
+            )
+            db.session.add(budget)
+            db.session.commit()
+            
+            # Create default categories if this is the first budget
+            if not Category.query.filter_by(user_id=current_user.id).first():
+                create_default_categories(current_user.id)
+        
+        # Calculate total income from income sources
+        total_income_from_sources = sum(source.amount for source in budget.income_sources)
+        
+        return jsonify({
+            'budget_id': budget.id,
+            'period_id': active_period.id,
+            'period_name': active_period.name,
+            'period_type': active_period.period_type,
+            'start_date': active_period.start_date.isoformat(),
+            'end_date': active_period.end_date.isoformat(),
+            'total_income': total_income_from_sources,
+            'balance_brought_forward': budget.balance_brought_forward,
+            'balance_to_allocate': total_income_from_sources + budget.balance_brought_forward - sum(a.allocated_amount for a in budget.allocations),
+            'income_sources': [{'id': source.id, 'name': source.name, 'amount': source.amount} for source in budget.income_sources]
+        })
+    except Exception as e:
+        print(f"Error in get_budget: {str(e)}")
+        return jsonify({'error': f'Error loading budget: {str(e)}'}), 500
 
 @app.route('/api/budget', methods=['PUT'])
 @token_required
