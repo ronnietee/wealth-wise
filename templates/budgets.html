@@ -76,6 +76,31 @@
 <script>
 let userCurrency = 'USD';
 
+// Format currency function
+function formatCurrency(amount, currency = 'USD') {
+    const symbol = getCurrencySymbol(currency);
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return symbol + formatter.format(amount || 0);
+}
+
+// Get currency symbol
+function getCurrencySymbol(currency) {
+    const symbols = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'ZAR': 'R',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'JPY': '¥'
+    };
+    return symbols[currency] || '$';
+}
+
 // Load user settings first
 async function loadUserSettings() {
     try {
@@ -114,7 +139,7 @@ async function loadCurrentBudget() {
                 <div class="budget-info">
                     <h4>${budget.period_name}</h4>
                     <p><strong>Type:</strong> ${budget.period_type}</p>
-                    <p><strong>Period:</strong> ${budget.start_date} to ${budget.end_date}</p>
+                    <p><strong>Period:</strong> ${budget.start_date || 'N/A'} to ${budget.end_date || 'N/A'}</p>
                     <p><strong>Total Income:</strong> ${formatCurrency(budget.total_income, userCurrency)}</p>
                     <p><strong>Balance to Allocate:</strong> ${formatCurrency(budget.balance_to_allocate, userCurrency)}</p>
                 </div>
@@ -155,8 +180,8 @@ async function loadBudgetPeriods() {
                     <div class="period-info">
                         <h4>${period.name}</h4>
                         <p><strong>Type:</strong> ${period.period_type}</p>
-                        <p><strong>Period:</strong> ${period.start_date} to ${period.end_date}</p>
-                        <p><strong>Created:</strong> ${new Date(period.created_at).toLocaleDateString()}</p>
+                        <p><strong>Period:</strong> ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}</p>
+                        <p><strong>Created:</strong> ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}</p>
                     </div>
                     <div class="period-actions">
                         ${period.is_active ? 

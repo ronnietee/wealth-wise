@@ -376,10 +376,10 @@ def get_budget_periods(current_user):
             'id': period.id,
             'name': period.name,
             'period_type': period.period_type,
-            'start_date': period.start_date.isoformat(),
-            'end_date': period.end_date.isoformat(),
+            'start_date': period.start_date.isoformat() if period.start_date else None,
+            'end_date': period.end_date.isoformat() if period.end_date else None,
             'is_active': period.is_active,
-            'created_at': period.created_at.isoformat()
+            'created_at': period.created_at.isoformat() if period.created_at else None
         } for period in periods])
     except Exception as e:
         print(f"Error in get_budget_periods: {str(e)}")
@@ -490,8 +490,8 @@ def get_budget(current_user):
             'period_id': active_period.id,
             'period_name': active_period.name,
             'period_type': active_period.period_type,
-            'start_date': active_period.start_date.isoformat(),
-            'end_date': active_period.end_date.isoformat(),
+            'start_date': active_period.start_date.isoformat() if active_period.start_date else None,
+            'end_date': active_period.end_date.isoformat() if active_period.end_date else None,
             'total_income': total_income_from_sources,
             'balance_brought_forward': budget.balance_brought_forward,
             'balance_to_allocate': total_income_from_sources + budget.balance_brought_forward - sum(a.allocated_amount for a in budget.allocations),
