@@ -555,31 +555,57 @@ def update_allocations(current_user):
 @app.route('/api/income-sources', methods=['POST'])
 @token_required
 def create_income_source(current_user):
-    data = request.get_json()
-    
-    # Get active budget period
-    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
-    if not active_period:
-        return jsonify({'message': 'No active budget period found'}), 404
-    
-    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
-    if not budget:
-        return jsonify({'message': 'No budget found for active period'}), 404
-    
-    income_source = IncomeSource(
-        name=data['name'],
-        amount=data['amount'],
-        budget_id=budget.id
-    )
-    
-    db.session.add(income_source)
-    db.session.commit()
-    
-    # Update total income
-    budget.total_income = sum(source.amount for source in budget.income_sources)
-    db.session.commit()
-    
-    return jsonify({'message': 'Income source created successfully', 'id': income_source.id}), 201
+    try:
+        data = request.get_json()
+        
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        
+        if not active_period:
+            # Create default monthly period for current month
+            current_date = datetime.now()
+            start_date = current_date.replace(day=1).date()
+            end_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            
+            active_period = BudgetPeriod(
+                name=current_date.strftime('%B %Y'),
+                period_type='monthly',
+                start_date=start_date,
+                end_date=end_date,
+                user_id=current_user.id,
+                is_active=True
+            )
+            db.session.add(active_period)
+            db.session.commit()
+        
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        
+        if not budget:
+            budget = Budget(
+                period_id=active_period.id,
+                user_id=current_user.id
+            )
+            db.session.add(budget)
+            db.session.commit()
+        
+        income_source = IncomeSource(
+            name=data['name'],
+            amount=data['amount'],
+            budget_id=budget.id
+        )
+        
+        db.session.add(income_source)
+        db.session.commit()
+        
+        # Update total income
+        budget.total_income = sum(source.amount for source in budget.income_sources)
+        db.session.commit()
+        
+        return jsonify({'message': 'Income source created successfully', 'id': income_source.id}), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error creating income source: {str(e)}'}), 500
 
 @app.route('/api/income-sources/<int:source_id>', methods=['PUT'])
 @token_required
