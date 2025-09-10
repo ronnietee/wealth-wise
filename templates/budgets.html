@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Budget Management</h1>
+        <p>Create and manage your budget periods</p>
+    </div>
+
+    <!-- Current Active Budget -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Current Active Budget</h3>
+        </div>
+        <div class="card-body">
+            <div id="current-budget-info">
+                <p>Loading current budget...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create New Budget Period -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Create New Budget Period</h3>
+        </div>
+        <div class="card-body">
+            <form id="create-budget-form">
+                <div class="form-group">
+                    <label for="budget-name">Budget Name</label>
+                    <input type="text" id="budget-name" name="name" required 
+                           placeholder="e.g., January 2024, Q1 2024, Vacation Budget">
+                </div>
+                
+                <div class="form-group">
+                    <label for="period-type">Period Type</label>
+                    <select id="period-type" name="period_type" required>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start-date">Start Date</label>
+                        <input type="date" id="start-date" name="start_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end-date">End Date</label>
+                        <input type="date" id="end-date" name="end_date" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Create Budget Period</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Periods List -->
+    <div class="card">
+        <div class="card-header">
+            <h3>All Budget Periods</h3>
+        </div>
+        <div class="card-body">
+            <div id="budget-periods-list">
+                <p>Loading budget periods...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let userCurrency = 'USD';
+
+// Load user settings first
+async function loadUserSettings() {
+    try {
+        const response = await fetch('/api/user/settings', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const settings = await response.json();
+            userCurrency = settings.currency;
+            document.dispatchEvent(new CustomEvent('currencyLoaded'));
+        }
+    } catch (error) {
+        console.error('Error loading user settings:', error);
+    }
+}
+
+// Load current active budget
+async function loadCurrentBudget() {
+    try {
+        const response = await fetch('/api/budget', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const budget = await response.json();
+            const currentBudgetInfo = document.getElementById('current-budget-info');
+            currentBudgetInfo.innerHTML = `
+                <div class="budget-info">
+                    <h4>${budget.period_name}</h4>
+                    <p><strong>Type:</strong> ${budget.period_type}</p>
+                    <p><strong>Period:</strong> ${budget.start_date} to ${budget.end_date}</p>
+                    <p><strong>Total Income:</strong> ${formatCurrency(budget.total_income, userCurrency)}</p>
+                    <p><strong>Balance to Allocate:</strong> ${formatCurrency(budget.balance_to_allocate, userCurrency)}</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading current budget:', error);
+        document.getElementById('current-budget-info').innerHTML = '<p>Error loading current budget</p>';
+    }
+}
+
+// Load all budget periods
+async function loadBudgetPeriods() {
+    try {
+        const response = await fetch('/api/budget-periods', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const periods = await response.json();
+            const periodsList = document.getElementById('budget-periods-list');
+            
+            if (periods.length === 0) {
+                periodsList.innerHTML = '<p>No budget periods found. Create your first budget period above.</p>';
+                return;
+            }
+            
+            periodsList.innerHTML = periods.map(period => `
+                <div class="budget-period-item ${period.is_active ? 'active' : ''}">
+                    <div class="period-info">
+                        <h4>${period.name}</h4>
+                        <p><strong>Type:</strong> ${period.period_type}</p>
+                        <p><strong>Period:</strong> ${period.start_date} to ${period.end_date}</p>
+                        <p><strong>Created:</strong> ${new Date(period.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div class="period-actions">
+                        ${period.is_active ? 
+                            '<span class="badge badge-success">Active</span>' : 
+                            `<button class="btn btn-sm btn-outline" onclick="activateBudgetPeriod(${period.id})">Activate</button>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading budget periods:', error);
+        document.getElementById('budget-periods-list').innerHTML = '<p>Error loading budget periods</p>';
+    }
+}
+
+// Activate a budget period
+async function activateBudgetPeriod(periodId) {
+    try {
+        const response = await fetch(`/api/budget-periods/${periodId}/activate`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            // Reload both current budget and periods list
+            await loadCurrentBudget();
+            await loadBudgetPeriods();
+            showMessage('Budget period activated successfully!', 'success');
+        } else {
+            const error = await response.json();
+            showMessage(error.message || 'Failed to activate budget period', 'error');
+        }
+    } catch (error) {
+        console.error('Error activating budget period:', error);
+        showMessage('Error activating budget period', 'error');
+    }
+}
+
+// Handle form submission
+document.getElementById('create-budget-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        name: formData.get('name'),
+        period_type: formData.get('period_type'),
+        start_date: formData.get('start_date'),
+        end_date: formData.get('end_date')
+    };
+    
+    try {
+        const response = await fetch('/api/budget-periods', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            const newPeriod = await response.json();
+            showMessage('Budget period created successfully!', 'success');
+            e.target.reset();
+            await loadCurrentBudget();
+            await loadBudgetPeriods();
+        } else {
+            const error = await response.json();
+            showMessage(error.message || 'Failed to create budget period', 'error');
+        }
+    } catch (error) {
+        console.error('Error creating budget period:', error);
+        showMessage('Error creating budget period', 'error');
+    }
+});
+
+// Set default dates
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    document.getElementById('start-date').value = startOfMonth.toISOString().split('T')[0];
+    document.getElementById('end-date').value = endOfMonth.toISOString().split('T')[0];
+    
+    // Load data
+    loadUserSettings().then(() => {
+        loadCurrentBudget();
+        loadBudgetPeriods();
+    });
+});
+
+// Auto-update dates based on period type
+document.getElementById('period-type').addEventListener('change', function() {
+    const periodType = this.value;
+    const startDateInput = document.getElementById('start-date');
+    const endDateInput = document.getElementById('end-date');
+    const nameInput = document.getElementById('budget-name');
+    
+    const today = new Date();
+    let startDate, endDate, name;
+    
+    switch (periodType) {
+        case 'monthly':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            name = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            break;
+        case 'quarterly':
+            const quarter = Math.floor(today.getMonth() / 3);
+            startDate = new Date(today.getFullYear(), quarter * 3, 1);
+            endDate = new Date(today.getFullYear(), quarter * 3 + 3, 0);
+            name = `Q${quarter + 1} ${today.getFullYear()}`;
+            break;
+        case 'yearly':
+            startDate = new Date(today.getFullYear(), 0, 1);
+            endDate = new Date(today.getFullYear(), 11, 31);
+            name = today.getFullYear().toString();
+            break;
+        default:
+            return; // Don't auto-fill for custom
+    }
+    
+    startDateInput.value = startDate.toISOString().split('T')[0];
+    endDateInput.value = endDate.toISOString().split('T')[0];
+    nameInput.value = name;
+});
+
+// Show message function
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
+    messageDiv.textContent = message;
+    
+    document.body.insertBefore(messageDiv, document.body.firstChild);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.budget-period-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background: #f9f9f9;
+}
+
+.budget-period-item.active {
+    background: #e8f5e8;
+    border-color: #4caf50;
+}
+
+.period-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.period-info p {
+    margin: 0.25rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.period-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.badge-success {
+    background: #4caf50;
+    color: white;
+}
+
+.budget-info {
+    padding: 1rem;
+    background: #f0f8ff;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+}
+
+.budget-info h4 {
+    margin: 0 0 1rem 0;
+    color: #1976d2;
+}
+
+.budget-info p {
+    margin: 0.5rem 0;
+    color: #333;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .budget-period-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .period-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+</style>
+{% endblock %}

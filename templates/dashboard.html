@@ -5,8 +5,19 @@
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>Dashboard</h1>
-        <p class="page-subtitle">Welcome back! Here's your financial overview for this month.</p>
+        <div class="header-content">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="page-subtitle">Welcome back! Here's your financial overview.</p>
+            </div>
+            <div class="budget-period-indicator">
+                <div class="current-budget">
+                    <span class="budget-label">Current Budget:</span>
+                    <span id="current-budget-name" class="budget-name">Loading...</span>
+                </div>
+                <a href="/budgets" class="btn btn-sm btn-outline">Manage Budgets</a>
+            </div>
+        </div>
     </div>
 
     <div class="dashboard-grid">
@@ -108,6 +119,9 @@ function loadDashboardData() {
             const totalIncome = data.total_income + (data.balance_brought_forward || 0);
             document.getElementById('totalIncome').textContent = formatCurrency(totalIncome, userCurrency);
             document.getElementById('balanceToAllocate').textContent = formatCurrency(data.balance_to_allocate, userCurrency);
+            
+            // Update budget period indicator
+            document.getElementById('current-budget-name').textContent = data.period_name || 'Unknown';
         })
         .catch(error => console.error('Error loading budget:', error));
 

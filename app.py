@@ -30,6 +30,7 @@ class User(db.Model):
     categories = db.relationship('Category', backref='user', lazy=True, cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')
     budgets = db.relationship('Budget', backref='user', lazy=True, cascade='all, delete-orphan')
+    budget_periods = db.relationship('BudgetPeriod', backref='user', lazy=True, cascade='all, delete-orphan')
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,9 +60,22 @@ class Transaction(db.Model):
     # Relationships
     subcategory = db.relationship('Subcategory', backref='transactions')
 
+class BudgetPeriod(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # e.g., "January 2024", "Q1 2024", "Custom Budget"
+    period_type = db.Column(db.String(20), nullable=False)  # 'monthly', 'quarterly', 'yearly', 'custom'
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=False)  # Only one active budget per user
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    budgets = db.relationship('Budget', backref='period', lazy=True, cascade='all, delete-orphan')
+
 class Budget(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    month_year = db.Column(db.String(7), nullable=False)  # Format: YYYY-MM
+    period_id = db.Column(db.Integer, db.ForeignKey('budget_period.id'), nullable=False)
     total_income = db.Column(db.Float, default=0)
     balance_brought_forward = db.Column(db.Float, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -114,6 +128,10 @@ def index():
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
+
+@app.route('/budgets')
+def budgets():
+    return render_template('budgets.html')
 
 @app.route('/income')
 def income():
@@ -347,15 +365,108 @@ def create_transaction(current_user):
     
     return jsonify({'message': 'Transaction created successfully', 'id': transaction.id}), 201
 
+# Budget Period Management Endpoints
+@app.route('/api/budget-periods', methods=['GET'])
+@token_required
+def get_budget_periods(current_user):
+    periods = BudgetPeriod.query.filter_by(user_id=current_user.id).order_by(BudgetPeriod.created_at.desc()).all()
+    return jsonify([{
+        'id': period.id,
+        'name': period.name,
+        'period_type': period.period_type,
+        'start_date': period.start_date.isoformat(),
+        'end_date': period.end_date.isoformat(),
+        'is_active': period.is_active,
+        'created_at': period.created_at.isoformat()
+    } for period in periods])
+
+@app.route('/api/budget-periods', methods=['POST'])
+@token_required
+def create_budget_period(current_user):
+    data = request.get_json()
+    
+    # Deactivate current active period
+    BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).update({'is_active': False})
+    
+    # Create new period
+    period = BudgetPeriod(
+        name=data['name'],
+        period_type=data['period_type'],
+        start_date=datetime.strptime(data['start_date'], '%Y-%m-%d').date(),
+        end_date=datetime.strptime(data['end_date'], '%Y-%m-%d').date(),
+        user_id=current_user.id,
+        is_active=True
+    )
+    db.session.add(period)
+    db.session.commit()
+    
+    # Create budget for this period
+    budget = Budget(
+        period_id=period.id,
+        user_id=current_user.id
+    )
+    db.session.add(budget)
+    db.session.commit()
+    
+    # Create default categories if this is the first budget
+    if not Category.query.filter_by(user_id=current_user.id).first():
+        create_default_categories(current_user.id)
+    
+    return jsonify({
+        'id': period.id,
+        'name': period.name,
+        'period_type': period.period_type,
+        'start_date': period.start_date.isoformat(),
+        'end_date': period.end_date.isoformat(),
+        'is_active': period.is_active,
+        'budget_id': budget.id
+    }), 201
+
+@app.route('/api/budget-periods/<int:period_id>/activate', methods=['POST'])
+@token_required
+def activate_budget_period(current_user, period_id):
+    # Deactivate current active period
+    BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).update({'is_active': False})
+    
+    # Activate selected period
+    period = BudgetPeriod.query.filter_by(id=period_id, user_id=current_user.id).first()
+    if not period:
+        return jsonify({'message': 'Budget period not found'}), 404
+    
+    period.is_active = True
+    db.session.commit()
+    
+    return jsonify({'message': 'Budget period activated successfully'})
+
 @app.route('/api/budget', methods=['GET'])
 @token_required
 def get_budget(current_user):
-    current_month = datetime.now().strftime('%Y-%m')
-    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    # Get active budget period
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    
+    if not active_period:
+        # Create default monthly period for current month
+        current_date = datetime.now()
+        start_date = current_date.replace(day=1).date()
+        end_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        
+        active_period = BudgetPeriod(
+            name=current_date.strftime('%B %Y'),
+            period_type='monthly',
+            start_date=start_date,
+            end_date=end_date,
+            user_id=current_user.id,
+            is_active=True
+        )
+        db.session.add(active_period)
+        db.session.commit()
+    
+    # Get or create budget for this period
+    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
     
     if not budget:
         budget = Budget(
-            month_year=current_month,
+            period_id=active_period.id,
             user_id=current_user.id
         )
         db.session.add(budget)
@@ -370,7 +481,11 @@ def get_budget(current_user):
     
     return jsonify({
         'budget_id': budget.id,
-        'month_year': budget.month_year,
+        'period_id': active_period.id,
+        'period_name': active_period.name,
+        'period_type': active_period.period_type,
+        'start_date': active_period.start_date.isoformat(),
+        'end_date': active_period.end_date.isoformat(),
         'total_income': total_income_from_sources,
         'balance_brought_forward': budget.balance_brought_forward,
         'balance_to_allocate': total_income_from_sources + budget.balance_brought_forward - sum(a.allocated_amount for a in budget.allocations),
@@ -381,17 +496,15 @@ def get_budget(current_user):
 @token_required
 def update_budget(current_user):
     data = request.get_json()
-    current_month = datetime.now().strftime('%Y-%m')
     
-    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    # Get active budget period
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    if not active_period:
+        return jsonify({'message': 'No active budget period found'}), 404
     
+    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
     if not budget:
-        budget = Budget(
-            month_year=current_month,
-            user_id=current_user.id
-        )
-        db.session.add(budget)
-        db.session.commit()
+        return jsonify({'message': 'No budget found for active period'}), 404
     
     budget.total_income = data.get('total_income', budget.total_income)
     budget.balance_brought_forward = data.get('balance_brought_forward', budget.balance_brought_forward)
@@ -404,17 +517,15 @@ def update_budget(current_user):
 @token_required
 def update_allocations(current_user):
     data = request.get_json()
-    current_month = datetime.now().strftime('%Y-%m')
     
-    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    # Get active budget period
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    if not active_period:
+        return jsonify({'message': 'No active budget period found'}), 404
     
+    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
     if not budget:
-        budget = Budget(
-            month_year=current_month,
-            user_id=current_user.id
-        )
-        db.session.add(budget)
-        db.session.commit()
+        return jsonify({'message': 'No budget found for active period'}), 404
     
     # Calculate total allocation amount
     total_allocation = sum(allocation['amount'] for allocation in data['allocations'])
@@ -445,17 +556,15 @@ def update_allocations(current_user):
 @token_required
 def create_income_source(current_user):
     data = request.get_json()
-    current_month = datetime.now().strftime('%Y-%m')
     
-    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    # Get active budget period
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    if not active_period:
+        return jsonify({'message': 'No active budget period found'}), 404
     
+    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
     if not budget:
-        budget = Budget(
-            month_year=current_month,
-            user_id=current_user.id
-        )
-        db.session.add(budget)
-        db.session.commit()
+        return jsonify({'message': 'No budget found for active period'}), 404
     
     income_source = IncomeSource(
         name=data['name'],
@@ -476,9 +585,13 @@ def create_income_source(current_user):
 @token_required
 def update_income_source(current_user, source_id):
     data = request.get_json()
-    current_month = datetime.now().strftime('%Y-%m')
     
-    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    # Get active budget period
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    if not active_period:
+        return jsonify({'message': 'No active budget period found'}), 404
+    
+    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
     income_source = IncomeSource.query.filter_by(id=source_id, budget_id=budget.id).first()
     
     if not income_source:
@@ -498,9 +611,12 @@ def update_income_source(current_user, source_id):
 @app.route('/api/income-sources/<int:source_id>', methods=['DELETE'])
 @token_required
 def delete_income_source(current_user, source_id):
-    current_month = datetime.now().strftime('%Y-%m')
+    # Get active budget period
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    if not active_period:
+        return jsonify({'message': 'No active budget period found'}), 404
     
-    budget = Budget.query.filter_by(user_id=current_user.id, month_year=current_month).first()
+    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
     income_source = IncomeSource.query.filter_by(id=source_id, budget_id=budget.id).first()
     
     if not income_source:
