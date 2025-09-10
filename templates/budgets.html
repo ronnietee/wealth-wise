@@ -217,6 +217,9 @@ async function activateBudgetPeriod(periodId) {
             await loadCurrentBudget();
             await loadBudgetPeriods();
             showMessage('Budget period activated successfully!', 'success');
+            
+            // Dispatch event to notify other pages of budget period change
+            document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
             showMessage(error.message || 'Failed to activate budget period', 'error');
@@ -255,6 +258,9 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
             e.target.reset();
             await loadCurrentBudget();
             await loadBudgetPeriods();
+            
+            // Dispatch event to notify other pages of budget period change
+            document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
             showMessage(error.message || 'Failed to create budget period', 'error');

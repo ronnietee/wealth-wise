@@ -710,25 +710,39 @@ def change_password(current_user):
 @app.route('/api/transactions', methods=['GET'])
 @token_required
 def get_transactions(current_user):
-    transactions = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.transaction_date.desc()).all()
-    
-    result = []
-    for transaction in transactions:
-        subcategory = Subcategory.query.get(transaction.subcategory_id)
-        category = Category.query.get(subcategory.category_id) if subcategory else None
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
         
-        result.append({
-            'id': transaction.id,
-            'amount': transaction.amount,
-            'description': transaction.description or '',
-            'comment': transaction.comment or '',
-            'subcategory_id': transaction.subcategory_id,
-            'transaction_date': transaction.transaction_date.isoformat(),
-            'category_name': category.name if category else 'Unknown',
-            'subcategory_name': subcategory.name if subcategory else 'Unknown'
-        })
-    
-    return jsonify(result)
+        if not active_period:
+            return jsonify([])
+        
+        # Filter transactions by active budget period date range
+        transactions = Transaction.query.filter_by(user_id=current_user.id).filter(
+            Transaction.transaction_date >= active_period.start_date,
+            Transaction.transaction_date <= active_period.end_date
+        ).order_by(Transaction.transaction_date.desc()).all()
+        
+        result = []
+        for transaction in transactions:
+            subcategory = Subcategory.query.get(transaction.subcategory_id)
+            category = Category.query.get(subcategory.category_id) if subcategory else None
+            
+            result.append({
+                'id': transaction.id,
+                'amount': transaction.amount,
+                'description': transaction.description or '',
+                'comment': transaction.comment or '',
+                'subcategory_id': transaction.subcategory_id,
+                'transaction_date': transaction.transaction_date.isoformat(),
+                'category_name': category.name if category else 'Unknown',
+                'subcategory_name': subcategory.name if subcategory else 'Unknown'
+            })
+        
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in get_transactions: {str(e)}")
+        return jsonify({'error': f'Error loading transactions: {str(e)}'}), 500
 
 @app.route('/api/transactions/<int:transaction_id>', methods=['PUT'])
 @token_required

@@ -159,6 +159,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCategories();
     });
     
+    // Listen for budget period changes
+    window.addEventListener('budgetPeriodChanged', function(event) {
+        loadBudgetData();
+        loadCategories();
+    });
+    
     setupFormListeners();
     setupScrollListener();
 });

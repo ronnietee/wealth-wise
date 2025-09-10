@@ -219,6 +219,11 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTransactions();
     });
     
+    // Listen for budget period changes
+    window.addEventListener('budgetPeriodChanged', function(event) {
+        loadTransactions();
+    });
+    
     setupFormListeners();
 });
 
