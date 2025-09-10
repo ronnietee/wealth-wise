@@ -390,6 +390,26 @@ def get_budget_periods(current_user):
 def create_budget_period(current_user):
     data = request.get_json()
     
+    start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+    end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+    
+    # Validate date range
+    if start_date >= end_date:
+        return jsonify({'error': 'Start date must be before end date'}), 400
+    
+    # Check for overlapping periods
+    overlapping_periods = BudgetPeriod.query.filter(
+        BudgetPeriod.user_id == current_user.id,
+        BudgetPeriod.start_date <= end_date,
+        BudgetPeriod.end_date >= start_date
+    ).all()
+    
+    if overlapping_periods:
+        period_names = [p.name for p in overlapping_periods]
+        return jsonify({
+            'error': f'This period overlaps with existing periods: {", ".join(period_names)}'
+        }), 400
+    
     # Deactivate current active period
     BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).update({'is_active': False})
     
@@ -397,8 +417,8 @@ def create_budget_period(current_user):
     period = BudgetPeriod(
         name=data['name'],
         period_type=data['period_type'],
-        start_date=datetime.strptime(data['start_date'], '%Y-%m-%d').date(),
-        end_date=datetime.strptime(data['end_date'], '%Y-%m-%d').date(),
+        start_date=start_date,
+        end_date=end_date,
         user_id=current_user.id,
         is_active=True
     )
