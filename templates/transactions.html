@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Listen for budget period changes
     window.addEventListener('budgetPeriodChanged', function(event) {
+        console.log('Received budgetPeriodChanged event, reloading transactions...');
         loadTransactions();
     });
     
@@ -295,8 +296,7 @@ function populateCategoryFilters() {
 }
 
 function loadTransactions() {
-    // For now, we'll need to add a transactions API endpoint
-    // This is a placeholder - you'll need to implement the backend
+    console.log('Loading transactions...');
     fetch('/api/transactions', {
         headers: {
             'Authorization': 'Bearer ' + getToken()
@@ -304,6 +304,7 @@ function loadTransactions() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Transactions loaded:', data);
         transactions = data;
         filteredTransactions = [...transactions];
         renderTransactions();
