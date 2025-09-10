@@ -262,6 +262,11 @@ function populateCategoryFilters() {
     const editCategory = document.getElementById('editCategory');
     const addExpenseCategory = document.getElementById('category');
     
+    // Clear existing options first (except the default option)
+    categoryFilter.innerHTML = '<option value="">All Categories</option>';
+    editCategory.innerHTML = '<option value="">Select a category</option>';
+    addExpenseCategory.innerHTML = '<option value="">Select a category</option>';
+    
     categories.forEach(category => {
         // For filter dropdown
         const filterOption = document.createElement('option');
