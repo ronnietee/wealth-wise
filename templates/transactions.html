@@ -28,6 +28,7 @@
                         <div class="form-group">
                             <label for="transactionDate">Date</label>
                             <input type="date" id="transactionDate" name="transaction_date" required>
+                            <small id="dateRangeInfo" class="form-text text-muted" style="display: none;"></small>
                         </div>
                         <div class="form-group">
                             <label for="category">Category</label>
@@ -208,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
     
     // Load data immediately, currency will be loaded globally
+    loadActiveBudgetPeriod();
     loadCategories();
     loadTransactions();
     
@@ -222,6 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for budget period changes
     window.addEventListener('budgetPeriodChanged', function(event) {
         console.log('Received budgetPeriodChanged event, reloading transactions...');
+        loadActiveBudgetPeriod();
         loadTransactions();
     });
     
@@ -293,6 +296,34 @@ function populateCategoryFilters() {
         addExpenseOption.textContent = category.name;
         addExpenseCategory.appendChild(addExpenseOption);
     });
+}
+
+async function loadActiveBudgetPeriod() {
+    try {
+        const response = await fetch('/api/budget', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (response.ok) {
+            const budgetData = await response.json();
+            window.activeBudgetPeriod = {
+                start_date: budgetData.start_date,
+                end_date: budgetData.end_date,
+                period_name: budgetData.period_name
+            };
+            
+            // Update date range info
+            const dateRangeInfo = document.getElementById('dateRangeInfo');
+            if (budgetData.start_date && budgetData.end_date) {
+                dateRangeInfo.textContent = `Valid date range: ${budgetData.start_date} to ${budgetData.end_date}`;
+                dateRangeInfo.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading active budget period:', error);
+    }
 }
 
 function loadTransactions() {
@@ -569,6 +600,18 @@ function handleExpenseSubmit(e) {
     if (!data.amount || !data.subcategory_id || !data.transaction_date) {
         showNotification('Please fill in all required fields', 'error');
         return;
+    }
+    
+    // Validate transaction date is within active budget period
+    if (window.activeBudgetPeriod) {
+        const transactionDate = new Date(data.transaction_date);
+        const startDate = new Date(window.activeBudgetPeriod.start_date);
+        const endDate = new Date(window.activeBudgetPeriod.end_date);
+        
+        if (transactionDate < startDate || transactionDate > endDate) {
+            showNotification(`Transaction date must be within the active budget period (${window.activeBudgetPeriod.start_date} to ${window.activeBudgetPeriod.end_date})`, 'error');
+            return;
+        }
     }
     
     // Show loading state

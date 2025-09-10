@@ -175,25 +175,47 @@ function switchTab(tab) {
 }
 
 function showLogin() {
+    console.log('Showing login modal');
     const modal = document.getElementById('authModal');
     if (modal) {
         modal.style.display = 'block';
         switchTab('login');
+        console.log('Login modal shown');
+    } else {
+        console.error('Login modal not found');
     }
 }
 
 function showHowItWorks() {
+    console.log('Showing how it works modal');
     const modal = document.getElementById('howItWorksModal');
     if (modal) {
         modal.style.display = 'block';
+        console.log('How it works modal shown');
+    } else {
+        console.error('How it works modal not found');
     }
 }
 
 function closeModal(modalId) {
+    console.log('Closing modal:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
+        console.log('Modal closed successfully');
+    } else {
+        console.error('Modal not found:', modalId);
     }
+}
+
+// Fallback function to close any visible modal
+function closeAnyModal() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (modal.style.display === 'block') {
+            modal.style.display = 'none';
+        }
+    });
 }
 
 // Close modal when clicking outside

@@ -353,12 +353,33 @@ def delete_subcategory(current_user, subcategory_id):
 def create_transaction(current_user):
     data = request.get_json()
     
+    # Get transaction date from request or use current time
+    if 'transaction_date' in data:
+        transaction_date = datetime.fromisoformat(data['transaction_date'].replace('Z', '+00:00'))
+    else:
+        transaction_date = datetime.utcnow()
+    
+    # Get active budget period to validate date range
+    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+    
+    if active_period:
+        # Convert period dates to datetime for comparison
+        period_start = datetime.combine(active_period.start_date, datetime.min.time())
+        period_end = datetime.combine(active_period.end_date, datetime.max.time())
+        
+        # Validate transaction date is within active period
+        if transaction_date.date() < active_period.start_date or transaction_date.date() > active_period.end_date:
+            return jsonify({
+                'error': f'Transaction date must be within the active budget period ({active_period.start_date} to {active_period.end_date})'
+            }), 400
+    
     transaction = Transaction(
         amount=data['amount'],
         description=data.get('description', ''),
         comment=data.get('comment', ''),
         subcategory_id=data['subcategory_id'],
-        user_id=current_user.id
+        user_id=current_user.id,
+        transaction_date=transaction_date
     )
     
     db.session.add(transaction)
@@ -792,11 +813,26 @@ def update_transaction(current_user, transaction_id):
     
     data = request.get_json()
     
+    # Check if transaction_date is being updated
+    if 'transaction_date' in data:
+        new_transaction_date = datetime.fromisoformat(data['transaction_date'].replace('Z', '+00:00'))
+        
+        # Get active budget period to validate date range
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        
+        if active_period:
+            # Validate new transaction date is within active period
+            if new_transaction_date.date() < active_period.start_date or new_transaction_date.date() > active_period.end_date:
+                return jsonify({
+                    'error': f'Transaction date must be within the active budget period ({active_period.start_date} to {active_period.end_date})'
+                }), 400
+        
+        transaction.transaction_date = new_transaction_date
+    
     transaction.amount = data.get('amount', transaction.amount)
     transaction.description = data.get('description', transaction.description)
     transaction.comment = data.get('comment', transaction.comment)
     transaction.subcategory_id = data.get('subcategory_id', transaction.subcategory_id)
-    transaction.transaction_date = datetime.fromisoformat(data.get('transaction_date', transaction.transaction_date.isoformat()))
     
     db.session.commit()
     

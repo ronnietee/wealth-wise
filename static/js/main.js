@@ -163,14 +163,6 @@ function formatDate(date) {
     });
 }
 
-// Close modal
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
 // Close modal when clicking outside
 window.addEventListener('click', function(e) {
     const modals = document.querySelectorAll('.modal');
