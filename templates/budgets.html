@@ -63,7 +63,19 @@
     <!-- Budget Periods List -->
     <div class="card">
         <div class="card-header">
-            <h3>All Budget Periods</h3>
+            <div class="section-header">
+                <h3>All Budget Periods</h3>
+                <div class="period-type-filter">
+                    <label for="periodTypeFilter">Filter by type:</label>
+                    <select id="periodTypeFilter">
+                        <option value="all">All Types</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="card-body">
             <div id="budget-periods-list">
@@ -75,6 +87,7 @@
 
 <script>
 let userCurrency = 'USD';
+let allPeriods = []; // Store all periods for filtering
 
 // Format currency function
 function formatCurrency(amount, currency = 'USD') {
@@ -168,29 +181,8 @@ async function loadBudgetPeriods() {
             if (periods.error) {
                 throw new Error(periods.error);
             }
-            const periodsList = document.getElementById('budget-periods-list');
-            
-            if (periods.length === 0) {
-                periodsList.innerHTML = '<p>No budget periods found. Create your first budget period above.</p>';
-                return;
-            }
-            
-            periodsList.innerHTML = periods.map(period => `
-                <div class="budget-period-item ${period.is_active ? 'active' : ''}">
-                    <div class="period-info">
-                        <h4>${period.name}</h4>
-                        <p><strong>Type:</strong> ${period.period_type}</p>
-                        <p><strong>Period:</strong> ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}</p>
-                        <p><strong>Created:</strong> ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}</p>
-                    </div>
-                    <div class="period-actions">
-                        ${period.is_active ? 
-                            '<span class="badge badge-success">Active</span>' : 
-                            `<button class="btn btn-sm btn-outline" onclick="activateBudgetPeriod(${period.id})">Activate</button>`
-                        }
-                    </div>
-                </div>
-            `).join('');
+            allPeriods = periods; // Store all periods for filtering
+            renderBudgetPeriods(periods);
         } else {
             const errorData = await response.json();
             throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
@@ -199,6 +191,43 @@ async function loadBudgetPeriods() {
         console.error('Error loading budget periods:', error);
         document.getElementById('budget-periods-list').innerHTML = `<p>Error loading budget periods: ${error.message}</p>`;
     }
+}
+
+// Filter periods by type
+function filterPeriodsByType(periodType) {
+    if (periodType === 'all') {
+        renderBudgetPeriods(allPeriods);
+    } else {
+        const filteredPeriods = allPeriods.filter(period => period.period_type === periodType);
+        renderBudgetPeriods(filteredPeriods);
+    }
+}
+
+// Render periods (extracted from loadBudgetPeriods)
+function renderBudgetPeriods(periods) {
+    const periodsList = document.getElementById('budget-periods-list');
+    
+    if (periods.length === 0) {
+        periodsList.innerHTML = '<p>No budget periods found. Create your first budget period above.</p>';
+        return;
+    }
+    
+    periodsList.innerHTML = periods.map(period => `
+        <div class="budget-period-item ${period.is_active ? 'active' : ''}">
+            <div class="period-info">
+                <h4>${period.name}</h4>
+                <p><strong>Type:</strong> ${period.period_type}</p>
+                <p><strong>Period:</strong> ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}</p>
+                <p><strong>Created:</strong> ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}</p>
+            </div>
+            <div class="period-actions">
+                ${period.is_active ? 
+                    '<span class="badge badge-success">Active</span>' : 
+                    `<button class="btn btn-sm btn-outline" onclick="activateBudgetPeriod(${period.id})">Activate</button>`
+                }
+            </div>
+        </div>
+    `).join('');
 }
 
 // Activate a budget period
@@ -287,6 +316,11 @@ document.addEventListener('DOMContentLoaded', function() {
         loadCurrentBudget();
         loadBudgetPeriods();
     });
+    
+    // Setup period type filter
+    document.getElementById('periodTypeFilter').addEventListener('change', function() {
+        filterPeriodsByType(this.value);
+    });
 });
 
 // Auto-update dates based on period type
@@ -354,6 +388,27 @@ function showMessage(message, type) {
 .budget-period-item.active {
     background: #e8f5e8;
     border-color: #4caf50;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.period-type-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-type-filter select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
 }
 
 .period-info h4 {

@@ -397,9 +397,11 @@ def create_budget_period(current_user):
     if start_date >= end_date:
         return jsonify({'error': 'Start date must be before end date'}), 400
     
-    # Check for overlapping periods
+    # Check for overlapping periods of the same type
+    # Allow overlaps between different period types (e.g., monthly and quarterly)
     overlapping_periods = BudgetPeriod.query.filter(
         BudgetPeriod.user_id == current_user.id,
+        BudgetPeriod.period_type == data['period_type'],
         BudgetPeriod.start_date <= end_date,
         BudgetPeriod.end_date >= start_date
     ).all()
@@ -407,11 +409,15 @@ def create_budget_period(current_user):
     if overlapping_periods:
         period_names = [p.name for p in overlapping_periods]
         return jsonify({
-            'error': f'This period overlaps with existing periods: {", ".join(period_names)}'
+            'error': f'This {data["period_type"]} period overlaps with existing {data["period_type"]} periods: {", ".join(period_names)}'
         }), 400
     
-    # Deactivate current active period
-    BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).update({'is_active': False})
+    # Deactivate current active period of the same type
+    BudgetPeriod.query.filter_by(
+        user_id=current_user.id, 
+        is_active=True,
+        period_type=data['period_type']
+    ).update({'is_active': False})
     
     # Create new period
     period = BudgetPeriod(
@@ -450,14 +456,19 @@ def create_budget_period(current_user):
 @app.route('/api/budget-periods/<int:period_id>/activate', methods=['POST'])
 @token_required
 def activate_budget_period(current_user, period_id):
-    # Deactivate current active period
-    BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).update({'is_active': False})
-    
-    # Activate selected period
+    # Get the period to activate
     period = BudgetPeriod.query.filter_by(id=period_id, user_id=current_user.id).first()
     if not period:
         return jsonify({'message': 'Budget period not found'}), 404
     
+    # Deactivate other active periods of the same type
+    BudgetPeriod.query.filter_by(
+        user_id=current_user.id, 
+        is_active=True,
+        period_type=period.period_type
+    ).update({'is_active': False})
+    
+    # Activate selected period
     period.is_active = True
     db.session.commit()
     
@@ -731,8 +742,15 @@ def change_password(current_user):
 @token_required
 def get_transactions(current_user):
     try:
-        # Get active budget period
-        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        # Get period type from query parameter (default to 'monthly')
+        period_type = request.args.get('period_type', 'monthly')
+        
+        # Get active budget period of the specified type
+        active_period = BudgetPeriod.query.filter_by(
+            user_id=current_user.id, 
+            is_active=True,
+            period_type=period_type
+        ).first()
         
         if not active_period:
             return jsonify([])
