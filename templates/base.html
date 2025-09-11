@@ -3,63 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Wealth Wise - Christian Family Budgeting{% endblock %}</title>
+    <title>{% block title %}STEWARD - Christian Family Budgeting{% endblock %}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <nav class="navbar">
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-container">
             <div class="nav-brand">
-                <i class="fas fa-coins"></i>
-                <span>Wealth Wise</span>
+                <i class="fas fa-hands-holding"></i>
+                <span>STEWARD</span>
             </div>
-            <div class="nav-menu" id="nav-menu">
-                <a href="/dashboard" class="nav-link">
-                    <i class="fas fa-home"></i>
+            <div class="nav-menu" id="nav-menu" role="menubar">
+                <a href="/dashboard" class="nav-link" role="menuitem" aria-label="Go to Dashboard">
+                    <i class="fas fa-home" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/budgets" class="nav-link">
-                    <i class="fas fa-calendar-alt"></i>
+                <a href="/budgets" class="nav-link" role="menuitem" aria-label="Manage Budgets">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                     <span>Budgets</span>
                 </a>
-                <a href="/income" class="nav-link">
-                    <i class="fas fa-dollar-sign"></i>
+                <a href="/income" class="nav-link" role="menuitem" aria-label="Manage Income">
+                    <i class="fas fa-dollar-sign" aria-hidden="true"></i>
                     <span>Income</span>
                 </a>
-                <a href="/breakdown" class="nav-link">
-                    <i class="fas fa-list"></i>
+                <a href="/breakdown" class="nav-link" role="menuitem" aria-label="View Budget Breakdown">
+                    <i class="fas fa-list" aria-hidden="true"></i>
                     <span>Breakdown</span>
                 </a>
-                <a href="/transactions" class="nav-link">
-                    <i class="fas fa-plus-circle"></i>
+                <a href="/transactions" class="nav-link" role="menuitem" aria-label="Add New Expense">
+                    <i class="fas fa-plus-circle" aria-hidden="true"></i>
                     <span>Add Expense</span>
                 </a>
-                <a href="/settings" class="nav-link">
-                    <i class="fas fa-cog"></i>
+                <a href="/settings" class="nav-link" role="menuitem" aria-label="Application Settings">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
                     <span>Settings</span>
                 </a>
-                <button class="nav-link logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
+                <button class="nav-link logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     <span>Logout</span>
                 </button>
             </div>
-            <div class="nav-toggle" id="nav-toggle">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-menu">
+                <span class="bar" aria-hidden="true"></span>
+                <span class="bar" aria-hidden="true"></span>
+                <span class="bar" aria-hidden="true"></span>
+            </button>
         </div>
     </nav>
 
-    <main class="main-content">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-container" id="breadcrumb-container" style="display: none;">
+        <div class="container">
+            <nav class="breadcrumb" id="breadcrumb">
+                <a href="/dashboard" class="breadcrumb-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <main class="main-content" id="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
 
     <footer class="footer">
         <div class="footer-content">
-            <p>&copy; 2024 Wealth Wise. Built with faith and love for Christian families.</p>
+            <p>&copy; 2024 STEWARD. Built with faith and love for Christian families.</p>
             <p class="verse">"The plans of the diligent lead to profit as surely as haste leads to poverty." - Proverbs 21:5</p>
         </div>
     </footer>

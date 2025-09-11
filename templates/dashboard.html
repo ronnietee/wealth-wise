@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Wealth Wise{% endblock %}
+{% block title %}Dashboard - STEWARD{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -21,69 +21,155 @@
     </div>
 
     <div class="dashboard-grid">
-        <!-- Quick Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-dollar-sign"></i>
+        <!-- Financial Overview Cards -->
+        <div class="overview-cards">
+            <div class="overview-card income-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Total Income</h3>
+                        <p>This period</p>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <h3 id="totalIncome">$0.00</h3>
-                    <p>Total Income</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-pie"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 id="totalAllocated">$0.00</h3>
-                    <p>Total Allocated</p>
+                <div class="card-value">
+                    <span id="totalIncome" class="value">$0.00</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-wallet"></i>
+            
+            <div class="overview-card allocated-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Allocated</h3>
+                        <p>Budget planned</p>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <h3 id="balanceToAllocate">$0.00</h3>
-                    <p>Balance to Allocate</p>
+                <div class="card-value">
+                    <span id="totalAllocated" class="value">$0.00</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-receipt"></i>
+            
+            <div class="overview-card spent-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Spent</h3>
+                        <p>Actual expenses</p>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <h3 id="totalSpent">$0.00</h3>
-                    <p>Total Spent</p>
+                <div class="card-value">
+                    <span id="totalSpent" class="value">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="overview-card balance-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Available</h3>
+                        <p>To allocate</p>
+                    </div>
+                </div>
+                <div class="card-value">
+                    <span id="balanceToAllocate" class="value">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Visualization -->
+        <div class="progress-section">
+            <div class="progress-card">
+                <div class="progress-header">
+                    <h3>Budget Progress</h3>
+                    <div class="progress-stats">
+                        <span id="progressPercentage">0%</span>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div id="progressBar" class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="progress-details">
+                    <div class="progress-item">
+                        <span class="label">Allocated:</span>
+                        <span id="allocatedAmount" class="amount">$0.00</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="label">Spent:</span>
+                        <span id="spentAmount" class="amount">$0.00</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Quick Actions</h2>
-            </div>
-            <div class="card-body">
-                <div class="quick-actions">
-                    <button class="action-btn" onclick="window.location.href='/breakdown'">
-                        <i class="fas fa-list"></i>
-                        <span>View Breakdown</span>
-                    </button>
-                    <button class="action-btn" onclick="window.location.href='/income'">
-                        <i class="fas fa-dollar-sign"></i>
-                        <span>Manage Income</span>
-                    </button>
-                    <button class="action-btn" onclick="window.location.href='/transactions'">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Expense</span>
-                    </button>
-                    <button class="action-btn" onclick="window.location.href='/transactions'">
-                        <i class="fas fa-history"></i>
-                        <span>View Transactions</span>
-                    </button>
+        <div class="actions-section">
+            <div class="actions-card">
+                <div class="actions-header">
+                    <h3>Quick Actions</h3>
+                    <p>Manage your budget efficiently</p>
+                </div>
+                <div class="actions-grid">
+                    <a href="/breakdown" class="action-item">
+                        <div class="action-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Budget Breakdown</h4>
+                            <p>View and manage categories</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                    
+                    <a href="/income" class="action-item">
+                        <div class="action-icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Manage Income</h4>
+                            <p>Add and track income sources</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                    
+                    <a href="/transactions" class="action-item">
+                        <div class="action-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>Add Expense</h4>
+                            <p>Record new transactions</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                    
+                    <a href="/transactions" class="action-item">
+                        <div class="action-icon">
+                            <i class="fas fa-list-alt"></i>
+                        </div>
+                        <div class="action-content">
+                            <h4>View Transactions</h4>
+                            <p>Review spending history</p>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
@@ -187,8 +273,35 @@ function loadCategoriesOverview() {
         // Update totals
         document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
         document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+        
+        // Update progress visualization
+        updateProgressVisualization(totalAllocated, totalSpent);
     })
     .catch(error => console.error('Error loading categories:', error));
+}
+
+function updateProgressVisualization(allocated, spent) {
+    // Update progress details
+    document.getElementById('allocatedAmount').textContent = formatCurrency(allocated, userCurrency);
+    document.getElementById('spentAmount').textContent = formatCurrency(spent, userCurrency);
+    
+    // Calculate progress percentage
+    const percentage = allocated > 0 ? Math.min((spent / allocated) * 100, 100) : 0;
+    document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
+    
+    // Update progress bar
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = percentage + '%';
+    
+    // Add color coding based on progress
+    progressBar.className = 'progress-fill';
+    if (percentage > 90) {
+        progressBar.classList.add('over-budget');
+    } else if (percentage > 75) {
+        progressBar.classList.add('warning');
+    } else {
+        progressBar.classList.add('on-track');
+    }
 }
 
 function formatCurrency(amount, currency = userCurrency || 'USD') {

@@ -1,6 +1,6 @@
-# Wealth Wise - Christian Family Budgeting Tool
+# STEWARD - Christian Family Budgeting Tool
 
-A beautiful, mobile-friendly budgeting application designed specifically for Christian families to manage their finances with wisdom and faith.
+A beautiful, mobile-friendly budgeting application designed specifically for Christian families to steward their finances with wisdom and faith.
 
 ## Features
 

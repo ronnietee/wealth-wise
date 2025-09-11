@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 app = Flask(__name__)
+app.config['APP_NAME'] = 'STEWARD'
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///wealthwise.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

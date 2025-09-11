@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Transactions - Wealth Wise{% endblock %}
+{% block title %}Transactions - STEWARD{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -11,56 +11,105 @@
 
     <div class="transactions-container">
         <!-- Add Expense Form -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Add New Expense</h2>
+        <div class="modern-form-card">
+            <div class="form-header">
+                <div class="form-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="form-title">
+                    <h2>Add New Expense</h2>
+                    <p>Record a new transaction for your budget</p>
+                </div>
             </div>
-            <div class="card-body">
-                <form id="expenseForm" class="expense-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="amount">Amount</label>
-                            <div class="input-group">
-                                <span class="input-prefix" data-currency-symbol>$</span>
-                                <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+            <div class="form-body">
+                <form id="expenseForm" class="modern-form" role="form" aria-label="Add new expense form">
+                    <div class="form-section">
+                        <h3 class="section-title">Transaction Details</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="amount" class="form-label">
+                                    <i class="fas fa-dollar-sign" aria-hidden="true"></i>
+                                    Amount
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-prefix" data-currency-symbol aria-hidden="true">$</span>
+                                    <input type="number" id="amount" name="amount" step="0.01" min="0.01" required 
+                                           class="form-input" placeholder="0.00" 
+                                           aria-describedby="amountError" aria-required="true">
+                                </div>
+                                <div class="form-error" id="amountError" role="alert" aria-live="polite"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="transactionDate" class="form-label">
+                                    <i class="fas fa-calendar" aria-hidden="true"></i>
+                                    Date
+                                </label>
+                                <input type="date" id="transactionDate" name="transaction_date" required 
+                                       class="form-input" aria-describedby="dateRangeInfo dateError" aria-required="true">
+                                <small id="dateRangeInfo" class="form-help" style="display: none;" aria-live="polite"></small>
+                                <div class="form-error" id="dateError" role="alert" aria-live="polite"></div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="transactionDate">Date</label>
-                            <input type="date" id="transactionDate" name="transaction_date" required>
-                            <small id="dateRangeInfo" class="form-text text-muted" style="display: none;"></small>
-                        </div>
-                        <div class="form-group">
-                            <label for="category">Category</label>
-                            <select id="category" name="category_id" required>
-                                <option value="">Select a category</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="subcategory">Subcategory</label>
-                            <select id="subcategory" name="subcategory_id" required>
-                                <option value="">Select a subcategory</option>
-                            </select>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">Categorization</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="category" class="form-label">
+                                    <i class="fas fa-tags"></i>
+                                    Category
+                                </label>
+                                <select id="category" name="category_id" required class="form-select">
+                                    <option value="">Select a category</option>
+                                </select>
+                                <div class="form-error" id="categoryError"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="subcategory" class="form-label">
+                                    <i class="fas fa-tag"></i>
+                                    Subcategory
+                                </label>
+                                <select id="subcategory" name="subcategory_id" required class="form-select">
+                                    <option value="">Select a subcategory</option>
+                                </select>
+                                <div class="form-error" id="subcategoryError"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-row">
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">Additional Information</h3>
                         <div class="form-group">
-                            <label for="description">Description</label>
-                            <input type="text" id="description" name="description" placeholder="Enter expense description">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left"></i>
+                                Description
+                            </label>
+                            <input type="text" id="description" name="description" 
+                                   class="form-input" placeholder="Enter expense description (optional)">
+                            <div class="form-error" id="descriptionError"></div>
                         </div>
                         <div class="form-group">
-                            <label for="comment">Comment</label>
-                            <textarea id="comment" name="comment" placeholder="Additional notes (optional)"></textarea>
+                            <label for="comment" class="form-label">
+                                <i class="fas fa-comment"></i>
+                                Comment
+                            </label>
+                            <textarea id="comment" name="comment" class="form-textarea" 
+                                      placeholder="Additional notes (optional)" rows="3"></textarea>
+                            <div class="form-error" id="commentError"></div>
                         </div>
                     </div>
+                    
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-plus"></i>
                             Add Expense
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <button type="button" class="btn btn-secondary btn-lg" onclick="resetForm()">
                             <i class="fas fa-undo"></i>
-                            Reset
+                            Reset Form
                         </button>
                     </div>
                 </form>
@@ -587,6 +636,9 @@ function loadSubcategories() {
 function handleExpenseSubmit(e) {
     e.preventDefault();
     
+    // Clear previous errors
+    clearFormErrors();
+    
     const formData = new FormData(e.target);
     const data = {
         amount: parseFloat(formData.get('amount')),
@@ -596,27 +648,46 @@ function handleExpenseSubmit(e) {
         transaction_date: formData.get('transaction_date')
     };
     
-    // Validate required fields
-    if (!data.amount || !data.subcategory_id || !data.transaction_date) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
+    let hasErrors = false;
+    
+    // Validate amount
+    if (!data.amount || data.amount <= 0) {
+        showFieldError('amount', 'Please enter a valid amount greater than 0');
+        hasErrors = true;
     }
     
-    // Validate transaction date is within active budget period
-    if (window.activeBudgetPeriod) {
+    // Validate transaction date
+    if (!data.transaction_date) {
+        showFieldError('transactionDate', 'Please select a transaction date');
+        hasErrors = true;
+    } else if (window.activeBudgetPeriod) {
         const transactionDate = new Date(data.transaction_date);
         const startDate = new Date(window.activeBudgetPeriod.start_date);
         const endDate = new Date(window.activeBudgetPeriod.end_date);
         
         if (transactionDate < startDate || transactionDate > endDate) {
-            showNotification(`Transaction date must be within the active budget period (${window.activeBudgetPeriod.start_date} to ${window.activeBudgetPeriod.end_date})`, 'error');
-            return;
+            showFieldError('transactionDate', `Date must be between ${window.activeBudgetPeriod.start_date} and ${window.activeBudgetPeriod.end_date}`);
+            hasErrors = true;
         }
     }
     
+    // Validate category
+    if (!data.subcategory_id) {
+        showFieldError('subcategory', 'Please select a subcategory');
+        hasErrors = true;
+    }
+    
+    if (hasErrors) {
+        showNotification('Please fix the errors below', 'error');
+        return;
+    }
+    
     // Show loading state
-    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
+    
+    form.classList.add('form-loading');
     showLoading(submitBtn);
     
     // Make API call
@@ -628,7 +699,12 @@ function handleExpenseSubmit(e) {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
     .then(data => {
         showNotification('Expense added successfully!', 'success');
         resetForm();
@@ -639,8 +715,67 @@ function handleExpenseSubmit(e) {
         showNotification('Error adding expense. Please try again.', 'error');
     })
     .finally(() => {
+        form.classList.remove('form-loading');
         hideLoading(submitBtn, originalText);
     });
+}
+
+// Form validation helper functions
+function clearFormErrors() {
+    const errorElements = document.querySelectorAll('.form-error');
+    errorElements.forEach(el => {
+        el.classList.remove('show');
+        el.textContent = '';
+    });
+    
+    const formGroups = document.querySelectorAll('.form-group');
+    formGroups.forEach(group => {
+        group.classList.remove('error', 'success');
+    });
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    const formGroup = field.closest('.form-group');
+    const errorElement = formGroup.querySelector('.form-error');
+    
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.add('show');
+    }
+    
+    formGroup.classList.add('error');
+    field.classList.add('error');
+}
+
+function showFieldSuccess(fieldId) {
+    const field = document.getElementById(fieldId);
+    const formGroup = field.closest('.form-group');
+    
+    formGroup.classList.remove('error');
+    formGroup.classList.add('success');
+    field.classList.remove('error');
+}
+
+function validateField(fieldId, value, validator) {
+    const field = document.getElementById(fieldId);
+    const formGroup = field.closest('.form-group');
+    const errorElement = formGroup.querySelector('.form-error');
+    
+    if (validator(value)) {
+        formGroup.classList.remove('error');
+        formGroup.classList.add('success');
+        field.classList.remove('error');
+        if (errorElement) {
+            errorElement.classList.remove('show');
+        }
+        return true;
+    } else {
+        formGroup.classList.remove('success');
+        formGroup.classList.add('error');
+        field.classList.add('error');
+        return false;
+    }
 }
 
 function resetForm() {
