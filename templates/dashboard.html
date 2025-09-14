@@ -38,138 +38,111 @@
                 </div>
             </div>
             
-            <div class="overview-card allocated-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-chart-pie"></i>
-                    </div>
-                    <div class="card-title">
-                        <h3>Allocated</h3>
-                        <p>Budget planned</p>
-                    </div>
-                </div>
-                <div class="card-value">
-                    <span id="totalAllocated" class="value">$0.00</span>
-                </div>
-            </div>
-            
-            <div class="overview-card spent-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="card-title">
-                        <h3>Spent</h3>
-                        <p>Actual expenses</p>
-                    </div>
-                </div>
-                <div class="card-value">
-                    <span id="totalSpent" class="value">$0.00</span>
-                </div>
-            </div>
-            
             <div class="overview-card balance-card">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-wallet"></i>
                     </div>
                     <div class="card-title">
-                        <h3>Available</h3>
-                        <p>To allocate</p>
+                        <h3>Balance</h3>
+                        <p>Income - Spent</p>
                     </div>
                 </div>
                 <div class="card-value">
-                    <span id="balanceToAllocate" class="value">$0.00</span>
+                    <span id="balance" class="value">$0.00</span>
                 </div>
             </div>
         </div>
 
-        <!-- Progress Visualization -->
-        <div class="progress-section">
-            <div class="progress-card">
-                <div class="progress-header">
-                    <h3>Budget Progress</h3>
-                    <div class="progress-stats">
-                        <span id="progressPercentage">0%</span>
+        <!-- Right Content Area -->
+        <div class="right-content">
+            <!-- Progress Visualization -->
+            <div class="progress-section">
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <h3>Budget Progress</h3>
+                        <div class="progress-stats">
+                            <span id="progressPercentage">0%</span>
+                        </div>
                     </div>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar">
-                        <div id="progressBar" class="progress-fill"></div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div id="progressBar" class="progress-fill"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="progress-details">
-                    <div class="progress-item">
-                        <span class="label">Allocated:</span>
-                        <span id="allocatedAmount" class="amount">$0.00</span>
-                    </div>
-                    <div class="progress-item">
-                        <span class="label">Spent:</span>
-                        <span id="spentAmount" class="amount">$0.00</span>
+                    <div class="progress-details">
+                        <div class="progress-item">
+                            <span class="label">Allocated:</span>
+                            <span id="allocatedAmount" class="amount">$0.00</span>
+                        </div>
+                        <div class="progress-item">
+                            <span class="label">Spent:</span>
+                            <span id="spentAmount" class="amount">$0.00</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Quick Actions -->
-        <div class="actions-section">
-            <div class="actions-card">
-                <div class="actions-header">
-                    <h3>Quick Actions</h3>
-                    <p>Manage your budget efficiently</p>
-                </div>
-                <div class="actions-grid">
-                    <a href="/breakdown" class="action-item">
-                        <div class="action-icon">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Budget Breakdown</h4>
-                            <p>View and manage categories</p>
-                        </div>
-                        <div class="action-arrow">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </a>
-                    
-                    <a href="/income" class="action-item">
-                        <div class="action-icon">
-                            <i class="fas fa-arrow-up"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Manage Income</h4>
-                            <p>Add and track income sources</p>
-                        </div>
-                        <div class="action-arrow">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </a>
-                    
-                    <a href="/transactions" class="action-item">
-                        <div class="action-icon">
-                            <i class="fas fa-plus-circle"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>Add Expense</h4>
-                            <p>Record new transactions</p>
-                        </div>
-                        <div class="action-arrow">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </a>
-                    
-                    <a href="/transactions" class="action-item">
-                        <div class="action-icon">
-                            <i class="fas fa-list-alt"></i>
-                        </div>
-                        <div class="action-content">
-                            <h4>View Transactions</h4>
-                            <p>Review spending history</p>
-                        </div>
-                        <div class="action-arrow">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </a>
+            <!-- Quick Actions -->
+            <div class="actions-section">
+                <div class="actions-card">
+                    <div class="actions-header">
+                        <h3>Quick Actions</h3>
+                        <p>Manage your budget efficiently</p>
+                    </div>
+                    <div class="actions-grid">
+                        <a href="/breakdown" class="action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Budget Breakdown</h4>
+                                <p>View and manage categories</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="/income" class="action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Manage Income</h4>
+                                <p>Add and track income sources</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="/transactions" class="action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>Add Expense</h4>
+                                <p>Record new transactions</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        
+                        <a href="/transactions" class="action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <div class="action-content">
+                                <h4>View Transactions</h4>
+                                <p>Review spending history</p>
+                            </div>
+                            <div class="action-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -217,7 +190,6 @@ function loadDashboardData() {
             }
             const totalIncome = data.total_income + (data.balance_brought_forward || 0);
             document.getElementById('totalIncome').textContent = formatCurrency(totalIncome, userCurrency);
-            document.getElementById('balanceToAllocate').textContent = formatCurrency(data.balance_to_allocate, userCurrency);
             
             // Update budget period indicator
             document.getElementById('current-budget-name').textContent = data.period_name || 'Unknown';
@@ -270,9 +242,10 @@ function loadCategoriesOverview() {
             totalSpent += categorySpent;
         });
 
-        // Update totals
-        document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
-        document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+        // Calculate balance (Income - Spent)
+        const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
+        const balance = totalIncome - totalSpent;
+        document.getElementById('balance').textContent = formatCurrency(balance, userCurrency);
         
         // Update progress visualization
         updateProgressVisualization(totalAllocated, totalSpent);
