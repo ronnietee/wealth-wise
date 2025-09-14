@@ -2897,7 +2897,13 @@ body {
         font-size: 3.5rem;
         top: 15%;
         z-index: 5;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        color: transparent;
+        -webkit-text-stroke: 2px solid rgba(255, 255, 255, 0.8);
+        text-stroke: 2px solid rgba(255, 255, 255, 0.8);
+        text-shadow: none;
+        font-family: 'Courier New', monospace;
+        font-weight: 300;
+        letter-spacing: 4px;
     }
     
     .hero-actions {
@@ -2924,7 +2930,13 @@ body {
     .hero-title-overlay {
         font-size: 4rem;
         top: 10%;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        color: transparent;
+        -webkit-text-stroke: 2px solid rgba(255, 255, 255, 0.8);
+        text-stroke: 2px solid rgba(255, 255, 255, 0.8);
+        text-shadow: none;
+        font-family: 'Courier New', monospace;
+        font-weight: 300;
+        letter-spacing: 4px;
     }
     
     .hero-content {
