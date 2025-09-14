@@ -134,7 +134,7 @@ body {
 
 /* Features Section */
 .features {
-    background: white;
+    background: #faf8f5;
     padding: 4rem 2rem;
 }
 
@@ -148,7 +148,8 @@ body {
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 3rem;
-    color: #2c3e50;
+    color: #8B4513;
+    font-weight: 600;
 }
 
 .features-grid {
@@ -161,30 +162,32 @@ body {
     text-align: center;
     padding: 2rem;
     border-radius: 15px;
-    background: #f8f9fa;
+    background: #f5f1eb;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e9ecef;
+    border: 1px solid #d4c4a8;
 }
 
 .feature-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(139, 69, 19, 0.2);
+    background: #f0ebe5;
 }
 
 .feature-icon {
     font-size: 3rem;
-    color: #667eea;
+    color: #8B4513;
     margin-bottom: 1rem;
 }
 
 .feature-card h3 {
     font-size: 1.3rem;
     margin-bottom: 1rem;
-    color: #2c3e50;
+    color: #8B4513;
+    font-weight: 600;
 }
 
 .feature-card p {
-    color: #6c757d;
+    color: #5d4e37;
     line-height: 1.6;
 }
 
@@ -1688,7 +1691,7 @@ body {
 
 .modal-header {
     padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -1759,7 +1762,7 @@ body {
 }
 
 .step-number {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
     color: white;
     width: 40px;
     height: 40px;
@@ -1772,12 +1775,13 @@ body {
 }
 
 .step-content h3 {
-    color: #2c3e50;
+    color: #8B4513;
     margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
 .step-content p {
-    color: #6c757d;
+    color: #5d4e37;
     line-height: 1.6;
 }
 
