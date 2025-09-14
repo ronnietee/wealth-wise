@@ -299,24 +299,24 @@ body {
 .main-content {
     background: #f8f9fa;
     min-height: calc(100vh - 70px);
-    padding: 2rem 0;
+    padding: 1rem 0;
 }
 
 .page-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 1.5rem;
     padding: 0 1rem;
 }
 
 .page-header h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #2c3e50;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .page-subtitle {
     color: #6c757d;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 /* Cards */
@@ -475,7 +475,7 @@ body {
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    gap: 2rem;
+    gap: 1.25rem;
 }
 
 .stats-grid {
@@ -2129,16 +2129,16 @@ body {
 /* Modern Dashboard Styles */
 .overview-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .overview-card {
     background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
     position: relative;
@@ -2179,7 +2179,7 @@ body {
 .card-header {
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .card-icon {
@@ -2236,14 +2236,14 @@ body {
 
 /* Progress Section */
 .progress-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 
 .progress-card {
     background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
 }
 
@@ -2324,19 +2324,19 @@ body {
 
 /* Actions Section */
 .actions-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
 }
 
 .actions-card {
     background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid #e5e7eb;
 }
 
 .actions-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .actions-header h3 {
@@ -2354,15 +2354,15 @@ body {
 
 .actions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
 }
 
 .action-item {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    border-radius: 12px;
+    padding: 0.75rem;
+    border-radius: 8px;
     border: 1px solid #e5e7eb;
     text-decoration: none;
     color: inherit;
@@ -2657,8 +2657,8 @@ body {
     }
     
     .page-header {
-        padding: 1rem 0;
-        margin-bottom: 1.5rem;
+        padding: 0.5rem 0;
+        margin-bottom: 1rem;
     }
     
     .page-header h1 {
@@ -2698,13 +2698,13 @@ body {
     
     /* Dashboard Mobile */
     .overview-cards {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
     }
     
     .overview-card {
-        padding: 1rem;
+        padding: 0.75rem;
     }
     
     .card-header {
