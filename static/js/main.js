@@ -424,9 +424,26 @@ function updateAllCurrencyDisplays() {
 function getCurrencySymbol(currency) {
     const symbols = {
         'USD': '$',
-        'ZAR': 'R',
         'EUR': '€',
-        'GBP': '£'
+        'GBP': '£',
+        'ZAR': 'R',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'BWP': 'P',
+        'ZMW': 'K',
+        'NGN': '₦',
+        'KES': 'KSh',
+        'GHS': '₵',
+        'UGX': 'USh',
+        'TZS': 'TSh',
+        'ETB': 'Br',
+        'RWF': 'RF',
+        'MWK': 'MK',
+        'BRL': 'R$',
+        'MXN': '$',
+        'PHP': '₱',
+        'INR': '₹',
+        'JPY': '¥'
     };
     return symbols[currency] || '$';
 }

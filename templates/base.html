@@ -15,8 +15,9 @@
     <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-container">
             <div class="nav-brand">
-                <i class="fas fa-hands-holding"></i>
-                <span>STEWARD</span>
+                <a href="/dashboard" class="logo-link">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="STEWARD Logo" class="logo-image">
+                </a>
             </div>
             <div class="nav-menu" id="nav-menu" role="menubar">
                 <a href="/dashboard" class="nav-link" role="menuitem" aria-label="Go to Dashboard">

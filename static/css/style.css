@@ -225,6 +225,24 @@ body {
     font-size: 1.8rem;
 }
 
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.logo-link:hover {
+    transform: scale(1.05);
+}
+
+.logo-image {
+    height: 40px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+}
+
 .nav-menu {
     display: flex;
     gap: 1rem;
@@ -2660,6 +2678,11 @@ body {
         font-size: 1.25rem;
     }
     
+    .logo-image {
+        height: 35px;
+        max-width: 100px;
+    }
+    
     .nav-menu {
         gap: 0.5rem;
     }
@@ -2975,22 +2998,20 @@ body {
     .hero-title-overlay {
         font-size: 3rem !important;
         top: 8% !important;
-        right: 3% !important;
+        right: 0% !important;
         left: auto !important;
         z-index: 30 !important;
         color: #d4c4a8 !important;
         position: absolute !important;
         text-shadow: 
-            3px 3px 0px rgba(63, 36, 17, 0.9),
-            -3px -3px 0px rgba(63, 36, 17, 0.9),
-            3px -3px 0px rgba(63, 36, 17, 0.9),
-            -3px 3px 0px rgba(63, 36, 17, 0.9),
-            0px 3px 0px rgba(63, 36, 17, 0.9),
-            0px -3px 0px rgba(63, 36, 17, 0.9),
-            3px 0px 0px rgba(63, 36, 17, 0.9),
-            -3px 0px 0px rgba(63, 36, 17, 0.9),
-            2px 2px 4px rgba(0, 0, 0, 0.8),
-            -2px -2px 4px rgba(0, 0, 0, 0.8) !important;
+            2px 2px 0px rgba(63, 36, 17, 0.8),
+            4px 4px 0px rgba(63, 36, 17, 0.6),
+            6px 6px 0px rgba(63, 36, 17, 0.4),
+            8px 8px 0px rgba(63, 36, 17, 0.2) !important;
+        font-family: 'Courier New', monospace !important;
+        font-weight: 700 !important;
+        letter-spacing: 4px !important;
+        white-space: nowrap !important;
     }
 }
 
