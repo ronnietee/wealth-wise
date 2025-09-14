@@ -2974,7 +2974,7 @@ body {
 @media (orientation: landscape) and (max-height: 500px) {
     .hero-title-overlay {
         font-size: 3rem !important;
-        top: 0% !important;
+        top: 8% !important;
         right: 3% !important;
         left: auto !important;
         z-index: 30 !important;
