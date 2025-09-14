@@ -2872,9 +2872,64 @@ body {
 }
 
 /* Landscape Mobile */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 100vh;
+        padding: 2rem 1rem;
+        text-align: center;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+    
+    .hero-content {
+        max-width: 100%;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+        background: rgba(63, 36, 17, 0.85);
+        padding: 1.5rem;
+        border-radius: 15px;
+        backdrop-filter: blur(15px);
+    }
+    
+    .hero-title-overlay {
+        font-size: 3.5rem;
+        top: 15%;
+        z-index: 5;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+        font-family: 'Aptos', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+}
+
 @media (max-width: 768px) and (orientation: landscape) {
     .hero {
-        min-height: 60vh;
+        min-height: 100vh;
+        background-size: cover;
+        background-position: center center;
+    }
+    
+    .hero-title-overlay {
+        font-size: 4rem;
+        top: 10%;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    
+    .hero-content {
+        max-width: 80%;
+        background: rgba(63, 36, 17, 0.9);
     }
     
     .overview-cards {
