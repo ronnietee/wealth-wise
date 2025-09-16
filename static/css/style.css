@@ -3360,6 +3360,611 @@ html {
     src: local('Aptos'), local('Aptos-Regular'), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+
+/* Basic Input Group - No Flexbox */
+.input-group {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 0.875rem;
+    pointer-events: none;
+}
+
+.input-group input {
+    width: 100%;
+    padding-left: 2.5rem;
+    padding-right: 0.75rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+    box-sizing: border-box;
+}
+
+/* Breakdown page specific spacing */
+.breakdown-container .input-group input {
+    padding-left: 3rem;
+}
+
+.breakdown-container .input-prefix {
+    left: 16px;
+}
+
+/* Budget Period Indicator Styling */
+.budget-period-indicator {
+    display: flex;
+    align-items: center;
+}
+
+.current-budget {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.current-budget:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.budget-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.budget-manage-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.7rem;
+}
+
+.budget-manage-link:hover {
+    background: #5a67d8;
+    transform: scale(1.1);
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .budget-period-indicator {
+        align-items: flex-start;
+    }
+    .current-budget {
+        align-self: flex-start;
+    }
+}
+
+/* Navigation Actions Styling */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.nav-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    text-decoration: none;
+    color: #6c757d;
+    background: transparent;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.nav-action-btn:hover {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+    transform: scale(1.05);
+}
+
+.nav-action-btn.logout-btn {
+    color: #dc3545;
+    border-color: #f8d7da;
+}
+
+.nav-action-btn.logout-btn:hover {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.nav-action-btn i {
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .nav-actions {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1001;
+        gap: 0.25rem;
+    }
+    .nav-action-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal-form .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.modal-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Modal input group specific styling */
+.modal-form .input-group {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.modal-form .input-prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 0.875rem;
+    pointer-events: none;
+}
+
+.modal-form .input-group input {
+    width: 100%;
+    padding-left: 2.5rem;
+    padding-right: 0.75rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+    box-sizing: border-box;
+}
+
+/* Ensure all modals are properly positioned */
+#editTransactionModal,
+#addExpenseModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+}
+
+#editTransactionModal .modal-content,
+#addExpenseModal .modal-content {
+    background-color: white;
+    margin: 5% auto !important;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+    position: relative;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+}
+
+.modal-form input:focus,
+.modal-form select:focus,
+.modal-form textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-form .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: flex-end;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+        top: 5%;
+        transform: none;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .modal-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .modal-form .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Add Expense Button Styling */
+.add-expense-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.add-expense-btn {
+    background: white;
+    color: #667eea;
+    border: 2px solid white;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.add-expense-btn:hover {
+    background: transparent;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.add-expense-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Compact Filters Styling */
+.filters-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filters-row .form-group {
+    margin-bottom: 0;
+}
+
+.filters-row label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.filters-row select,
+.filters-row input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+}
+
+.filters-row .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    height: auto;
+}
+
+/* Spreadsheet-like Table Styling */
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.transactions-table th {
+    background: #f8f9fa;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 2px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.transactions-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.transactions-table td:last-child {
+    text-align: center;
+    width: 120px;
+}
+
+.transactions-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.transactions-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Action Buttons Styling */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    padding: 0;
+    min-width: 32px;
+    min-height: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn.edit {
+    background: #3b82f6;
+    color: white;
+}
+
+.action-btn.edit:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.delete {
+    background: #ef4444;
+    color: white;
+}
+
+.action-btn.delete:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.action-btn i {
+    font-size: 0.875rem;
+}
+
+/* Ensure action buttons are not affected by external styles */
+.transactions-table .action-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    font-size: 0.875rem !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.transactions-table .action-btn.edit {
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.transactions-table .action-btn.edit:hover {
+    background: #2563eb !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3) !important;
+}
+
+.transactions-table .action-btn.delete {
+    background: #ef4444 !important;
+    color: white !important;
+}
+
+.transactions-table .action-btn.delete:hover {
+    background: #dc2626 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Comment Tooltip */
+.comment-cell {
+    position: relative;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.comment-tooltip {
+    position: absolute;
+    background: #1f2937;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    z-index: 1000;
+    max-width: 300px;
+    word-wrap: break-word;
+    white-space: normal;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comment-tooltip.show {
+    opacity: 1;
+}
+
 /* Critical CSS for above-the-fold content */
 .hero,
 .navbar,

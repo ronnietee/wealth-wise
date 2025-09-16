@@ -10,110 +10,12 @@
     </div>
 
     <div class="transactions-container">
-        <!-- Add Expense Form -->
-        <div class="modern-form-card">
-            <div class="form-header">
-                <div class="form-icon">
-                    <i class="fas fa-plus-circle"></i>
-                </div>
-                <div class="form-title">
-                    <h2>Add New Expense</h2>
-                    <p>Record a new transaction for your budget</p>
-                </div>
-            </div>
-            <div class="form-body">
-                <form id="expenseForm" class="modern-form" role="form" aria-label="Add new expense form">
-                    <div class="form-section">
-                        <h3 class="section-title">Transaction Details</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="amount" class="form-label">
-                                    <i class="fas fa-dollar-sign" aria-hidden="true"></i>
-                                    Amount
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-prefix" data-currency-symbol aria-hidden="true">$</span>
-                                    <input type="number" id="amount" name="amount" step="0.01" min="0.01" required 
-                                           class="form-input" placeholder="0.00" 
-                                           aria-describedby="amountError" aria-required="true">
-                                </div>
-                                <div class="form-error" id="amountError" role="alert" aria-live="polite"></div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="transactionDate" class="form-label">
-                                    <i class="fas fa-calendar" aria-hidden="true"></i>
-                                    Date
-                                </label>
-                                <input type="date" id="transactionDate" name="transaction_date" required 
-                                       class="form-input" aria-describedby="dateRangeInfo dateError" aria-required="true">
-                                <small id="dateRangeInfo" class="form-help" style="display: none;" aria-live="polite"></small>
-                                <div class="form-error" id="dateError" role="alert" aria-live="polite"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h3 class="section-title">Categorization</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="category" class="form-label">
-                                    <i class="fas fa-tags"></i>
-                                    Category
-                                </label>
-                                <select id="category" name="category_id" required class="form-select">
-                                    <option value="">Select a category</option>
-                                </select>
-                                <div class="form-error" id="categoryError"></div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="subcategory" class="form-label">
-                                    <i class="fas fa-tag"></i>
-                                    Subcategory
-                                </label>
-                                <select id="subcategory" name="subcategory_id" required class="form-select">
-                                    <option value="">Select a subcategory</option>
-                                </select>
-                                <div class="form-error" id="subcategoryError"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h3 class="section-title">Additional Information</h3>
-                        <div class="form-group">
-                            <label for="description" class="form-label">
-                                <i class="fas fa-align-left"></i>
-                                Description
-                            </label>
-                            <input type="text" id="description" name="description" 
-                                   class="form-input" placeholder="Enter expense description (optional)">
-                            <div class="form-error" id="descriptionError"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="comment" class="form-label">
-                                <i class="fas fa-comment"></i>
-                                Comment
-                            </label>
-                            <textarea id="comment" name="comment" class="form-textarea" 
-                                      placeholder="Additional notes (optional)" rows="3"></textarea>
-                            <div class="form-error" id="commentError"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-plus"></i>
-                            Add Expense
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-lg" onclick="resetForm()">
-                            <i class="fas fa-undo"></i>
-                            Reset Form
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <!-- Add New Expense Button -->
+        <div class="add-expense-section">
+            <button class="btn btn-primary btn-lg add-expense-btn" onclick="openAddExpenseModal()">
+                <i class="fas fa-plus-circle"></i>
+                Add New Expense
+            </button>
         </div>
 
         <!-- Filters and Search -->
@@ -159,10 +61,6 @@
         <div class="card">
             <div class="card-header">
                 <h2>All Transactions</h2>
-                <button class="btn btn-primary" onclick="window.location.href='/input'">
-                    <i class="fas fa-plus"></i>
-                    Add New Transaction
-                </button>
             </div>
             <div class="card-body">
                 <div class="table-container">
@@ -196,7 +94,7 @@
             <button class="close-btn" onclick="closeModal('editTransactionModal')">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="editTransactionForm">
+            <form id="editTransactionForm" class="modal-form">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="editAmount">Amount</label>
@@ -254,9 +152,6 @@ let categories = [];
 let filteredTransactions = [];
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date as default
-    document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
-    
     // Load data immediately, currency will be loaded globally
     loadActiveBudgetPeriod();
     loadCategories();
@@ -318,12 +213,12 @@ function loadCategories() {
 function populateCategoryFilters() {
     const categoryFilter = document.getElementById('categoryFilter');
     const editCategory = document.getElementById('editCategory');
-    const addExpenseCategory = document.getElementById('category');
     
     // Clear existing options first (except the default option)
     categoryFilter.innerHTML = '<option value="">All Categories</option>';
-    editCategory.innerHTML = '<option value="">Select a category</option>';
-    addExpenseCategory.innerHTML = '<option value="">Select a category</option>';
+    if (editCategory) {
+        editCategory.innerHTML = '<option value="">Select a category</option>';
+    }
     
     categories.forEach(category => {
         // For filter dropdown
@@ -333,17 +228,13 @@ function populateCategoryFilters() {
         categoryFilter.appendChild(filterOption);
         
         // For edit form dropdown
-        const editOption = document.createElement('option');
-        editOption.value = category.id;
-        editOption.textContent = category.name;
-        editOption.dataset.subcategories = JSON.stringify(category.subcategories);
-        editCategory.appendChild(editOption);
-        
-        // For add expense form dropdown
-        const addExpenseOption = document.createElement('option');
-        addExpenseOption.value = category.id;
-        addExpenseOption.textContent = category.name;
-        addExpenseCategory.appendChild(addExpenseOption);
+        if (editCategory) {
+            const editOption = document.createElement('option');
+            editOption.value = category.id;
+            editOption.textContent = category.name;
+            editOption.dataset.subcategories = JSON.stringify(category.subcategories);
+            editCategory.appendChild(editOption);
+        }
     });
 }
 
@@ -363,9 +254,9 @@ async function loadActiveBudgetPeriod() {
                 period_name: budgetData.period_name
             };
             
-            // Update date range info
+            // Update date range info (if element exists)
             const dateRangeInfo = document.getElementById('dateRangeInfo');
-            if (budgetData.start_date && budgetData.end_date) {
+            if (dateRangeInfo && budgetData.start_date && budgetData.end_date) {
                 dateRangeInfo.textContent = `Valid date range: ${budgetData.start_date} to ${budgetData.end_date}`;
                 dateRangeInfo.style.display = 'block';
             }
@@ -407,6 +298,9 @@ function renderTransactions() {
     }
     
     tbody.innerHTML = filteredTransactions.map(transaction => {
+        const comment = transaction.comment || '';
+        const commentDisplay = comment.length > 50 ? comment.substring(0, 50) + '...' : comment;
+        
         return `
             <tr>
                 <td>${formatDate(transaction.transaction_date)}</td>
@@ -414,14 +308,18 @@ function renderTransactions() {
                 <td>${transaction.category_name || '-'}</td>
                 <td>${transaction.subcategory_name || '-'}</td>
                 <td class="amount">${formatCurrency(transaction.amount, userCurrency)}</td>
-                <td>${transaction.comment || '-'}</td>
-                <td class="actions">
-                    <button class="btn btn-sm btn-secondary" onclick="editTransaction(${transaction.id})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteTransaction(${transaction.id})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <td class="comment-cell" ${comment ? `onmouseover="showTooltip(event, '${comment.replace(/'/g, "\\'")}')" onmouseout="hideTooltip()"` : ''}>
+                    ${commentDisplay || '-'}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn edit" onclick="editTransaction(${transaction.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteTransaction(${transaction.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -503,34 +401,162 @@ function editTransaction(transactionId) {
     const transaction = transactions.find(t => t.id === transactionId);
     if (!transaction) return;
     
-    const category = findCategoryBySubcategoryId(transaction.subcategory_id);
-    const subcategory = findSubcategoryById(transaction.subcategory_id);
-    
-    document.getElementById('editTransactionId').value = transactionId;
-    document.getElementById('editAmount').value = transaction.amount;
-    document.getElementById('editTransactionDate').value = transaction.transaction_date.split('T')[0];
-    document.getElementById('editDescription').value = transaction.description || '';
-    document.getElementById('editComment').value = transaction.comment || '';
-    
-    if (category) {
-        document.getElementById('editCategory').value = category.id;
-        loadEditSubcategories();
-        if (subcategory) {
-            document.getElementById('editSubcategory').value = subcategory.id;
+    // Load categories first
+    loadEditCategories().then(() => {
+        const category = findCategoryBySubcategoryId(transaction.subcategory_id);
+        const subcategory = findSubcategoryById(transaction.subcategory_id);
+        
+        document.getElementById('editTransactionId').value = transactionId;
+        document.getElementById('editAmount').value = transaction.amount;
+        document.getElementById('editTransactionDate').value = transaction.transaction_date.split('T')[0];
+        document.getElementById('editDescription').value = transaction.description || '';
+        document.getElementById('editComment').value = transaction.comment || '';
+        
+        if (category) {
+            document.getElementById('editCategory').value = category.id;
+            loadEditSubcategories();
+            if (subcategory) {
+                document.getElementById('editSubcategory').value = subcategory.id;
+            }
         }
-    }
-    
-    document.getElementById('editTransactionModal').style.display = 'block';
+        
+        const modal = document.getElementById('editTransactionModal');
+        modal.style.display = 'block';
+        // Force proper positioning
+        setTimeout(() => {
+            modal.scrollTop = 0;
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.marginTop = '5%';
+                modalContent.style.marginBottom = '5%';
+            }
+        }, 10);
+    });
+}
+
+function loadEditCategories() {
+    return fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(categories => {
+        const categorySelect = document.getElementById('editCategory');
+        categorySelect.innerHTML = '<option value="">Select a category</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            option.dataset.subcategories = JSON.stringify(category.subcategories);
+            categorySelect.appendChild(option);
+        });
+    })
+    .catch(error => console.error('Error loading categories:', error));
 }
 
 function loadEditSubcategories() {
     const categorySelect = document.getElementById('editCategory');
     const subcategorySelect = document.getElementById('editSubcategory');
+    
+    if (!categorySelect || !subcategorySelect) return;
+    
     const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
     
     subcategorySelect.innerHTML = '<option value="">Select a subcategory</option>';
     
-    if (selectedCategory.value) {
+    if (selectedCategory && selectedCategory.value && selectedCategory.dataset.subcategories) {
+        try {
+            const subcategories = JSON.parse(selectedCategory.dataset.subcategories);
+            subcategories.forEach(subcategory => {
+                const option = document.createElement('option');
+                option.value = subcategory.id;
+                option.textContent = subcategory.name;
+                subcategorySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error parsing subcategories:', error);
+        }
+    }
+}
+
+// Tooltip functions
+function showTooltip(event, text) {
+    if (!text || text.trim() === '') return;
+    
+    // Remove existing tooltip
+    hideTooltip();
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'comment-tooltip show';
+    tooltip.textContent = text;
+    document.body.appendChild(tooltip);
+    
+    // Position tooltip
+    const rect = event.target.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+    let top = rect.top - tooltipRect.height - 8;
+    
+    // Adjust if tooltip goes off screen
+    if (left < 8) left = 8;
+    if (left + tooltipRect.width > window.innerWidth - 8) {
+        left = window.innerWidth - tooltipRect.width - 8;
+    }
+    if (top < 8) {
+        top = rect.bottom + 8;
+    }
+    
+    tooltip.style.left = (left + window.pageXOffset) + 'px';
+    tooltip.style.top = (top + window.pageYOffset) + 'px';
+}
+
+function hideTooltip() {
+    const existingTooltip = document.querySelector('.comment-tooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+}
+
+// Modal functions
+function openAddExpenseModal() {
+    document.getElementById('modalTransactionDate').value = new Date().toISOString().split('T')[0];
+    loadModalCategories();
+    document.getElementById('addExpenseModal').style.display = 'block';
+}
+
+function loadModalCategories() {
+    fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(categories => {
+        const categorySelect = document.getElementById('modalCategory');
+        categorySelect.innerHTML = '<option value="">Select a category</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            option.dataset.subcategories = JSON.stringify(category.subcategories);
+            categorySelect.appendChild(option);
+        });
+    })
+    .catch(error => console.error('Error loading categories:', error));
+}
+
+function loadModalSubcategories() {
+    const categorySelect = document.getElementById('modalCategory');
+    const subcategorySelect = document.getElementById('modalSubcategory');
+    
+    subcategorySelect.innerHTML = '<option value="">Select a subcategory</option>';
+    
+    const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+    if (selectedCategory.value && selectedCategory.dataset.subcategories) {
         const subcategories = JSON.parse(selectedCategory.dataset.subcategories);
         subcategories.forEach(subcategory => {
             const option = document.createElement('option');
@@ -566,9 +592,89 @@ function closeModal(modalId) {
 }
 
 function setupFormListeners() {
-    document.getElementById('expenseForm').addEventListener('submit', handleExpenseSubmit);
-    document.getElementById('editTransactionForm').addEventListener('submit', handleEditTransaction);
-    document.getElementById('category').addEventListener('change', loadSubcategories);
+    // Only add listeners for elements that exist
+    const editForm = document.getElementById('editTransactionForm');
+    if (editForm) {
+        editForm.addEventListener('submit', handleEditTransaction);
+    }
+    
+    // Add modal form listeners
+    const addExpenseForm = document.getElementById('addExpenseForm');
+    if (addExpenseForm) {
+        addExpenseForm.addEventListener('submit', handleModalExpenseSubmit);
+    }
+}
+
+function handleModalExpenseSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        amount: parseFloat(formData.get('amount')),
+        transaction_date: formData.get('transaction_date'),
+        description: formData.get('description'),
+        comment: formData.get('comment'),
+        subcategory_id: parseInt(formData.get('subcategory'))
+    };
+    
+    // Validation
+    if (!data.amount || data.amount <= 0) {
+        showNotification('Please enter a valid amount', 'error');
+        return;
+    }
+    
+    if (!data.transaction_date) {
+        showNotification('Please select a transaction date', 'error');
+        return;
+    }
+    
+    if (!data.subcategory_id) {
+        showNotification('Please select a subcategory', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    submitBtn.disabled = true;
+    
+    // Make API call
+    fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(data => {
+        showNotification('Expense added successfully!', 'success');
+        closeModal('addExpenseModal');
+        resetModalForm();
+        loadTransactions(); // Refresh transactions
+    })
+    .catch(error => {
+        console.error('Error adding expense:', error);
+        const errorMessage = error.error || error.message || 'Error adding expense. Please try again.';
+        showNotification(errorMessage, 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function resetModalForm() {
+    document.getElementById('addExpenseForm').reset();
+    document.getElementById('modalTransactionDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modalSubcategory').innerHTML = '<option value="">Select a subcategory</option>';
 }
 
 function handleEditTransaction(e) {
@@ -612,26 +718,7 @@ function formatDate(dateString) {
     });
 }
 
-// Expense form functions
-function loadSubcategories() {
-    const categorySelect = document.getElementById('category');
-    const subcategorySelect = document.getElementById('subcategory');
-    
-    const categoryId = categorySelect.value;
-    subcategorySelect.innerHTML = '<option value="">Select a subcategory</option>';
-    
-    if (categoryId) {
-        const category = categories.find(cat => cat.id == categoryId);
-        if (category) {
-            category.subcategories.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub.id;
-                option.textContent = sub.name;
-                subcategorySelect.appendChild(option);
-            });
-        }
-    }
-}
+// Expense form functions - removed since we use modals now
 
 function handleExpenseSubmit(e) {
     e.preventDefault();
@@ -778,10 +865,6 @@ function validateField(fieldId, value, validator) {
     }
 }
 
-function resetForm() {
-    document.getElementById('expenseForm').reset();
-    document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
-    document.getElementById('subcategory').innerHTML = '<option value="">Select a subcategory</option>';
-}
+// resetForm function removed - no longer needed with modals
 </script>
 {% endblock %}

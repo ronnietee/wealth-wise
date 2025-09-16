@@ -24,10 +24,6 @@
                     <i class="fas fa-home" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/budgets" class="nav-link" role="menuitem" aria-label="Manage Budgets">
-                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
-                    <span>Budgets</span>
-                </a>
                 <a href="/income" class="nav-link" role="menuitem" aria-label="Manage Income">
                     <i class="fas fa-dollar-sign" aria-hidden="true"></i>
                     <span>Income</span>
@@ -36,18 +32,22 @@
                     <i class="fas fa-list" aria-hidden="true"></i>
                     <span>Breakdown</span>
                 </a>
-                <a href="/transactions" class="nav-link" role="menuitem" aria-label="Add New Expense">
-                    <i class="fas fa-plus-circle" aria-hidden="true"></i>
-                    <span>Add Expense</span>
+                <a href="/transactions" class="nav-link" role="menuitem" aria-label="View Transactions">
+                    <i class="fas fa-list-alt" aria-hidden="true"></i>
+                    <span>Transactions</span>
                 </a>
-                <a href="/settings" class="nav-link" role="menuitem" aria-label="Application Settings">
-                    <i class="fas fa-cog" aria-hidden="true"></i>
-                    <span>Settings</span>
+                <a href="/budgets" class="nav-link" role="menuitem" aria-label="Manage Budgets">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                    <span>Budgets</span>
                 </a>
-                <button class="nav-link logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application">
-                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    <span>Logout</span>
-                </button>
+                <div class="nav-actions">
+                    <a href="/settings" class="nav-action-btn" role="menuitem" aria-label="Application Settings" title="Settings">
+                        <i class="fas fa-cog" aria-hidden="true"></i>
+                    </a>
+                    <button class="nav-action-btn logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application" title="Logout">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
             <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-menu">
                 <span class="bar" aria-hidden="true"></span>
@@ -72,6 +72,59 @@
     <main class="main-content" id="main-content" role="main">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Add Expense Modal -->
+    <div class="modal" id="addExpenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Expense</h2>
+                <button class="close-btn" onclick="closeModal('addExpenseModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addExpenseForm" class="modal-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalAmount">Amount</label>
+                            <div class="input-group">
+                                <span class="input-prefix" data-currency-symbol>$</span>
+                                <input type="number" id="modalAmount" name="amount" step="0.01" min="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalTransactionDate">Date</label>
+                            <input type="date" id="modalTransactionDate" name="transaction_date" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalCategory">Category</label>
+                            <select id="modalCategory" name="category" required onchange="loadModalSubcategories()">
+                                <option value="">Select a category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalSubcategory">Subcategory</label>
+                            <select id="modalSubcategory" name="subcategory" required>
+                                <option value="">Select a subcategory</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalDescription">Description</label>
+                        <input type="text" id="modalDescription" name="description" placeholder="What did you spend on?">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalComment">Comment (Optional)</label>
+                        <textarea id="modalComment" name="comment" rows="3" placeholder="Additional notes..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('addExpenseModal')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer">
         <div class="footer-content">
