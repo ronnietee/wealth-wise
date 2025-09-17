@@ -3,83 +3,207 @@
 {% block title %}Income - STEWARD{% endblock %}
 
 {% block content %}
+<style>
+.compact-layout .card-body {
+    padding: 1rem;
+}
+
+.compact-income-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.income-sources-compact {
+    flex: 1;
+    min-width: 300px;
+}
+
+.balance-form-compact {
+    flex: 1;
+    min-width: 300px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.income-sources-list-compact {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.income-source-item-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    background: #f9f9f9;
+}
+
+.source-name-compact {
+    font-weight: 500;
+    flex: 1;
+}
+
+.source-amount-compact {
+    font-weight: 600;
+    color: #2e7d32;
+    margin: 0 0.5rem;
+}
+
+.source-actions-compact {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.form-row-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.form-group-compact label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.form-group-compact .input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.form-group-compact .input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    z-index: 2;
+    color: #666;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.form-group-compact input {
+    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.balance-display-compact {
+    padding: 0.5rem;
+    background: #f0f0f0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.balance-amount {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.form-actions-compact {
+    margin-top: 0.5rem;
+}
+
+.no-income-sources-compact {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .compact-income-layout {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .income-sources-compact,
+    .balance-form-compact {
+        min-width: auto;
+    }
+}
+</style>
+
 <div class="container">
     <div class="page-header">
-        <h1>Income Management</h1>
-        <p class="page-subtitle">Set your monthly income and balance brought forward to start budgeting.</p>
+        <h1>Income</h1>
+        <p class="page-subtitle">Track your income sources and manage your monthly balance forward.</p>
     </div>
 
     <div class="income-form-container">
-        <div class="card">
-            <div class="card-header">
-                <h2>Income Sources</h2>
-                <p>Add your income sources and balance brought forward from the previous month.</p>
-            </div>
+        <div class="card compact-layout">
             <div class="card-body">
-                <div class="income-sources-section">
-                    <div class="income-sources-header">
-                        <h3>Income Sources</h3>
-                        <button class="btn btn-primary" onclick="showAddIncomeSourceModal()">
-                            <i class="fas fa-plus"></i>
-                            Add Income Source
-                        </button>
-                    </div>
-                    
-                    <div id="incomeSourcesList" class="income-sources-list">
-                        <!-- Income sources will be loaded here -->
-                    </div>
-                </div>
-
-                <form id="balanceForm" class="balance-form">
-                    <div class="form-group">
-                        <label for="balanceBroughtForward">Balance Brought Forward</label>
-                        <div class="input-group">
-                            <span class="input-prefix" id="balanceCurrency" data-currency-symbol>$</span>
-                            <input type="number" id="balanceBroughtForward" name="balance_brought_forward" step="0.01" min="0" value="0">
+                <div class="compact-income-layout">
+                    <!-- Left side: Income Sources -->
+                    <div class="income-sources-compact">
+                        <div class="section-header">
+                            <h3>Income Sources</h3>
+                            <button class="btn btn-primary btn-sm" onclick="showAddIncomeSourceModal()">
+                                <i class="fas fa-plus"></i>
+                                Add
+                            </button>
                         </div>
-                        <small class="form-help">Any remaining balance from last month</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="availableBalance">Available to Allocate</label>
-                        <div class="balance-display">
-                            <span class="balance-amount" id="availableBalance">$0.00</span>
+                        <div id="incomeSourcesList" class="income-sources-list-compact">
+                            <!-- Income sources will be loaded here -->
                         </div>
-                        <small class="form-help">This is the total amount you can allocate to your budget categories</small>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
-                            Save Balance
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                            <i class="fas fa-undo"></i>
-                            Reset
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                    <!-- Right side: Balance Form -->
+                    <div class="balance-form-compact">
+                        <form id="balanceForm">
+                            <div class="form-row-compact">
+                                <div class="form-group-compact">
+                                    <label for="balanceBroughtForward">Balance Forward</label>
+                                    <div class="input-group">
+                                        <span class="input-prefix" id="balanceCurrency" data-currency-symbol>$</span>
+                                        <input type="number" id="balanceBroughtForward" name="balance_brought_forward" step="0.01" min="0" value="0">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group-compact">
+                                    <label for="availableBalance">Available</label>
+                                    <div class="balance-display-compact">
+                                        <span class="balance-amount" id="availableBalance">$0.00</span>
+                                    </div>
+                                </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h2>Quick Actions</h2>
-            </div>
-            <div class="card-body">
-                <div class="quick-actions">
-                    <button class="action-btn" onclick="window.location.href='/breakdown'">
-                        <i class="fas fa-list"></i>
-                        <span>Manage Breakdown</span>
-                    </button>
-                    <button class="action-btn" onclick="window.location.href='/transactions'">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Expense</span>
-                    </button>
-                    <button class="action-btn" onclick="window.location.href='/summary'">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>View Summary</span>
-                    </button>
+                                <div class="form-actions-compact">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,7 +231,7 @@
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Add Income Source</button>
+                    <button type="submit" class="btn btn-primary">Add</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addIncomeSourceModal')">Cancel</button>
                 </div>
             </form>
@@ -137,7 +261,7 @@
                 </div>
                 <input type="hidden" id="editIncomeSourceId" name="source_id">
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Update Income Source</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('editIncomeSourceModal')">Cancel</button>
                 </div>
             </form>
@@ -218,21 +342,19 @@ function renderIncomeSources() {
     const container = document.getElementById('incomeSourcesList');
     
     if (incomeSources.length === 0) {
-        container.innerHTML = '<p class="no-income-sources">No income sources added yet. Click "Add Income Source" to get started.</p>';
+        container.innerHTML = '<p class="no-income-sources-compact">No sources added yet</p>';
         return;
     }
     
     container.innerHTML = incomeSources.map(source => `
-        <div class="income-source-item">
-            <div class="income-source-info">
-                <span class="source-name">${source.name}</span>
-                <span class="source-amount">${formatCurrency(source.amount, userCurrency)}</span>
-            </div>
-            <div class="income-source-actions">
-                <button class="btn btn-sm btn-secondary" onclick="showEditIncomeSourceModal(${source.id}, '${source.name}', ${source.amount})" title="Edit">
+        <div class="income-source-item-compact">
+            <span class="source-name-compact">${source.name}</span>
+            <span class="source-amount-compact">${formatCurrency(source.amount, userCurrency)}</span>
+            <div class="source-actions-compact">
+                <button class="btn btn-xs btn-secondary" onclick="showEditIncomeSourceModal(${source.id}, '${source.name}', ${source.amount})" title="Edit">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteIncomeSource(${source.id})" title="Delete">
+                <button class="btn btn-xs btn-danger" onclick="deleteIncomeSource(${source.id})" title="Delete">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>

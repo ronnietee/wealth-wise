@@ -422,15 +422,6 @@ function editTransaction(transactionId) {
         
         const modal = document.getElementById('editTransactionModal');
         modal.style.display = 'block';
-        // Force proper positioning
-        setTimeout(() => {
-            modal.scrollTop = 0;
-            const modalContent = modal.querySelector('.modal-content');
-            if (modalContent) {
-                modalContent.style.marginTop = '5%';
-                modalContent.style.marginBottom = '5%';
-            }
-        }, 10);
     });
 }
 
