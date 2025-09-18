@@ -2201,24 +2201,6 @@ body {
 }
 
 /* Minimalistic Budgets Page */
-.current-budget-card {
-    background: linear-gradient(135deg, #8B4513, #D2691E);
-    color: white;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 20px rgba(139, 69, 19, 0.3);
-}
-
-.budget-info {
-    padding: 1.5rem;
-}
-
-.budget-status h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
 .budgets-header {
     display: flex;
     justify-content: space-between;
