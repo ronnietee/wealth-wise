@@ -4,44 +4,63 @@
 
 {% block content %}
 <div class="container">
-    <div class="header">
+    <div class="page-header">
         <h1>Budget Management</h1>
-        <p>Create and manage your budget periods</p>
+        <p class="page-subtitle">Create and manage your budget periods</p>
     </div>
 
     <!-- Current Active Budget -->
-    <div class="card">
-        <div class="card-header">
-            <h3>Current Active Budget</h3>
-        </div>
-        <div class="card-body">
-            <div id="current-budget-info">
-                <p>Loading current budget...</p>
+    <div class="current-budget-card">
+        <div class="budget-info">
+            <div class="budget-status">
+                <h3>Current Active Budget</h3>
+                <div id="current-budget-info">
+                    <p>Loading current budget...</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Create New Budget Period -->
-    <div class="card">
-        <div class="card-header">
-            <h3>Create New Budget Period</h3>
+    <!-- Header with Create Button and Filter -->
+    <div class="budgets-header">
+        <div class="header-left">
+            <button class="btn btn-primary create-budget-btn" onclick="toggleCreateForm()">
+                <i class="fas fa-plus"></i>
+                Create Budget
+            </button>
         </div>
+        <div class="header-right">
+            <div class="filter-container">
+                <select id="periodTypeFilter" class="filter-select">
+                    <option value="all">All Types</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create New Budget Period (Collapsible) -->
+    <div class="card create-budget-card" id="create-budget-card" style="display: none;">
         <div class="card-body">
             <form id="create-budget-form">
-                <div class="form-group">
-                    <label for="budget-name">Budget Name</label>
-                    <input type="text" id="budget-name" name="name" required 
-                           placeholder="e.g., January 2024, Q1 2024, Vacation Budget">
-                </div>
-                
-                <div class="form-group">
-                    <label for="period-type">Period Type</label>
-                    <select id="period-type" name="period_type" required>
-                        <option value="monthly">Monthly</option>
-                        <option value="quarterly">Quarterly</option>
-                        <option value="yearly">Yearly</option>
-                        <option value="custom">Custom</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget-name">Budget Name</label>
+                        <input type="text" id="budget-name" name="name" required 
+                               placeholder="e.g., January 2024, Q1 2024">
+                    </div>
+                    <div class="form-group">
+                        <label for="period-type">Period Type</label>
+                        <select id="period-type" name="period_type" required>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="yearly">Yearly</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-row">
@@ -55,28 +74,16 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary">Create Budget Period</button>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Create Budget Period</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleCreateForm()">Cancel</button>
+                </div>
             </form>
         </div>
     </div>
 
     <!-- Budget Periods List -->
     <div class="card">
-        <div class="card-header">
-            <div class="section-header">
-                <h3>All Budget Periods</h3>
-                <div class="period-type-filter">
-                    <label for="periodTypeFilter">Filter by type:</label>
-                    <select id="periodTypeFilter">
-                        <option value="all">All Types</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="quarterly">Quarterly</option>
-                        <option value="yearly">Yearly</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                </div>
-            </div>
-        </div>
         <div class="card-body">
             <div id="budget-periods-list">
                 <p>Loading budget periods...</p>
@@ -88,6 +95,26 @@
 <script>
 let userCurrency = 'USD';
 let allPeriods = []; // Store all periods for filtering
+
+// Toggle create budget form
+function toggleCreateForm() {
+    const createCard = document.getElementById('create-budget-card');
+    const createBtn = document.querySelector('.create-budget-btn');
+    
+    if (createCard.style.display === 'none') {
+        createCard.style.display = 'block';
+        createBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+        createBtn.classList.remove('btn-primary');
+        createBtn.classList.add('btn-secondary');
+    } else {
+        createCard.style.display = 'none';
+        createBtn.innerHTML = '<i class="fas fa-plus"></i> Create Budget';
+        createBtn.classList.remove('btn-secondary');
+        createBtn.classList.add('btn-primary');
+        // Reset form
+        document.getElementById('create-budget-form').reset();
+    }
+}
 
 // Format currency function
 function formatCurrency(amount, currency = 'USD') {
@@ -302,6 +329,9 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
             e.target.reset();
             await loadCurrentBudget();
             await loadBudgetPeriods();
+            
+            // Close the create form
+            toggleCreateForm();
             
             // Dispatch event to notify other pages of budget period change
             console.log('Dispatching budgetPeriodChanged event (new period)');
