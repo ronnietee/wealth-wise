@@ -504,7 +504,22 @@ def delete_budget_period(current_user, period_id):
     if not period:
         return jsonify({'message': 'Budget period not found'}), 404
     
-    # Delete the period (cascade will handle related budgets, transactions, etc.)
+    # Delete all transactions that were created during this budget period
+    # Transactions are linked to subcategories, so we need to find all transactions
+    # that were created between the period's start and end dates
+    transactions_to_delete = Transaction.query.filter(
+        Transaction.user_id == current_user.id,
+        Transaction.transaction_date >= period.start_date,
+        Transaction.transaction_date <= period.end_date
+    ).all()
+    
+    print(f"DEBUG: Deleting {len(transactions_to_delete)} transactions for period {period.name}")
+    
+    # Delete the transactions
+    for transaction in transactions_to_delete:
+        db.session.delete(transaction)
+    
+    # Delete the period (cascade will handle related budgets, allocations, income sources, etc.)
     db.session.delete(period)
     db.session.commit()
     

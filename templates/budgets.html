@@ -225,6 +225,7 @@ async function loadBudgetPeriods() {
             if (periods.error) {
                 throw new Error(periods.error);
             }
+            console.log('Loaded budget periods:', periods);
             allPeriods = periods; // Store all periods for filtering
             renderBudgetPeriods(periods);
         } else {
@@ -249,9 +250,11 @@ function filterPeriodsByType(periodType) {
 
 // Render periods (extracted from loadBudgetPeriods)
 function renderBudgetPeriods(periods) {
+    console.log('Rendering budget periods:', periods);
     const periodsList = document.getElementById('budget-periods-list');
     
     if (periods.length === 0) {
+        console.log('No periods found, showing no-data message');
         periodsList.innerHTML = '<tr><td colspan="6" class="no-data">No budget periods found. Create your first budget period above.</td></tr>';
         return;
     }
@@ -347,8 +350,11 @@ async function deleteBudgetPeriod(periodId) {
         
         if (response.ok) {
             showNotification('Budget period and all related data deleted successfully!', 'success');
-            await loadCurrentBudget();
+            
+            // Reload the budget periods list
+            console.log('Reloading budget periods after deletion...');
             await loadBudgetPeriods();
+            await loadCurrentBudget();
             
             // Dispatch event to notify other pages of budget period change
             console.log('Dispatching budgetPeriodChanged event (deletion)');
@@ -389,8 +395,11 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
             const newPeriod = await response.json();
             showNotification('Budget period created successfully!', 'success');
             e.target.reset();
-            await loadCurrentBudget();
+            
+            // Reload the budget periods list
+            console.log('Reloading budget periods after creation...');
             await loadBudgetPeriods();
+            await loadCurrentBudget();
             
             // Close the create form
             toggleCreateForm();
