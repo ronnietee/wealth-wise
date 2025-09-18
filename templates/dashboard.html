@@ -233,12 +233,19 @@ function loadDashboardData() {
             }
         })
         .then(response => {
+            if (response.status === 404) {
+                // No budget found, show no budget message
+                showNoBudgetMessage();
+                return;
+            }
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             return response.json();
         })
         .then(data => {
+            if (!data) return; // Skip if we already handled 404 above
+            
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -250,26 +257,18 @@ function loadDashboardData() {
             
             // Hide no budget message if it was showing
             hideNoBudgetMessage();
+            
+            // Load other data now that we have a budget
+            loadCategoriesOverview();
+            checkBudgetBalance();
+            checkOverspending();
         })
         .catch(error => {
             console.error('Error loading budget:', error);
-            if (error.message.includes('No active budget period found')) {
-                // Show no budget message
-                showNoBudgetMessage();
-            } else {
-                document.getElementById('current-budget-name').textContent = 'Error loading budget';
-                showNotification('Error loading budget: ' + error.message, 'error');
-            }
+            document.getElementById('current-budget-name').textContent = 'Error loading budget';
+            showNotification('Error loading budget: ' + error.message, 'error');
         });
 
-        // Load categories for overview
-        loadCategoriesOverview();
-        
-        // Check budget balance
-        checkBudgetBalance();
-        
-        // Check for overspending
-        checkOverspending();
     });
 }
 
