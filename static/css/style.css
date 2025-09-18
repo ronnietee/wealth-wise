@@ -2701,13 +2701,15 @@ body {
 .dropdown-menu {
     display: none !important;
     position: fixed !important;
-    top: 80px !important;
-    right: 20px !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     background: red !important;
     border-radius: 8px !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-    border: 3px solid blue !important;
-    min-width: 200px !important;
+    border: 5px solid blue !important;
+    min-width: 300px !important;
+    min-height: 200px !important;
     z-index: 10002 !important;
     animation: dropdownSlideIn 0.2s ease !important;
     opacity: 1 !important;

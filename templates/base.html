@@ -42,7 +42,18 @@
                 </a>
                 <div class="nav-actions">
                     <div class="nav-dropdown">
-                        <button class="nav-action-btn dropdown-toggle" onclick="alert('TEST ALERT')" role="menuitem" aria-label="Application Settings" title="Settings" aria-expanded="false" aria-haspopup="true">
+                        <button class="nav-action-btn dropdown-toggle" onclick="
+                            const dropdown = document.getElementById('settingsDropdown');
+                            const isOpen = dropdown.style.display === 'block';
+                            dropdown.style.display = isOpen ? 'none' : 'block';
+                            console.log('Dropdown display:', dropdown.style.display);
+                            console.log('Dropdown element:', dropdown);
+                            console.log('Dropdown computed style:', window.getComputedStyle(dropdown).display);
+                            console.log('Dropdown position:', window.getComputedStyle(dropdown).position);
+                            console.log('Dropdown top:', window.getComputedStyle(dropdown).top);
+                            console.log('Dropdown right:', window.getComputedStyle(dropdown).right);
+                            console.log('Dropdown z-index:', window.getComputedStyle(dropdown).zIndex);
+                        " role="menuitem" aria-label="Application Settings" title="Settings" aria-expanded="false" aria-haspopup="true">
                             <i class="fas fa-cog" aria-hidden="true"></i>
                         </button>
                         <div class="dropdown-menu" id="settingsDropdown">
