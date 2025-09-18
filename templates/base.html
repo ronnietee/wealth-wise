@@ -41,9 +41,25 @@
                     <span>Budgets</span>
                 </a>
                 <div class="nav-actions">
-                    <a href="/settings" class="nav-action-btn" role="menuitem" aria-label="Application Settings" title="Settings">
-                        <i class="fas fa-cog" aria-hidden="true"></i>
-                    </a>
+                    <div class="nav-dropdown">
+                        <button class="nav-action-btn dropdown-toggle" onclick="toggleSettingsDropdown()" role="menuitem" aria-label="Application Settings" title="Settings" aria-expanded="false" aria-haspopup="true">
+                            <i class="fas fa-cog" aria-hidden="true"></i>
+                        </button>
+                        <div class="dropdown-menu" id="settingsDropdown">
+                            <a href="#" class="dropdown-item" onclick="openEmailModal()">
+                                <i class="fas fa-envelope"></i>
+                                Change Email
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="openPasswordModal()">
+                                <i class="fas fa-key"></i>
+                                Change Password
+                            </a>
+                            <a href="#" class="dropdown-item" onclick="openCurrencyModal()">
+                                <i class="fas fa-dollar-sign"></i>
+                                Change Currency
+                            </a>
+                        </div>
+                    </div>
                     <button class="nav-action-btn logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application" title="Logout">
                         <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     </button>
@@ -126,6 +142,120 @@
         </div>
     </div>
 
+    <!-- Settings Modals -->
+    <!-- Email Change Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Email</h3>
+                <button class="modal-close" onclick="closeEmailModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="emailForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="modalEmail">Email Address</label>
+                        <input type="email" id="modalEmail" name="email" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEmailModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveEmail()">
+                    <i class="fas fa-save"></i>
+                    Save Email
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Password</h3>
+                <button class="modal-close" onclick="closePasswordModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="modalCurrentPassword">Current Password</label>
+                        <input type="password" id="modalCurrentPassword" name="current_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalNewPassword">New Password</label>
+                        <input type="password" id="modalNewPassword" name="new_password" required minlength="6">
+                        <small class="form-help">Password must be at least 6 characters long</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalConfirmPassword">Confirm New Password</label>
+                        <input type="password" id="modalConfirmPassword" name="confirm_password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="savePassword()">
+                    <i class="fas fa-key"></i>
+                    Change Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currency Change Modal -->
+    <div id="currencyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Currency</h3>
+                <button class="modal-close" onclick="closeCurrencyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="currencyForm" class="modal-form">
+                    <div class="form-group">
+                        <label for="modalCurrency">Default Currency</label>
+                        <select id="modalCurrency" name="currency" required>
+                            <option value="USD">USD ($) - US Dollar</option>
+                            <option value="EUR">EUR (€) - Euro</option>
+                            <option value="GBP">GBP (£) - British Pound</option>
+                            <option value="ZAR">ZAR (R) - South African Rand</option>
+                            <option value="CAD">CAD (C$) - Canadian Dollar</option>
+                            <option value="AUD">AUD (A$) - Australian Dollar</option>
+                            <option value="BWP">BWP (P) - Botswana Pula</option>
+                            <option value="ZMW">ZMW (K) - Zambian Kwacha</option>
+                            <option value="NGN">NGN (₦) - Nigerian Naira</option>
+                            <option value="KES">KES (KSh) - Kenyan Shilling</option>
+                            <option value="GHS">GHS (₵) - Ghanaian Cedi</option>
+                            <option value="UGX">UGX (USh) - Ugandan Shilling</option>
+                            <option value="TZS">TZS (TSh) - Tanzanian Shilling</option>
+                            <option value="ETB">ETB (Br) - Ethiopian Birr</option>
+                            <option value="RWF">RWF (RF) - Rwandan Franc</option>
+                            <option value="MWK">MWK (MK) - Malawian Kwacha</option>
+                            <option value="BRL">BRL (R$) - Brazilian Real</option>
+                            <option value="MXN">MXN ($) - Mexican Peso</option>
+                            <option value="PHP">PHP (₱) - Philippine Peso</option>
+                            <option value="INR">INR (₹) - Indian Rupee</option>
+                            <option value="JPY">JPY (¥) - Japanese Yen</option>
+                        </select>
+                        <small class="form-help">This will be used for displaying all monetary values</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCurrencyModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCurrency()">
+                    <i class="fas fa-save"></i>
+                    Save Currency
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="footer-content">
             <p>&copy; 2024 STEWARD. Built with faith and love for Christian families.</p>
@@ -146,7 +276,206 @@
                     loadUserCurrency();
                 }
             }, 100);
+            
+            // Load user settings for modals
+            loadUserSettingsForModals();
         });
+
+        // Settings dropdown functionality
+        function toggleSettingsDropdown() {
+            const dropdown = document.getElementById('settingsDropdown');
+            const isOpen = dropdown.style.display === 'block';
+            
+            // Close all dropdowns first
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+            
+            // Toggle current dropdown
+            dropdown.style.display = isOpen ? 'none' : 'block';
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        // Load user settings for modals
+        function loadUserSettingsForModals() {
+            fetch('/api/user/settings', {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Store current email and currency for modals
+                if (document.getElementById('modalEmail')) {
+                    document.getElementById('modalEmail').value = data.email;
+                }
+                if (document.getElementById('modalCurrency')) {
+                    document.getElementById('modalCurrency').value = data.currency;
+                }
+            })
+            .catch(error => console.error('Error loading user settings:', error));
+        }
+
+        // Email modal functions
+        function openEmailModal() {
+            document.getElementById('emailModal').style.display = 'block';
+            document.getElementById('settingsDropdown').style.display = 'none';
+        }
+
+        function closeEmailModal() {
+            document.getElementById('emailModal').style.display = 'none';
+            document.getElementById('emailForm').reset();
+        }
+
+        function saveEmail() {
+            const email = document.getElementById('modalEmail').value;
+            
+            const data = {
+                email: email
+            };
+            
+            fetch('/api/user/settings', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification('Email updated successfully!', 'success');
+                }
+                closeEmailModal();
+            })
+            .catch(error => {
+                console.error('Error updating email:', error);
+                showNotification('Error updating email. Please try again.', 'error');
+            });
+        }
+
+        // Password modal functions
+        function openPasswordModal() {
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('settingsDropdown').style.display = 'none';
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('passwordForm').reset();
+        }
+
+        function savePassword() {
+            const currentPassword = document.getElementById('modalCurrentPassword').value;
+            const newPassword = document.getElementById('modalNewPassword').value;
+            const confirmPassword = document.getElementById('modalConfirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showNotification('Password must be at least 6 characters long', 'error');
+                return;
+            }
+            
+            const data = {
+                current_password: currentPassword,
+                new_password: newPassword
+            };
+            
+            fetch('/api/user/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification('Password changed successfully!', 'success');
+                }
+                closePasswordModal();
+            })
+            .catch(error => {
+                console.error('Error changing password:', error);
+                showNotification('Error changing password. Please try again.', 'error');
+            });
+        }
+
+        // Currency modal functions
+        function openCurrencyModal() {
+            document.getElementById('currencyModal').style.display = 'block';
+            document.getElementById('settingsDropdown').style.display = 'none';
+        }
+
+        function closeCurrencyModal() {
+            document.getElementById('currencyModal').style.display = 'none';
+            document.getElementById('currencyForm').reset();
+        }
+
+        function saveCurrency() {
+            const currency = document.getElementById('modalCurrency').value;
+            
+            const data = {
+                currency: currency
+            };
+            
+            fetch('/api/user/settings', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Currency updated successfully!', 'success');
+                closeCurrencyModal();
+                // Reload the page to update currency formatting
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error updating currency:', error);
+                showNotification('Error updating currency. Please try again.', 'error');
+            });
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const emailModal = document.getElementById('emailModal');
+            const passwordModal = document.getElementById('passwordModal');
+            const currencyModal = document.getElementById('currencyModal');
+            
+            if (event.target === emailModal) {
+                closeEmailModal();
+            }
+            if (event.target === passwordModal) {
+                closePasswordModal();
+            }
+            if (event.target === currencyModal) {
+                closeCurrencyModal();
+            }
+        }
     </script>
     {% block scripts %}{% endblock %}
 </body>

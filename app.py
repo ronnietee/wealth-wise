@@ -147,9 +147,6 @@ def input_page():
     return render_template('input.html')
 
 
-@app.route('/settings')
-def settings():
-    return render_template('settings.html')
 
 @app.route('/transactions')
 def transactions():
