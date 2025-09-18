@@ -192,23 +192,22 @@ async function loadCurrentBudget() {
             if (budget.error) {
                 throw new Error(budget.error);
             }
-            const currentBudgetInfo = document.getElementById('current-budget-info');
-            currentBudgetInfo.innerHTML = `
-                <div class="budget-info">
-                    <h4>${budget.period_name}</h4>
-                    <p><strong>Type:</strong> ${budget.period_type}</p>
-                    <p><strong>Period:</strong> ${budget.start_date || 'N/A'} to ${budget.end_date || 'N/A'}</p>
-                    <p><strong>Total Income:</strong> ${formatCurrency(budget.total_income, userCurrency)}</p>
-                    <p><strong>Balance to Allocate:</strong> ${formatCurrency(budget.balance_to_allocate, userCurrency)}</p>
-                </div>
-            `;
+            // Budget loaded successfully - no need to display anything since we removed the current budget section
+            return budget;
+        } else if (response.status === 404) {
+            // No budget found - this is expected when no budget exists
+            return null;
         } else {
             const errorData = await response.json();
             throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
         }
     } catch (error) {
         console.error('Error loading current budget:', error);
-        document.getElementById('current-budget-info').innerHTML = `<p>Error loading current budget: ${error.message}</p>`;
+        // Don't show error for 404 (no budget) cases
+        if (!error.message.includes('404')) {
+            showNotification('Error loading current budget: ' + error.message, 'error');
+        }
+        return null;
     }
 }
 
@@ -307,18 +306,18 @@ async function activateBudgetPeriod(periodId) {
             // Reload both current budget and periods list
             await loadCurrentBudget();
             await loadBudgetPeriods();
-            showMessage('Budget period activated successfully!', 'success');
+            showNotification('Budget period activated successfully!', 'success');
             
             // Dispatch event to notify other pages of budget period change
             console.log('Dispatching budgetPeriodChanged event');
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
-            showMessage(error.message || 'Failed to activate budget period', 'error');
+            showNotification(error.message || 'Failed to activate budget period', 'error');
         }
     } catch (error) {
         console.error('Error activating budget period:', error);
-        showMessage('Error activating budget period', 'error');
+        showNotification('Error activating budget period', 'error');
     }
 }
 
@@ -347,7 +346,7 @@ async function deleteBudgetPeriod(periodId) {
         });
         
         if (response.ok) {
-            showMessage('Budget period and all related data deleted successfully!', 'success');
+            showNotification('Budget period and all related data deleted successfully!', 'success');
             await loadCurrentBudget();
             await loadBudgetPeriods();
             
@@ -356,11 +355,11 @@ async function deleteBudgetPeriod(periodId) {
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
-            showMessage(error.message || 'Failed to delete budget period', 'error');
+            showNotification(error.message || 'Failed to delete budget period', 'error');
         }
     } catch (error) {
         console.error('Error deleting budget period:', error);
-        showMessage('Error deleting budget period', 'error');
+        showNotification('Error deleting budget period', 'error');
     }
 }
 
@@ -388,7 +387,7 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
         
         if (response.ok) {
             const newPeriod = await response.json();
-            showMessage('Budget period created successfully!', 'success');
+            showNotification('Budget period created successfully!', 'success');
             e.target.reset();
             await loadCurrentBudget();
             await loadBudgetPeriods();
@@ -401,11 +400,11 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
-            showMessage(error.message || 'Failed to create budget period', 'error');
+            showNotification(error.message || 'Failed to create budget period', 'error');
         }
     } catch (error) {
         console.error('Error creating budget period:', error);
-        showMessage('Error creating budget period', 'error');
+        showNotification('Error creating budget period', 'error');
     }
 });
 
@@ -466,18 +465,6 @@ document.getElementById('period-type').addEventListener('change', function() {
     nameInput.value = name;
 });
 
-// Show message function
-function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
-    messageDiv.textContent = message;
-    
-    document.body.insertBefore(messageDiv, document.body.firstChild);
-    
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 3000);
-}
 </script>
 
 <style>
