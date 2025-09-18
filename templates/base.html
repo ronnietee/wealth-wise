@@ -283,8 +283,11 @@
 
         // Settings dropdown functionality
         function toggleSettingsDropdown() {
+            console.log('toggleSettingsDropdown called');
             const dropdown = document.getElementById('settingsDropdown');
+            console.log('Dropdown element:', dropdown);
             const isOpen = dropdown.style.display === 'block';
+            console.log('Is currently open:', isOpen);
             
             // Close all dropdowns first
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
@@ -292,7 +295,10 @@
             });
             
             // Toggle current dropdown
-            dropdown.style.display = isOpen ? 'none' : 'block';
+            const newDisplay = isOpen ? 'none' : 'block';
+            console.log('Setting display to:', newDisplay);
+            dropdown.style.display = newDisplay;
+            console.log('Dropdown display after change:', dropdown.style.display);
         }
 
         // Close dropdowns when clicking outside
