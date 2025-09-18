@@ -2699,7 +2699,7 @@ body {
 }
 
 .dropdown-menu {
-    display: none !important;
+    display: none;
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
