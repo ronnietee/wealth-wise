@@ -852,6 +852,51 @@ def delete_transaction(current_user, transaction_id):
     
     return jsonify({'message': 'Transaction deleted successfully'})
 
+@app.route('/api/budget/balance-check', methods=['GET'])
+@token_required
+def check_budget_balance(current_user):
+    """Check if total income is sufficient for total allocated budget"""
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        
+        if not active_period:
+            return jsonify({
+                'is_balanced': True,
+                'message': 'No active budget period found'
+            })
+        
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        
+        if not budget:
+            return jsonify({
+                'is_balanced': True,
+                'message': 'No budget found for active period'
+            })
+        
+        # Calculate total income from income sources
+        total_income = sum(source.amount for source in budget.income_sources)
+        total_income += budget.balance_brought_forward or 0
+        
+        # Calculate total allocated amount
+        total_allocated = sum(allocation.allocated_amount for allocation in budget.allocations)
+        
+        # Check if budget is balanced
+        is_balanced = total_income >= total_allocated
+        deficit = total_allocated - total_income if not is_balanced else 0
+        
+        return jsonify({
+            'is_balanced': is_balanced,
+            'total_income': total_income,
+            'total_allocated': total_allocated,
+            'deficit': deficit,
+            'message': f'Budget is {"balanced" if is_balanced else "unbalanced"}. {"Deficit: $" + f"{deficit:.2f}" if not is_balanced else ""}'
+        })
+        
+    except Exception as e:
+        print(f"Error in check_budget_balance: {str(e)}")
+        return jsonify({'error': f'Error checking budget balance: {str(e)}'}), 500
+
 
 def create_default_categories(user_id):
     default_categories = [

@@ -467,6 +467,10 @@ function saveAllocations() {
         } else {
             showNotification('Allocations saved successfully!', 'success');
             loadBudgetData(); // Refresh budget data
+            // Trigger budget balance check for dashboard
+            if (typeof checkBudgetBalance === 'function') {
+                checkBudgetBalance();
+            }
         }
     })
     .catch(error => {

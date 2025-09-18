@@ -21,6 +21,23 @@
         </div>
     </div>
 
+    <!-- Budget Balance Alert -->
+    <div id="budget-balance-alert" class="budget-alert" style="display: none;">
+        <div class="alert-content">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="alert-message">
+                <h3>Budget Unbalanced</h3>
+                <p id="budget-alert-text">Your total allocated budget exceeds your total income.</p>
+            </div>
+            <div class="alert-actions">
+                <a href="/breakdown" class="btn btn-primary">Fix Budget</a>
+                <button onclick="dismissBudgetAlert()" class="btn btn-secondary">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <div class="dashboard-grid">
         <!-- Financial Overview Cards -->
         <div class="overview-cards">
@@ -203,6 +220,9 @@ function loadDashboardData() {
 
         // Load categories for overview
         loadCategoriesOverview();
+        
+        // Check budget balance
+        checkBudgetBalance();
     });
 }
 
@@ -417,6 +437,57 @@ function resetModalForm() {
     document.getElementById('addExpenseForm').reset();
     document.getElementById('modalTransactionDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('modalSubcategory').innerHTML = '<option value="">Select a subcategory</option>';
+}
+
+function checkBudgetBalance() {
+    fetch('/api/budget/balance-check', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        if (!data.is_balanced) {
+            showBudgetAlert(data);
+        } else {
+            hideBudgetAlert();
+        }
+    })
+    .catch(error => {
+        console.error('Error checking budget balance:', error);
+        // Don't show error notification for balance check failures
+    });
+}
+
+function showBudgetAlert(balanceData) {
+    const alert = document.getElementById('budget-balance-alert');
+    const alertText = document.getElementById('budget-alert-text');
+    
+    const deficit = balanceData.deficit || 0;
+    const totalIncome = balanceData.total_income || 0;
+    const totalAllocated = balanceData.total_allocated || 0;
+    
+    alertText.textContent = `Your total allocated budget (${formatCurrency(totalAllocated, userCurrency)}) exceeds your total income (${formatCurrency(totalIncome, userCurrency)}) by ${formatCurrency(deficit, userCurrency)}. Please adjust your budget allocations.`;
+    
+    alert.style.display = 'block';
+}
+
+function hideBudgetAlert() {
+    const alert = document.getElementById('budget-balance-alert');
+    alert.style.display = 'none';
+}
+
+function dismissBudgetAlert() {
+    hideBudgetAlert();
 }
 </script>
 {% endblock %}

@@ -1856,6 +1856,122 @@ body {
     }
 }
 
+/* Budget Balance Alert */
+.budget-alert {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    border: 2px solid #ff5252;
+    border-radius: 12px;
+    margin: 1rem 0;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+    animation: budgetAlertSlideIn 0.4s ease;
+}
+
+.alert-content {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+.alert-icon {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.alert-message {
+    flex: 1;
+    color: white;
+}
+
+.alert-message h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.alert-message p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+    opacity: 0.95;
+}
+
+.alert-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.alert-actions .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alert-actions .btn-primary {
+    background: white;
+    color: #ff6b6b;
+}
+
+.alert-actions .btn-primary:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.alert-actions .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.alert-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+@keyframes budgetAlertSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design for budget alert */
+@media (max-width: 768px) {
+    .alert-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .alert-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .alert-actions .btn {
+        flex: 1;
+        max-width: 120px;
+    }
+}
+
 /* Footer */
 .footer {
     background: #2c3e50;
