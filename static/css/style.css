@@ -4565,6 +4565,9 @@ html {
     transition: all 0.2s ease;
     cursor: pointer;
     font-size: 0.9rem;
+    pointer-events: auto !important;
+    z-index: 10003 !important;
+    position: relative !important;
 }
 
 .nav-action-btn:hover {
