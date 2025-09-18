@@ -102,15 +102,22 @@ let allPeriods = []; // Store all periods for filtering
 
 // Toggle create budget form
 function toggleCreateForm() {
+    console.log('toggleCreateForm called');
     const createCard = document.getElementById('create-budget-card');
     const createBtn = document.querySelector('.create-budget-btn');
     
+    console.log('Create card element:', createCard);
+    console.log('Create button element:', createBtn);
+    console.log('Current display style:', createCard.style.display);
+    
     if (createCard.style.display === 'none') {
+        console.log('Showing create form');
         createCard.style.display = 'block';
         createBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
         createBtn.classList.remove('btn-primary');
         createBtn.classList.add('btn-secondary');
     } else {
+        console.log('Hiding create form');
         createCard.style.display = 'none';
         createBtn.innerHTML = '<i class="fas fa-plus"></i> Create Budget';
         createBtn.classList.remove('btn-secondary');
@@ -372,6 +379,7 @@ async function deleteBudgetPeriod(periodId) {
 // Handle form submission
 document.getElementById('create-budget-form').addEventListener('submit', async function(e) {
     e.preventDefault();
+    console.log('Form submission started...');
     
     const formData = new FormData(e.target);
     const data = {
@@ -380,6 +388,8 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
         start_date: formData.get('start_date'),
         end_date: formData.get('end_date')
     };
+    
+    console.log('Form data:', data);
     
     try {
         const response = await fetch('/api/budget-periods', {
@@ -393,6 +403,7 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
         
         if (response.ok) {
             const newPeriod = await response.json();
+            console.log('Budget period created successfully:', newPeriod);
             showNotification('Budget period created successfully!', 'success');
             e.target.reset();
             
@@ -402,6 +413,7 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
             await loadCurrentBudget();
             
             // Close the create form
+            console.log('Closing create form...');
             toggleCreateForm();
             
             // Dispatch event to notify other pages of budget period change
@@ -409,6 +421,7 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
+            console.error('Error creating budget period:', error);
             showNotification(error.message || 'Failed to create budget period', 'error');
         }
     } catch (error) {
