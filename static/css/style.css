@@ -199,6 +199,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
+    overflow: visible !important;
 }
 
 .nav-container {
@@ -209,6 +210,7 @@ body {
     justify-content: space-between;
     align-items: center;
     height: 70px;
+    overflow: visible !important;
 }
 
 .nav-brand {
@@ -247,6 +249,7 @@ body {
     display: flex;
     gap: 1rem;
     align-items: center;
+    overflow: visible !important;
 }
 
 .nav-link {
@@ -2692,6 +2695,7 @@ body {
 .nav-dropdown {
     position: relative;
     display: inline-block;
+    overflow: visible !important;
 }
 
 .dropdown-menu {
