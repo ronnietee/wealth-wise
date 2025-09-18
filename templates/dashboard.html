@@ -38,6 +38,24 @@
         </div>
     </div>
 
+    <!-- Overspending Alert -->
+    <div id="overspending-alert" class="overspending-alert" style="display: none;">
+        <div class="alert-content">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="alert-message">
+                <h3>Overspending Detected</h3>
+                <p id="overspending-alert-text">You have exceeded your allocated budget in some categories.</p>
+                <div id="overspending-details" class="overspending-details"></div>
+            </div>
+            <div class="alert-actions">
+                <a href="/breakdown" class="btn btn-primary">View Breakdown</a>
+                <button onclick="dismissOverspendingAlert()" class="btn btn-secondary">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <div class="dashboard-grid">
         <!-- Financial Overview Cards -->
         <div class="overview-cards">
@@ -223,6 +241,9 @@ function loadDashboardData() {
         
         // Check budget balance
         checkBudgetBalance();
+        
+        // Check for overspending
+        checkOverspending();
     });
 }
 
@@ -421,6 +442,8 @@ function handleModalExpenseSubmit(e) {
         closeModal('addExpenseModal');
         resetModalForm();
         loadDashboardData(); // Refresh dashboard data
+        // Check for overspending after adding expense
+        checkOverspending();
     })
     .catch(error => {
         console.error('Error adding expense:', error);
@@ -488,6 +511,77 @@ function hideBudgetAlert() {
 
 function dismissBudgetAlert() {
     hideBudgetAlert();
+}
+
+function checkOverspending() {
+    console.log('Checking overspending...');
+    fetch('/api/budget/overspending-check', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => {
+        console.log('Overspending check response:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Overspending data:', data);
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        if (data.has_overspending) {
+            console.log('Overspending detected:', data.overspent_categories);
+            showOverspendingAlert(data);
+        } else {
+            console.log('No overspending detected');
+            hideOverspendingAlert();
+        }
+    })
+    .catch(error => {
+        console.error('Error checking overspending:', error);
+        // Don't show error notification for overspending check failures
+    });
+}
+
+function showOverspendingAlert(overspendingData) {
+    const alert = document.getElementById('overspending-alert');
+    const alertText = document.getElementById('overspending-alert-text');
+    const detailsContainer = document.getElementById('overspending-details');
+    
+    const totalOverspent = overspendingData.total_overspent_categories;
+    const overspentCategories = overspendingData.overspent_categories;
+    
+    alertText.textContent = `You have exceeded your allocated budget in ${totalOverspent} categor${totalOverspent === 1 ? 'y' : 'ies'}.`;
+    
+    // Create details for overspent categories
+    detailsContainer.innerHTML = overspentCategories.map(category => `
+        <div class="overspent-item">
+            <div class="overspent-info">
+                <span class="category-name">${category.category_name} - ${category.subcategory_name}</span>
+                <span class="overspent-amount">${formatCurrency(category.overspent_amount, userCurrency)} over</span>
+            </div>
+            <div class="overspent-stats">
+                <span class="allocated">Allocated: ${formatCurrency(category.allocated, userCurrency)}</span>
+                <span class="spent">Spent: ${formatCurrency(category.spent, userCurrency)}</span>
+                <span class="percentage">${Math.round(category.overspent_percentage)}% over</span>
+            </div>
+        </div>
+    `).join('');
+    
+    alert.style.display = 'block';
+}
+
+function hideOverspendingAlert() {
+    const alert = document.getElementById('overspending-alert');
+    alert.style.display = 'none';
+}
+
+function dismissOverspendingAlert() {
+    hideOverspendingAlert();
 }
 </script>
 {% endblock %}

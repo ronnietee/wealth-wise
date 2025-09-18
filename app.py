@@ -897,6 +897,89 @@ def check_budget_balance(current_user):
         print(f"Error in check_budget_balance: {str(e)}")
         return jsonify({'error': f'Error checking budget balance: {str(e)}'}), 500
 
+@app.route('/api/budget/overspending-check', methods=['GET'])
+@token_required
+def check_overspending(current_user):
+    """Check for subcategories where spending exceeds allocation"""
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        
+        if not active_period:
+            return jsonify({
+                'has_overspending': False,
+                'overspent_categories': [],
+                'message': 'No active budget period found'
+            })
+        
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        
+        if not budget:
+            return jsonify({
+                'has_overspending': False,
+                'overspent_categories': [],
+                'message': 'No budget found for active period'
+            })
+        
+        overspent_categories = []
+        
+        # Get all subcategories for the user
+        subcategories = Subcategory.query.join(Category).filter(Category.user_id == current_user.id).all()
+        print(f"Found {len(subcategories)} subcategories for user {current_user.id}")
+        
+        for subcategory in subcategories:
+            # Get allocation for this subcategory
+            allocation = BudgetAllocation.query.filter_by(
+                budget_id=budget.id,
+                subcategory_id=subcategory.id
+            ).first()
+            
+            allocated_amount = allocation.allocated_amount if allocation else 0
+            
+            # Calculate spent amount for the current period
+            spent_transactions = Transaction.query.filter_by(
+                user_id=current_user.id,
+                subcategory_id=subcategory.id
+            ).filter(
+                Transaction.transaction_date >= active_period.start_date,
+                Transaction.transaction_date <= active_period.end_date
+            ).all()
+            
+            spent_amount = sum(t.amount for t in spent_transactions)
+            
+            # Check if overspent
+            print(f"Subcategory {subcategory.name}: allocated={allocated_amount}, spent={spent_amount}")
+            if spent_amount > allocated_amount and allocated_amount > 0:
+                overspent_amount = spent_amount - allocated_amount
+                print(f"Overspent detected: {subcategory.name} by {overspent_amount}")
+                overspent_categories.append({
+                    'subcategory_id': subcategory.id,
+                    'subcategory_name': subcategory.name,
+                    'category_name': subcategory.category.name,
+                    'allocated': allocated_amount,
+                    'spent': spent_amount,
+                    'overspent_amount': overspent_amount,
+                    'overspent_percentage': (overspent_amount / allocated_amount) * 100
+                })
+        
+        # Sort by overspent amount (highest first)
+        overspent_categories.sort(key=lambda x: x['overspent_amount'], reverse=True)
+        
+        print(f"Final result: {len(overspent_categories)} overspent categories")
+        for cat in overspent_categories:
+            print(f"  - {cat['category_name']} - {cat['subcategory_name']}: {cat['overspent_amount']} over")
+        
+        return jsonify({
+            'has_overspending': len(overspent_categories) > 0,
+            'overspent_categories': overspent_categories,
+            'total_overspent_categories': len(overspent_categories),
+            'message': f'Found {len(overspent_categories)} overspent subcategor{"y" if len(overspent_categories) == 1 else "ies"}'
+        })
+        
+    except Exception as e:
+        print(f"Error in check_overspending: {str(e)}")
+        return jsonify({'error': f'Error checking overspending: {str(e)}'}), 500
+
 
 def create_default_categories(user_id):
     default_categories = [

@@ -570,6 +570,10 @@ function deleteTransaction(transactionId) {
         .then(data => {
             showNotification('Transaction deleted successfully!', 'success');
             loadTransactions();
+            // Check for overspending after deleting transaction
+            if (typeof checkOverspending === 'function') {
+                checkOverspending();
+            }
         })
         .catch(error => {
             console.error('Error deleting transaction:', error);
@@ -650,6 +654,10 @@ function handleModalExpenseSubmit(e) {
         closeModal('addExpenseModal');
         resetModalForm();
         loadTransactions(); // Refresh transactions
+        // Check for overspending after adding expense
+        if (typeof checkOverspending === 'function') {
+            checkOverspending();
+        }
     })
     .catch(error => {
         console.error('Error adding expense:', error);
@@ -694,6 +702,10 @@ function handleEditTransaction(e) {
         showNotification('Transaction updated successfully!', 'success');
         closeModal('editTransactionModal');
         loadTransactions();
+        // Check for overspending after updating transaction
+        if (typeof checkOverspending === 'function') {
+            checkOverspending();
+        }
     })
     .catch(error => {
         console.error('Error updating transaction:', error);

@@ -287,6 +287,10 @@ function saveAllocations() {
         if (typeof checkBudgetBalance === 'function') {
             checkBudgetBalance();
         }
+        // Trigger overspending check for dashboard
+        if (typeof checkOverspending === 'function') {
+            checkOverspending();
+        }
     })
     .catch(error => {
         console.error('Error saving allocations:', error);

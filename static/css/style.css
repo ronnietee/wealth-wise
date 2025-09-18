@@ -1828,7 +1828,7 @@ body {
     border-radius: 8px;
     color: white;
     font-weight: 500;
-    z-index: 3000;
+    z-index: 10001;
     animation: notificationSlideIn 0.3s ease;
 }
 
@@ -1969,6 +1969,104 @@ body {
     .alert-actions .btn {
         flex: 1;
         max-width: 120px;
+    }
+}
+
+/* Overspending Alert */
+.overspending-alert {
+    background: linear-gradient(135deg, #ff8c00, #ffa500);
+    border: 2px solid #ff7f00;
+    border-radius: 12px;
+    margin: 1rem 0;
+    box-shadow: 0 4px 20px rgba(255, 140, 0, 0.3);
+    animation: overspendingAlertSlideIn 0.4s ease;
+}
+
+.overspending-details {
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.overspent-item {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.overspent-item:last-child {
+    margin-bottom: 0;
+}
+
+.overspent-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.category-name {
+    font-weight: 600;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.overspent-amount {
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.overspent-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.overspent-stats span {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+}
+
+.overspent-stats .percentage {
+    background: rgba(255, 0, 0, 0.3);
+    color: white;
+    font-weight: 600;
+}
+
+@keyframes overspendingAlertSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design for overspending alert */
+@media (max-width: 768px) {
+    .overspent-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .overspent-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .overspent-stats span {
+        text-align: center;
     }
 }
 
