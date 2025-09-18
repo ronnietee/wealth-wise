@@ -283,7 +283,6 @@
 
         // Settings dropdown functionality
         function toggleSettingsDropdown() {
-            alert('Button clicked!'); // Test if function is called
             const dropdown = document.getElementById('settingsDropdown');
             const isOpen = dropdown.style.display === 'block';
             
@@ -294,6 +293,15 @@
             
             // Toggle current dropdown
             dropdown.style.display = isOpen ? 'none' : 'block';
+            
+            // Debug: Check if dropdown is visible
+            if (dropdown.style.display === 'block') {
+                console.log('Dropdown should be visible now');
+                console.log('Dropdown computed style:', window.getComputedStyle(dropdown).display);
+                console.log('Dropdown position:', dropdown.style.position);
+                console.log('Dropdown top:', dropdown.style.top);
+                console.log('Dropdown right:', dropdown.style.right);
+            }
         }
 
         // Close dropdowns when clicking outside
