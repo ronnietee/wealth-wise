@@ -2807,28 +2807,6 @@ body {
     gap: 0.5rem;
 }
 
-.current-budget {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-}
-
-.budget-label {
-    font-size: 0.8rem;
-    color: #666;
-    font-weight: 500;
-}
-
-.budget-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #2c3e50;
-    background: #f8f9fa;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    border: 1px solid #e9ecef;
-}
 
 @media (max-width: 768px) {
     .header-content {
