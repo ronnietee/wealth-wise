@@ -2550,6 +2550,179 @@ body {
     }
 }
 
+/* Minimalistic Settings Page */
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-header .header-left h2 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.settings-header .header-left p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.settings-card {
+    margin-bottom: 1.5rem;
+}
+
+.settings-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.settings-form .form-group {
+    margin-bottom: 0;
+}
+
+.settings-form .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.settings-form .form-group input,
+.settings-form .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+}
+
+.settings-form .form-group input:focus,
+.settings-form .form-group select:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.1);
+}
+
+.readonly-input {
+    background: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: not-allowed;
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.password-card {
+    margin-bottom: 1.5rem;
+    border: 2px solid #8B4513;
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.15);
+}
+
+.password-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.password-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.app-info-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.app-info-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.app-version {
+    margin-bottom: 1rem;
+}
+
+.version-label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.app-inspiration p {
+    margin: 0 0 0.5rem 0;
+    font-style: italic;
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.verse-reference {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Responsive design for settings page */
+@media (max-width: 768px) {
+    .settings-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .settings-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .form-actions {
+        justify-content: center;
+    }
+    
+    .password-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    
+    .app-info-content {
+        padding: 0 1rem;
+    }
+}
+
 /* Footer */
 .footer {
     background: #2c3e50;
