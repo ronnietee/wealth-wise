@@ -496,6 +496,20 @@ def activate_budget_period(current_user, period_id):
     
     return jsonify({'message': 'Budget period activated successfully'})
 
+@app.route('/api/budget-periods/<int:period_id>', methods=['DELETE'])
+@token_required
+def delete_budget_period(current_user, period_id):
+    # Get the period to delete
+    period = BudgetPeriod.query.filter_by(id=period_id, user_id=current_user.id).first()
+    if not period:
+        return jsonify({'message': 'Budget period not found'}), 404
+    
+    # Delete the period (cascade will handle related budgets, transactions, etc.)
+    db.session.delete(period)
+    db.session.commit()
+    
+    return jsonify({'message': 'Budget period and all related data deleted successfully'})
+
 @app.route('/api/budget', methods=['GET'])
 @token_required
 def get_budget(current_user):

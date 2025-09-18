@@ -73,8 +73,24 @@
     <!-- Budget Periods List -->
     <div class="card">
         <div class="card-body">
-            <div id="budget-periods-list">
-                <p>Loading budget periods...</p>
+            <div class="table-container">
+                <table class="budgets-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Period</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="budget-periods-list">
+                        <tr>
+                            <td colspan="6" class="loading">Loading budget periods...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -237,25 +253,42 @@ function renderBudgetPeriods(periods) {
     const periodsList = document.getElementById('budget-periods-list');
     
     if (periods.length === 0) {
-        periodsList.innerHTML = '<p>No budget periods found. Create your first budget period above.</p>';
+        periodsList.innerHTML = '<tr><td colspan="6" class="no-data">No budget periods found. Create your first budget period above.</td></tr>';
         return;
     }
     
     periodsList.innerHTML = periods.map(period => `
-        <div class="budget-period-item ${period.is_active ? 'active' : ''}">
-            <div class="period-info">
-                <h4>${period.name}</h4>
-                <p><strong>Type:</strong> ${period.period_type}</p>
-                <p><strong>Period:</strong> ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}</p>
-                <p><strong>Created:</strong> ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}</p>
-            </div>
-            <div class="period-actions">
+        <tr class="budget-period-row ${period.is_active ? 'active' : ''}">
+            <td class="period-name">${period.name}</td>
+            <td class="period-type">
+                <span class="type-badge ${period.period_type}">${period.period_type}</span>
+            </td>
+            <td class="period-dates">
+                ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}
+            </td>
+            <td class="period-created">
+                ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}
+            </td>
+            <td class="period-status">
                 ${period.is_active ? 
                     '<span class="badge badge-success">Active</span>' : 
-                    `<button class="btn btn-sm btn-outline" onclick="activateBudgetPeriod(${period.id})">Activate</button>`
+                    '<span class="badge badge-secondary">Inactive</span>'
                 }
-            </div>
-        </div>
+            </td>
+            <td class="period-actions">
+                <div class="action-buttons">
+                    ${period.is_active ? 
+                        '' : 
+                        `<button class="btn btn-sm btn-primary" onclick="activateBudgetPeriod(${period.id})" title="Activate">
+                            <i class="fas fa-play"></i>
+                        </button>`
+                    }
+                    <button class="btn btn-sm btn-danger" onclick="deleteBudgetPeriod(${period.id})" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
     `).join('');
 }
 
@@ -286,6 +319,48 @@ async function activateBudgetPeriod(periodId) {
     } catch (error) {
         console.error('Error activating budget period:', error);
         showMessage('Error activating budget period', 'error');
+    }
+}
+
+// Delete a budget period
+async function deleteBudgetPeriod(periodId) {
+    // Find the period name for confirmation
+    const period = allPeriods.find(p => p.id === periodId);
+    if (!period) {
+        showMessage('Budget period not found', 'error');
+        return;
+    }
+    
+    // Confirm deletion
+    const confirmed = confirm(`Are you sure you want to delete "${period.name}"?\n\nThis will permanently delete:\n- The budget period\n- All budget allocations\n- All transactions\n- All income sources\n- All other related data\n\nThis action cannot be undone.`);
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/budget-periods/${periodId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            showMessage('Budget period and all related data deleted successfully!', 'success');
+            await loadCurrentBudget();
+            await loadBudgetPeriods();
+            
+            // Dispatch event to notify other pages of budget period change
+            console.log('Dispatching budgetPeriodChanged event (deletion)');
+            document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
+        } else {
+            const error = await response.json();
+            showMessage(error.message || 'Failed to delete budget period', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting budget period:', error);
+        showMessage('Error deleting budget period', 'error');
     }
 }
 

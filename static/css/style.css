@@ -2283,60 +2283,140 @@ body {
     border-top: 1px solid #eee;
 }
 
-/* Budget periods list improvements */
-.budget-period-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border: 1px solid #eee;
+/* Budget periods table */
+.table-container {
+    overflow-x: auto;
     border-radius: 8px;
-    margin-bottom: 0.75rem;
+    border: 1px solid #e9ecef;
+}
+
+.budgets-table {
+    width: 100%;
+    border-collapse: collapse;
     background: white;
+    font-size: 0.9rem;
+}
+
+.budgets-table thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.budgets-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.budgets-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.budget-period-row {
     transition: all 0.2s ease;
 }
 
-.budget-period-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
+.budget-period-row:hover {
+    background: #f8f9fa;
 }
 
-.budget-period-info {
-    flex: 1;
+.budget-period-row.active {
+    background: #e8f5e8;
+    border-left: 4px solid #28a745;
 }
 
-.budget-period-name {
+.period-name {
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 0.25rem;
+    min-width: 150px;
 }
 
-.budget-period-dates {
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 0.25rem;
+.period-type {
+    min-width: 100px;
 }
 
-.budget-period-type {
+.type-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    background: #f8f9fa;
-    color: #6c757d;
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 500;
     text-transform: uppercase;
+    background: #e9ecef;
+    color: #6c757d;
 }
 
-.budget-period-actions {
+.type-badge.monthly {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.type-badge.quarterly {
+    background: #d4edda;
+    color: #155724;
+}
+
+.type-badge.yearly {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.type-badge.custom {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.period-dates {
+    color: #666;
+    font-size: 0.85rem;
+    min-width: 200px;
+}
+
+.period-created {
+    color: #666;
+    font-size: 0.85rem;
+    min-width: 100px;
+}
+
+.period-status {
+    min-width: 80px;
+}
+
+.period-actions {
+    min-width: 120px;
+}
+
+.action-buttons {
     display: flex;
     gap: 0.5rem;
     align-items: center;
 }
 
-.budget-period-actions .btn {
-    padding: 0.375rem 0.75rem;
+.action-buttons .btn {
+    padding: 0.375rem 0.5rem;
     font-size: 0.8rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.action-buttons .btn i {
+    font-size: 0.75rem;
+}
+
+.loading, .no-data {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 2rem;
 }
 
 /* Responsive design for budgets page */
@@ -2356,15 +2436,27 @@ body {
         flex-direction: column;
     }
     
-    .budget-period-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+    .table-container {
+        font-size: 0.8rem;
     }
     
-    .budget-period-actions {
-        width: 100%;
-        justify-content: flex-end;
+    .budgets-table th,
+    .budgets-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .period-name {
+        min-width: 120px;
+    }
+    
+    .period-dates {
+        min-width: 150px;
+    }
+    
+    .action-buttons .btn {
+        min-width: 28px;
+        height: 28px;
+        padding: 0.25rem;
     }
 }
 
