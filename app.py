@@ -949,9 +949,16 @@ def check_overspending(current_user):
             
             # Check if overspent
             print(f"DEBUG: {subcategory.name}: allocated={allocated_amount}, spent={spent_amount}")
-            if spent_amount > allocated_amount and allocated_amount > 0:
+            if spent_amount > allocated_amount:
                 overspent_amount = spent_amount - allocated_amount
                 print(f"DEBUG: OVERSHOT! {subcategory.name} by {overspent_amount}")
+                
+                # Calculate percentage (handle division by zero for 0 allocation)
+                if allocated_amount > 0:
+                    overspent_percentage = (overspent_amount / allocated_amount) * 100
+                else:
+                    overspent_percentage = 100  # 100% over when allocation is 0
+                
                 overspent_categories.append({
                     'subcategory_id': subcategory.id,
                     'subcategory_name': subcategory.name,
@@ -959,7 +966,7 @@ def check_overspending(current_user):
                     'allocated': allocated_amount,
                     'spent': spent_amount,
                     'overspent_amount': overspent_amount,
-                    'overspent_percentage': (overspent_amount / allocated_amount) * 100
+                    'overspent_percentage': overspent_percentage
                 })
         
         # Sort by overspent amount (highest first)
