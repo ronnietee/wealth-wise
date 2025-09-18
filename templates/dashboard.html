@@ -514,30 +514,25 @@ function dismissBudgetAlert() {
 }
 
 function checkOverspending() {
-    console.log('Checking overspending...');
     fetch('/api/budget/overspending-check', {
         headers: {
             'Authorization': 'Bearer ' + getToken()
         }
     })
     .then(response => {
-        console.log('Overspending check response:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('Overspending data:', data);
         if (data.error) {
             throw new Error(data.error);
         }
         
         if (data.has_overspending) {
-            console.log('Overspending detected:', data.overspent_categories);
             showOverspendingAlert(data);
         } else {
-            console.log('No overspending detected');
             hideOverspendingAlert();
         }
     })
