@@ -284,6 +284,7 @@
         // Settings dropdown functionality
         function toggleSettingsDropdown() {
             const dropdown = document.getElementById('settingsDropdown');
+            const button = document.querySelector('.nav-action-btn.dropdown-toggle');
             const isOpen = dropdown.style.display === 'block';
             
             // Close all dropdowns first
@@ -292,7 +293,15 @@
             });
             
             // Toggle current dropdown
-            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) {
+                // Calculate position relative to button
+                const buttonRect = button.getBoundingClientRect();
+                dropdown.style.top = (buttonRect.bottom + 5) + 'px';
+                dropdown.style.right = (window.innerWidth - buttonRect.right) + 'px';
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
         }
 
         // Close dropdowns when clicking outside
