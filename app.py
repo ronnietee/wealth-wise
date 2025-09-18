@@ -518,36 +518,19 @@ def get_budget(current_user):
         active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
         
         if not active_period:
-            # Create default monthly period for current month
-            current_date = datetime.now()
-            start_date = current_date.replace(day=1).date()
-            end_date = (current_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-            
-            active_period = BudgetPeriod(
-                name=current_date.strftime('%B %Y'),
-                period_type='monthly',
-                start_date=start_date,
-                end_date=end_date,
-                user_id=current_user.id,
-                is_active=True
-            )
-            db.session.add(active_period)
-            db.session.commit()
+            return jsonify({
+                'error': 'No active budget period found',
+                'message': 'Please create a budget period to begin managing your finances.'
+            }), 404
         
-        # Get or create budget for this period
+        # Get budget for this period
         budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
         
         if not budget:
-            budget = Budget(
-                period_id=active_period.id,
-                user_id=current_user.id
-            )
-            db.session.add(budget)
-            db.session.commit()
-            
-            # Create default categories if this is the first budget
-            if not Category.query.filter_by(user_id=current_user.id).first():
-                create_default_categories(current_user.id)
+            return jsonify({
+                'error': 'No budget found for active period',
+                'message': 'Please create a budget period to begin managing your finances.'
+            }), 404
         
         # Calculate total income from income sources
         total_income_from_sources = sum(source.amount for source in budget.income_sources)

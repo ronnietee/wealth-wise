@@ -21,6 +21,22 @@
         </div>
     </div>
 
+    <!-- No Budget Message -->
+    <div id="no-budget-message" class="no-budget-card" style="display: none;">
+        <div class="no-budget-content">
+            <div class="no-budget-icon">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="no-budget-message">
+                <h3>No Budget Period Found</h3>
+                <p>You don't have any budget periods set up yet. Create your first budget to start managing your finances.</p>
+            </div>
+            <div class="no-budget-actions">
+                <a href="/budgets" class="btn btn-primary">Create Budget</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Budget Balance Alert -->
     <div id="budget-balance-alert" class="budget-alert" style="display: none;">
         <div class="alert-content">
@@ -56,7 +72,8 @@
         </div>
     </div>
 
-    <div class="dashboard-grid">
+    <div class="dashboard-content">
+        <div class="dashboard-grid">
         <!-- Financial Overview Cards -->
         <div class="overview-cards">
             <div class="overview-card income-card">
@@ -183,6 +200,7 @@
             </div>
         </div>
 
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -229,11 +247,19 @@ function loadDashboardData() {
             
             // Update budget period indicator
             document.getElementById('current-budget-name').textContent = data.period_name || 'Unknown';
+            
+            // Hide no budget message if it was showing
+            hideNoBudgetMessage();
         })
         .catch(error => {
             console.error('Error loading budget:', error);
-            document.getElementById('current-budget-name').textContent = 'Error loading budget';
-            showNotification('Error loading budget: ' + error.message, 'error');
+            if (error.message.includes('No active budget period found')) {
+                // Show no budget message
+                showNoBudgetMessage();
+            } else {
+                document.getElementById('current-budget-name').textContent = 'Error loading budget';
+                showNotification('Error loading budget: ' + error.message, 'error');
+            }
         });
 
         // Load categories for overview
@@ -588,6 +614,37 @@ function hideOverspendingAlert() {
 
 function dismissOverspendingAlert() {
     hideOverspendingAlert();
+}
+
+function showNoBudgetMessage() {
+    // Hide main dashboard content
+    const mainContent = document.querySelector('.dashboard-content');
+    if (mainContent) {
+        mainContent.style.display = 'none';
+    }
+    
+    // Show no budget message
+    const noBudgetMessage = document.getElementById('no-budget-message');
+    if (noBudgetMessage) {
+        noBudgetMessage.style.display = 'block';
+    }
+    
+    // Update budget period indicator
+    document.getElementById('current-budget-name').textContent = 'No Budget';
+}
+
+function hideNoBudgetMessage() {
+    // Show main dashboard content
+    const mainContent = document.querySelector('.dashboard-content');
+    if (mainContent) {
+        mainContent.style.display = 'block';
+    }
+    
+    // Hide no budget message
+    const noBudgetMessage = document.getElementById('no-budget-message');
+    if (noBudgetMessage) {
+        noBudgetMessage.style.display = 'none';
+    }
 }
 </script>
 {% endblock %}
