@@ -10,49 +10,30 @@
     </div>
 
     <div class="transactions-container">
-        <!-- Add New Expense Button -->
-        <div class="add-expense-section">
-            <button class="btn btn-primary btn-lg add-expense-btn" onclick="openAddExpenseModal()">
-                <i class="fas fa-plus-circle"></i>
-                Add New Expense
-            </button>
-        </div>
-
-        <!-- Filters and Search -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Filters & Search</h2>
+        <!-- Header with Add Button and Search -->
+        <div class="transactions-header">
+            <div class="header-left">
+                <button class="btn btn-primary add-expense-btn" onclick="openAddExpenseModal()">
+                    <i class="fas fa-plus"></i>
+                    Add Expense
+                </button>
             </div>
-            <div class="card-body">
-                <div class="filters-row">
-                    <div class="form-group">
-                        <label for="categoryFilter">Category</label>
-                        <select id="categoryFilter">
-                            <option value="">All Categories</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="dateFrom">From Date</label>
-                        <input type="date" id="dateFrom">
-                    </div>
-                    <div class="form-group">
-                        <label for="dateTo">To Date</label>
-                        <input type="date" id="dateTo">
-                    </div>
-                    <div class="form-group">
-                        <label for="searchInput">Search</label>
-                        <input type="text" id="searchInput" placeholder="Search descriptions...">
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-primary" onclick="applyFilters()">
-                            <i class="fas fa-search"></i>
-                            Apply Filters
-                        </button>
-                        <button class="btn btn-secondary" onclick="clearFilters()">
-                            <i class="fas fa-times"></i>
-                            Clear
-                        </button>
-                    </div>
+            <div class="header-right">
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search transactions..." class="search-input">
+                    <button class="search-btn" onclick="applyFilters()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="filter-options">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                    </select>
+                    <input type="date" id="dateFrom" class="filter-date" placeholder="From">
+                    <input type="date" id="dateTo" class="filter-date" placeholder="To">
+                    <button class="btn btn-secondary btn-sm" onclick="clearFilters()" title="Clear filters">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -396,6 +377,35 @@ function clearFilters() {
     filteredTransactions = [...transactions];
     renderTransactions();
 }
+
+// Add real-time search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            // Debounce the search to avoid too many calls
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 300);
+        });
+    }
+    
+    // Add real-time filtering for other inputs
+    const categoryFilter = document.getElementById('categoryFilter');
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', applyFilters);
+    }
+    if (dateFrom) {
+        dateFrom.addEventListener('change', applyFilters);
+    }
+    if (dateTo) {
+        dateTo.addEventListener('change', applyFilters);
+    }
+});
 
 function editTransaction(transactionId) {
     const transaction = transactions.find(t => t.id === transactionId);
