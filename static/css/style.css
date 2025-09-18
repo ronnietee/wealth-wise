@@ -2700,20 +2700,17 @@ body {
 
 .dropdown-menu {
     display: none;
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    background: red !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-    border: 5px solid blue !important;
-    min-width: 300px !important;
-    min-height: 200px !important;
-    z-index: 10002 !important;
-    animation: dropdownSlideIn 0.2s ease !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    min-width: 200px;
+    z-index: 10002;
+    margin-top: 0.5rem;
+    animation: dropdownSlideIn 0.2s ease;
 }
 
 .dropdown-item {
