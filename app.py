@@ -925,6 +925,7 @@ def check_overspending(current_user):
         
         # Get all subcategories for the user
         subcategories = Subcategory.query.join(Category).filter(Category.user_id == current_user.id).all()
+        print(f"DEBUG: Found {len(subcategories)} subcategories for user {current_user.id}")
         
         for subcategory in subcategories:
             # Get allocation for this subcategory
@@ -947,8 +948,10 @@ def check_overspending(current_user):
             spent_amount = sum(t.amount for t in spent_transactions)
             
             # Check if overspent
+            print(f"DEBUG: {subcategory.name}: allocated={allocated_amount}, spent={spent_amount}")
             if spent_amount > allocated_amount and allocated_amount > 0:
                 overspent_amount = spent_amount - allocated_amount
+                print(f"DEBUG: OVERSHOT! {subcategory.name} by {overspent_amount}")
                 overspent_categories.append({
                     'subcategory_id': subcategory.id,
                     'subcategory_name': subcategory.name,
@@ -961,6 +964,10 @@ def check_overspending(current_user):
         
         # Sort by overspent amount (highest first)
         overspent_categories.sort(key=lambda x: x['overspent_amount'], reverse=True)
+        
+        print(f"DEBUG: Final result - {len(overspent_categories)} overspent categories")
+        for cat in overspent_categories:
+            print(f"DEBUG:   - {cat['category_name']} - {cat['subcategory_name']}: {cat['overspent_amount']} over")
         
         return jsonify({
             'has_overspending': len(overspent_categories) > 0,

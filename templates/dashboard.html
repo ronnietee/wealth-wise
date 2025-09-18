@@ -514,25 +514,30 @@ function dismissBudgetAlert() {
 }
 
 function checkOverspending() {
+    console.log('Checking overspending...');
     fetch('/api/budget/overspending-check', {
         headers: {
             'Authorization': 'Bearer ' + getToken()
         }
     })
     .then(response => {
+        console.log('Overspending response status:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         return response.json();
     })
     .then(data => {
+        console.log('Overspending data received:', data);
         if (data.error) {
             throw new Error(data.error);
         }
         
         if (data.has_overspending) {
+            console.log('Overspending detected, showing alert');
             showOverspendingAlert(data);
         } else {
+            console.log('No overspending detected, hiding alert');
             hideOverspendingAlert();
         }
     })
@@ -543,9 +548,14 @@ function checkOverspending() {
 }
 
 function showOverspendingAlert(overspendingData) {
+    console.log('showOverspendingAlert called with data:', overspendingData);
     const alert = document.getElementById('overspending-alert');
     const alertText = document.getElementById('overspending-alert-text');
     const detailsContainer = document.getElementById('overspending-details');
+    
+    console.log('Alert element found:', alert);
+    console.log('Alert text element found:', alertText);
+    console.log('Details container found:', detailsContainer);
     
     const totalOverspent = overspendingData.total_overspent_categories;
     const overspentCategories = overspendingData.overspent_categories;
@@ -567,6 +577,7 @@ function showOverspendingAlert(overspendingData) {
         </div>
     `).join('');
     
+    console.log('Setting alert display to block');
     alert.style.display = 'block';
 }
 
