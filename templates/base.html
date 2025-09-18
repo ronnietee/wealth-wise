@@ -43,7 +43,7 @@
                 <div class="nav-actions">
                     <div class="nav-dropdown">
                         <button class="nav-action-btn dropdown-toggle" onclick="toggleSettingsDropdown()" role="menuitem" aria-label="Application Settings" title="Settings" aria-expanded="false" aria-haspopup="true">
-                            <i class="fas fa-cog" aria-hidden="true"></i>
+                        <i class="fas fa-cog" aria-hidden="true"></i>
                         </button>
                         <div class="dropdown-menu" id="settingsDropdown">
                             <a href="#" class="dropdown-item" onclick="openEmailModal()">
@@ -283,11 +283,9 @@
 
         // Settings dropdown functionality
         function toggleSettingsDropdown() {
-            console.log('toggleSettingsDropdown called');
+            alert('Button clicked!'); // Test if function is called
             const dropdown = document.getElementById('settingsDropdown');
-            console.log('Dropdown element:', dropdown);
             const isOpen = dropdown.style.display === 'block';
-            console.log('Is currently open:', isOpen);
             
             // Close all dropdowns first
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
@@ -295,10 +293,7 @@
             });
             
             // Toggle current dropdown
-            const newDisplay = isOpen ? 'none' : 'block';
-            console.log('Setting display to:', newDisplay);
-            dropdown.style.display = newDisplay;
-            console.log('Dropdown display after change:', dropdown.style.display);
+            dropdown.style.display = isOpen ? 'none' : 'block';
         }
 
         // Close dropdowns when clicking outside

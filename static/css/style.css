@@ -2700,16 +2700,15 @@ body {
 
 .dropdown-menu {
     display: none !important;
-    position: absolute !important;
-    top: 100% !important;
-    right: 0 !important;
+    position: fixed !important;
+    top: 80px !important;
+    right: 20px !important;
     background: white !important;
     border-radius: 8px !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
     border: 1px solid #e0e0e0 !important;
     min-width: 200px !important;
     z-index: 10002 !important;
-    margin-top: 0.5rem !important;
     animation: dropdownSlideIn 0.2s ease !important;
 }
 
