@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -7,6 +7,10 @@ import jwt
 import os
 from datetime import datetime, timedelta
 from functools import wraps
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+import io
 
 app = Flask(__name__)
 app.config['APP_NAME'] = 'STEWARD'
@@ -811,113 +815,198 @@ def reset_user_data(current_user):
 @token_required
 def export_user_data(current_user):
     try:
-        # Get all user data
-        user_data = {
-            'user_info': {
-                'username': current_user.username,
-                'email': current_user.email,
-                'currency': current_user.currency,
-                'created_at': current_user.created_at.isoformat() if current_user.created_at else None
-            },
-            'categories': [],
-            'budget_periods': [],
-            'transactions': []
-        }
+        # Create a new workbook
+        wb = Workbook()
         
-        # Get categories and subcategories
+        # Remove default sheet
+        wb.remove(wb.active)
+        
+        # Define styles
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="8B4513", end_color="8B4513", fill_type="solid")
+        border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Create Summary Sheet
+        summary_ws = wb.create_sheet("Summary")
+        summary_ws.append(["STEWARD - Financial Data Export"])
+        summary_ws.append([f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"])
+        summary_ws.append([f"User: {current_user.username} ({current_user.email})"])
+        summary_ws.append([f"Currency: {current_user.currency}"])
+        summary_ws.append([])
+        
+        # Get active budget period for summary
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        if active_period:
+            budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+            if budget:
+                total_income = sum(source.amount for source in budget.income_sources)
+                total_allocated = sum(allocation.allocated_amount for allocation in budget.allocations)
+                
+                summary_ws.append(["Current Budget Period Summary"])
+                summary_ws.append([f"Period: {active_period.name}"])
+                summary_ws.append([f"Start Date: {active_period.start_date}"])
+                summary_ws.append([f"End Date: {active_period.end_date}"])
+                summary_ws.append([f"Total Income: {getCurrencySymbol(current_user.currency)}{total_income:,.2f}"])
+                summary_ws.append([f"Total Allocated: {getCurrencySymbol(current_user.currency)}{total_allocated:,.2f}"])
+                summary_ws.append([f"Remaining: {getCurrencySymbol(current_user.currency)}{total_income - total_allocated:,.2f}"])
+                summary_ws.append([])
+        
+        # Get transaction summary
+        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        total_transactions = len(transactions)
+        total_spent = sum(t.amount for t in transactions)
+        
+        summary_ws.append(["Transaction Summary"])
+        summary_ws.append([f"Total Transactions: {total_transactions}"])
+        summary_ws.append([f"Total Spent: {getCurrencySymbol(current_user.currency)}{total_spent:,.2f}"])
+        
+        # Create Allocations Sheet
+        allocations_ws = wb.create_sheet("Allocations")
+        allocations_ws.append(["Category", "Subcategory", "Allocated Amount", "Spent Amount", "Remaining", "Period"])
+        
+        # Style header row
+        for cell in allocations_ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+            cell.border = border
+        
+        # Get all allocations with spending data
         categories = Category.query.filter_by(user_id=current_user.id).all()
         for category in categories:
-            category_data = {
-                'id': category.id,
-                'name': category.name,
-                'is_template': category.is_template,
-                'created_at': category.created_at.isoformat() if category.created_at else None,
-                'subcategories': []
-            }
-            
             for subcategory in category.subcategories:
-                subcategory_data = {
-                    'id': subcategory.id,
-                    'name': subcategory.name,
-                    'created_at': subcategory.created_at.isoformat() if subcategory.created_at else None
-                }
-                category_data['subcategories'].append(subcategory_data)
-            
-            user_data['categories'].append(category_data)
+                # Get allocation for active period
+                allocated = 0
+                spent = 0
+                period_name = "No Active Period"
+                
+                if active_period:
+                    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+                    if budget:
+                        allocation = BudgetAllocation.query.filter_by(
+                            budget_id=budget.id,
+                            subcategory_id=subcategory.id
+                        ).first()
+                        if allocation:
+                            allocated = allocation.allocated_amount
+                        period_name = active_period.name
+                        
+                        # Calculate spent amount
+                        spent_transactions = Transaction.query.filter_by(
+                            user_id=current_user.id,
+                            subcategory_id=subcategory.id
+                        ).filter(
+                            Transaction.transaction_date >= active_period.start_date,
+                            Transaction.transaction_date <= active_period.end_date
+                        ).all()
+                        spent = sum(t.amount for t in spent_transactions)
+                
+                remaining = allocated - spent
+                allocations_ws.append([
+                    category.name,
+                    subcategory.name,
+                    allocated,
+                    spent,
+                    remaining,
+                    period_name
+                ])
         
-        # Get budget periods
-        budget_periods = BudgetPeriod.query.filter_by(user_id=current_user.id).all()
-        for period in budget_periods:
-            period_data = {
-                'id': period.id,
-                'name': period.name,
-                'period_type': period.period_type,
-                'start_date': period.start_date.isoformat() if period.start_date else None,
-                'end_date': period.end_date.isoformat() if period.end_date else None,
-                'is_active': period.is_active,
-                'created_at': period.created_at.isoformat() if period.created_at else None,
-                'budgets': []
-            }
-            
-            # Get budgets for this period
-            budgets = Budget.query.filter_by(period_id=period.id, user_id=current_user.id).all()
-            for budget in budgets:
-                budget_data = {
-                    'id': budget.id,
-                    'total_income': budget.total_income,
-                    'balance_brought_forward': budget.balance_brought_forward,
-                    'created_at': budget.created_at.isoformat() if budget.created_at else None,
-                    'income_sources': [],
-                    'allocations': []
-                }
-                
-                # Get income sources
-                for source in budget.income_sources:
-                    budget_data['income_sources'].append({
-                        'id': source.id,
-                        'name': source.name,
-                        'amount': source.amount,
-                        'created_at': source.created_at.isoformat() if source.created_at else None
-                    })
-                
-                # Get allocations
-                for allocation in budget.allocations:
-                    subcategory = Subcategory.query.get(allocation.subcategory_id)
-                    category = Category.query.get(subcategory.category_id) if subcategory else None
-                    
-                    budget_data['allocations'].append({
-                        'id': allocation.id,
-                        'allocated_amount': allocation.allocated_amount,
-                        'category_name': category.name if category else 'Unknown',
-                        'subcategory_name': subcategory.name if subcategory else 'Unknown'
-                    })
-                
-                period_data['budgets'].append(budget_data)
-            
-            user_data['budget_periods'].append(period_data)
+        # Style allocation data rows
+        for row in allocations_ws.iter_rows(min_row=2):
+            for cell in row:
+                cell.border = border
+                if cell.column in [3, 4, 5]:  # Amount columns
+                    cell.number_format = '#,##0.00'
         
-        # Get transactions
-        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        # Auto-adjust column widths
+        for column in allocations_ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            allocations_ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Create Transactions Sheet
+        transactions_ws = wb.create_sheet("Transactions")
+        transactions_ws.append(["Date", "Category", "Subcategory", "Amount", "Description", "Comment"])
+        
+        # Style header row
+        for cell in transactions_ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+            cell.border = border
+        
+        # Add transaction data
         for transaction in transactions:
             subcategory = Subcategory.query.get(transaction.subcategory_id)
             category = Category.query.get(subcategory.category_id) if subcategory else None
             
-            transaction_data = {
-                'id': transaction.id,
-                'amount': transaction.amount,
-                'description': transaction.description,
-                'comment': transaction.comment,
-                'transaction_date': transaction.transaction_date.isoformat() if transaction.transaction_date else None,
-                'category_name': category.name if category else 'Unknown',
-                'subcategory_name': subcategory.name if subcategory else 'Unknown'
-            }
-            user_data['transactions'].append(transaction_data)
+            transactions_ws.append([
+                transaction.transaction_date.strftime('%Y-%m-%d') if transaction.transaction_date else '',
+                category.name if category else 'Unknown',
+                subcategory.name if subcategory else 'Unknown',
+                transaction.amount,
+                transaction.description or '',
+                transaction.comment or ''
+            ])
         
-        return jsonify(user_data)
+        # Style transaction data rows
+        for row in transactions_ws.iter_rows(min_row=2):
+            for cell in row:
+                cell.border = border
+                if cell.column == 4:  # Amount column
+                    cell.number_format = '#,##0.00'
+        
+        # Auto-adjust column widths for transactions
+        for column in transactions_ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            transactions_ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Save to BytesIO
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        # Return file
+        filename = f"steward-export-{current_user.username}-{datetime.now().strftime('%Y%m%d')}.xlsx"
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
         
     except Exception as e:
         print(f"Error in export_user_data: {str(e)}")
         return jsonify({'message': f'Error exporting data: {str(e)}'}), 500
+
+def getCurrencySymbol(currency):
+    symbols = {
+        'USD': '$', 'EUR': '€', 'GBP': '£', 'ZAR': 'R', 'CAD': 'C$', 'AUD': 'A$',
+        'BWP': 'P', 'ZMW': 'K', 'NGN': '₦', 'KES': 'KSh', 'GHS': '₵', 'UGX': 'USh',
+        'TZS': 'TSh', 'ETB': 'Br', 'RWF': 'RF', 'MWK': 'MK', 'BRL': 'R$', 'MXN': '$',
+        'PHP': '₱', 'INR': '₹', 'JPY': '¥'
+    }
+    return symbols.get(currency, '$')
 
 @app.route('/api/transactions', methods=['GET'])
 @token_required
