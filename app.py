@@ -804,7 +804,120 @@ def reset_user_data(current_user):
         
     except Exception as e:
         db.session.rollback()
+        print(f"Error in reset_user_data: {str(e)}")
         return jsonify({'message': f'Error resetting data: {str(e)}'}), 500
+
+@app.route('/api/user/export-data', methods=['GET'])
+@token_required
+def export_user_data(current_user):
+    try:
+        # Get all user data
+        user_data = {
+            'user_info': {
+                'username': current_user.username,
+                'email': current_user.email,
+                'currency': current_user.currency,
+                'created_at': current_user.created_at.isoformat() if current_user.created_at else None
+            },
+            'categories': [],
+            'budget_periods': [],
+            'transactions': []
+        }
+        
+        # Get categories and subcategories
+        categories = Category.query.filter_by(user_id=current_user.id).all()
+        for category in categories:
+            category_data = {
+                'id': category.id,
+                'name': category.name,
+                'is_template': category.is_template,
+                'created_at': category.created_at.isoformat() if category.created_at else None,
+                'subcategories': []
+            }
+            
+            for subcategory in category.subcategories:
+                subcategory_data = {
+                    'id': subcategory.id,
+                    'name': subcategory.name,
+                    'created_at': subcategory.created_at.isoformat() if subcategory.created_at else None
+                }
+                category_data['subcategories'].append(subcategory_data)
+            
+            user_data['categories'].append(category_data)
+        
+        # Get budget periods
+        budget_periods = BudgetPeriod.query.filter_by(user_id=current_user.id).all()
+        for period in budget_periods:
+            period_data = {
+                'id': period.id,
+                'name': period.name,
+                'period_type': period.period_type,
+                'start_date': period.start_date.isoformat() if period.start_date else None,
+                'end_date': period.end_date.isoformat() if period.end_date else None,
+                'is_active': period.is_active,
+                'created_at': period.created_at.isoformat() if period.created_at else None,
+                'budgets': []
+            }
+            
+            # Get budgets for this period
+            budgets = Budget.query.filter_by(period_id=period.id, user_id=current_user.id).all()
+            for budget in budgets:
+                budget_data = {
+                    'id': budget.id,
+                    'total_income': budget.total_income,
+                    'balance_brought_forward': budget.balance_brought_forward,
+                    'created_at': budget.created_at.isoformat() if budget.created_at else None,
+                    'income_sources': [],
+                    'allocations': []
+                }
+                
+                # Get income sources
+                for source in budget.income_sources:
+                    budget_data['income_sources'].append({
+                        'id': source.id,
+                        'name': source.name,
+                        'amount': source.amount,
+                        'created_at': source.created_at.isoformat() if source.created_at else None
+                    })
+                
+                # Get allocations
+                for allocation in budget.allocations:
+                    subcategory = Subcategory.query.get(allocation.subcategory_id)
+                    category = Category.query.get(subcategory.category_id) if subcategory else None
+                    
+                    budget_data['allocations'].append({
+                        'id': allocation.id,
+                        'allocated_amount': allocation.allocated_amount,
+                        'category_name': category.name if category else 'Unknown',
+                        'subcategory_name': subcategory.name if subcategory else 'Unknown'
+                    })
+                
+                period_data['budgets'].append(budget_data)
+            
+            user_data['budget_periods'].append(period_data)
+        
+        # Get transactions
+        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        for transaction in transactions:
+            subcategory = Subcategory.query.get(transaction.subcategory_id)
+            category = Category.query.get(subcategory.category_id) if subcategory else None
+            
+            transaction_data = {
+                'id': transaction.id,
+                'amount': transaction.amount,
+                'description': transaction.description,
+                'comment': transaction.comment,
+                'transaction_date': transaction.transaction_date.isoformat() if transaction.transaction_date else None,
+                'category_name': category.name if category else 'Unknown',
+                'subcategory_name': subcategory.name if subcategory else 'Unknown'
+            }
+            user_data['transactions'].append(transaction_data)
+        
+        return jsonify(user_data)
+        
+    except Exception as e:
+        print(f"Error in export_user_data: {str(e)}")
+        return jsonify({'message': f'Error exporting data: {str(e)}'}), 500
 
 @app.route('/api/transactions', methods=['GET'])
 @token_required
