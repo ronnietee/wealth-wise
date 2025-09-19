@@ -152,6 +152,10 @@ def input_page():
 def transactions():
     return render_template('transactions.html')
 
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
+
 # API Routes
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -768,6 +772,39 @@ def change_password(current_user):
     db.session.commit()
     
     return jsonify({'message': 'Password changed successfully'})
+
+@app.route('/api/user/reset-data', methods=['POST'])
+@token_required
+def reset_user_data(current_user):
+    try:
+        # Delete all user's transactions
+        Transaction.query.filter_by(user_id=current_user.id).delete()
+        
+        # Delete all user's budget allocations
+        BudgetAllocation.query.join(Budget).filter(Budget.user_id == current_user.id).delete()
+        
+        # Delete all user's income sources
+        IncomeSource.query.join(Budget).filter(Budget.user_id == current_user.id).delete()
+        
+        # Delete all user's budgets
+        Budget.query.filter_by(user_id=current_user.id).delete()
+        
+        # Delete all user's budget periods
+        BudgetPeriod.query.filter_by(user_id=current_user.id).delete()
+        
+        # Delete all user's subcategories
+        Subcategory.query.join(Category).filter(Category.user_id == current_user.id).delete()
+        
+        # Delete all user's categories
+        Category.query.filter_by(user_id=current_user.id).delete()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'All data has been reset successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error resetting data: {str(e)}'}), 500
 
 @app.route('/api/transactions', methods=['GET'])
 @token_required

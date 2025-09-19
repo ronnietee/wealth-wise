@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - STEWARD{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        <p>Manage your account preferences and application settings</p>
+    </div>
+
+    <div class="settings-grid">
+        <!-- Account Settings -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h2><i class="fas fa-user"></i> Account Settings</h2>
+            </div>
+            <div class="settings-card-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Email Address</h3>
+                        <p>Update your email address for account notifications</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="openEmailModal()">
+                        <i class="fas fa-edit"></i> Change Email
+                    </button>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Password</h3>
+                        <p>Change your account password for security</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="openPasswordModal()">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Settings -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h2><i class="fas fa-cog"></i> Application Settings</h2>
+            </div>
+            <div class="settings-card-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Default Currency</h3>
+                        <p>Set your preferred currency for displaying monetary values</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="openCurrencyModal()">
+                        <i class="fas fa-dollar-sign"></i> Change Currency
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h2><i class="fas fa-database"></i> Data Management</h2>
+            </div>
+            <div class="settings-card-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Export Data</h3>
+                        <p>Download your budget and transaction data</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Reset Data</h3>
+                        <p>Clear all your budget and transaction data</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="resetData()">
+                        <i class="fas fa-trash"></i> Reset All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h2><i class="fas fa-info-circle"></i> About STEWARD</h2>
+            </div>
+            <div class="settings-card-body">
+                <div class="about-content">
+                    <p><strong>Version:</strong> 1.0.0</p>
+                    <p><strong>Built with:</strong> Faith and love for Christian families</p>
+                    <p class="verse">"The plans of the diligent lead to profit as surely as haste leads to poverty." - Proverbs 21:5</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Data Confirmation Modal -->
+<div class="modal" id="resetDataModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Reset All Data</h3>
+            <button class="modal-close" onclick="closeResetModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-message">
+                <p><strong>Warning:</strong> This action cannot be undone!</p>
+                <p>This will permanently delete:</p>
+                <ul>
+                    <li>All your transactions</li>
+                    <li>All your budget periods and allocations</li>
+                    <li>All your income sources</li>
+                    <li>All your custom categories and subcategories</li>
+                </ul>
+                <p>Your account settings (email, password, currency) will be preserved.</p>
+            </div>
+            <div class="form-group">
+                <label for="confirmReset">Type "RESET" to confirm:</label>
+                <input type="text" id="confirmReset" placeholder="Type RESET here">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeResetModal()">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="confirmResetData()" id="confirmResetBtn" disabled>
+                <i class="fas fa-trash"></i> Reset All Data
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Export data functionality
+function exportData() {
+    showNotification('Export functionality coming soon!', 'info');
+}
+
+// Reset data functionality
+function resetData() {
+    document.getElementById('resetDataModal').style.display = 'block';
+}
+
+function closeResetModal() {
+    document.getElementById('resetDataModal').style.display = 'none';
+    document.getElementById('confirmReset').value = '';
+    document.getElementById('confirmResetBtn').disabled = true;
+}
+
+// Enable reset button only when "RESET" is typed
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmInput = document.getElementById('confirmReset');
+    const confirmBtn = document.getElementById('confirmResetBtn');
+    
+    if (confirmInput && confirmBtn) {
+        confirmInput.addEventListener('input', function() {
+            confirmBtn.disabled = this.value !== 'RESET';
+        });
+    }
+});
+
+function confirmResetData() {
+    const confirmInput = document.getElementById('confirmReset');
+    if (confirmInput.value !== 'RESET') {
+        showNotification('Please type "RESET" to confirm', 'error');
+        return;
+    }
+    
+    if (confirm('Are you absolutely sure you want to reset all data? This cannot be undone!')) {
+        // Call API to reset data
+        fetch('/api/user/reset-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                showNotification(data.message, 'success');
+                closeResetModal();
+                // Redirect to dashboard after reset
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+            } else {
+                showNotification('Data reset successfully!', 'success');
+                closeResetModal();
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Error resetting data:', error);
+            showNotification('Error resetting data. Please try again.', 'error');
+        });
+    }
+}
+
+// Close reset modal when clicking outside
+window.onclick = function(event) {
+    const resetModal = document.getElementById('resetDataModal');
+    if (event.target === resetModal) {
+        closeResetModal();
+    }
+}
+</script>
+{% endblock %}
