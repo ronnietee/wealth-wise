@@ -10,13 +10,9 @@
     </div>
 
     <div class="transactions-container">
-        <!-- Header with Add Button and Search -->
+        <!-- Header with Search and Filters -->
         <div class="transactions-header">
             <div class="header-left">
-                <button class="btn btn-primary add-expense-btn" onclick="openAddExpenseModal()">
-                    <i class="fas fa-plus"></i>
-                    Add Expense
-                </button>
             </div>
             <div class="header-right">
                 <div class="search-container">
@@ -31,8 +27,16 @@
                     </select>
                     <input type="date" id="dateFrom" class="filter-date" placeholder="From">
                     <input type="date" id="dateTo" class="filter-date" placeholder="To">
-                    <button class="btn btn-secondary btn-sm" onclick="clearFilters()" title="Clear filters">
+                    <select id="amountFilter" class="filter-select">
+                        <option value="">All Amounts</option>
+                        <option value="0-50">$0 - $50</option>
+                        <option value="50-100">$50 - $100</option>
+                        <option value="100-500">$100 - $500</option>
+                        <option value="500+">$500+</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm clear-filters-btn" onclick="clearFilters()" title="Clear all filters">
                         <i class="fas fa-times"></i>
+                        Clear
                     </button>
                 </div>
             </div>
@@ -42,6 +46,10 @@
         <div class="card">
             <div class="card-header">
                 <h2>All Transactions</h2>
+                <button class="btn btn-primary add-expense-btn" onclick="openAddExpenseModal()">
+                    <i class="fas fa-plus"></i>
+                    Add Expense
+                </button>
             </div>
             <div class="card-body">
                 <div class="table-container">
@@ -307,6 +315,7 @@ function renderTransactions() {
     }).join('');
 }
 
+
 function findCategoryBySubcategoryId(subcategoryId) {
     for (const category of categories) {
         for (const subcategory of category.subcategories) {
@@ -333,6 +342,7 @@ function applyFilters() {
     const categoryFilter = document.getElementById('categoryFilter').value;
     const dateFrom = document.getElementById('dateFrom').value;
     const dateTo = document.getElementById('dateTo').value;
+    const amountFilter = document.getElementById('amountFilter').value;
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     
     filteredTransactions = transactions.filter(transaction => {
@@ -350,6 +360,25 @@ function applyFilters() {
         }
         if (dateTo && new Date(transaction.transaction_date) > new Date(dateTo)) {
             return false;
+        }
+        
+        // Amount filter
+        if (amountFilter) {
+            const amount = transaction.amount || 0;
+            switch (amountFilter) {
+                case '0-50':
+                    if (amount < 0 || amount > 50) return false;
+                    break;
+                case '50-100':
+                    if (amount < 50 || amount > 100) return false;
+                    break;
+                case '100-500':
+                    if (amount < 100 || amount > 500) return false;
+                    break;
+                case '500+':
+                    if (amount < 500) return false;
+                    break;
+            }
         }
         
         // Search filter
@@ -373,6 +402,7 @@ function clearFilters() {
     document.getElementById('categoryFilter').value = '';
     document.getElementById('dateFrom').value = '';
     document.getElementById('dateTo').value = '';
+    document.getElementById('amountFilter').value = '';
     document.getElementById('searchInput').value = '';
     filteredTransactions = [...transactions];
     renderTransactions();
@@ -395,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const categoryFilter = document.getElementById('categoryFilter');
     const dateFrom = document.getElementById('dateFrom');
     const dateTo = document.getElementById('dateTo');
+    const amountFilter = document.getElementById('amountFilter');
     
     if (categoryFilter) {
         categoryFilter.addEventListener('change', applyFilters);
@@ -404,6 +435,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (dateTo) {
         dateTo.addEventListener('change', applyFilters);
+    }
+    if (amountFilter) {
+        amountFilter.addEventListener('change', applyFilters);
     }
 });
 
