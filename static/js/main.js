@@ -19,10 +19,8 @@ function initializeNavigation() {
     // Mobile menu toggle
     if (navToggle && navMenu) {
         navToggle.addEventListener('click', function() {
-            console.log('Mobile menu toggle clicked');
             navToggle.classList.toggle('active');
             navMenu.classList.toggle('active');
-            console.log('Menu active state:', navMenu.classList.contains('active'));
         });
         
         // Close menu when clicking outside

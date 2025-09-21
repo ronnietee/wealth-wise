@@ -10,6 +10,12 @@
     </div>
 
     <div class="breakdown-container">
+        <!-- Sticky Available Badge -->
+        <div class="sticky-available-badge" id="stickyAvailableBadge">
+            <span class="label">Available to allocate:</span>
+            <span class="amount" id="stickyAvailableAmount">$0.00</span>
+        </div>
+        
         <!-- Budget Summary -->
         <div class="card budget-summary" id="budgetSummary">
             <div class="budget-summary-header" onclick="toggleBudgetSummary()">
@@ -145,6 +151,7 @@
 <script>
 let categories = [];
 let currentBudget = null;
+let overAllocationTimeout = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Load data immediately, currency will be loaded globally
@@ -167,6 +174,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupFormListeners();
     setupScrollListener();
+    
+    // Test notification (remove this after testing)
+    // setTimeout(() => showNotification('Budget breakdown loaded successfully!', 'success'), 1000);
 });
 
 function updateCurrencySymbols() {
@@ -214,7 +224,18 @@ function updateBudgetSummary() {
 
 function toggleBudgetSummary() {
     const summary = document.getElementById('budgetSummary');
+    const stickyBadge = document.getElementById('stickyAvailableBadge');
+    const availableElement = document.getElementById('availableToAllocate');
+    
     summary.classList.toggle('collapsed');
+    
+    // Show/hide sticky badge
+    if (summary.classList.contains('collapsed')) {
+        stickyBadge.classList.add('show');
+        updateStickyBadge();
+    } else {
+        stickyBadge.classList.remove('show');
+    }
 }
 
 function setupScrollListener() {
@@ -224,17 +245,71 @@ function setupScrollListener() {
     window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
         const summary = document.getElementById('budgetSummary');
+        const stickyBadge = document.getElementById('stickyAvailableBadge');
         
         if (currentScrollY > 100 && !isCollapsed) {
             summary.classList.add('collapsed');
+            stickyBadge.classList.add('show');
+            updateStickyBadge();
             isCollapsed = true;
         } else if (currentScrollY <= 100 && isCollapsed) {
             summary.classList.remove('collapsed');
+            stickyBadge.classList.remove('show');
             isCollapsed = false;
         }
         
         lastScrollY = currentScrollY;
     });
+}
+
+function updateStickyBadge() {
+    const availableElement = document.getElementById('availableToAllocate');
+    const stickyAmount = document.getElementById('stickyAvailableAmount');
+    const stickyBadge = document.getElementById('stickyAvailableBadge');
+    
+    if (availableElement && stickyAmount && stickyBadge) {
+        stickyAmount.textContent = availableElement.textContent;
+        
+        // Add visual indicator for negative amounts
+        const amount = parseFloat(availableElement.textContent.replace(/[^0-9.-]/g, ''));
+        if (amount < 0) {
+            stickyBadge.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+            stickyBadge.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+        } else {
+            stickyBadge.style.background = 'linear-gradient(135deg, #8B4513 0%, #D2691E 100%)';
+            stickyBadge.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        }
+    }
+}
+
+function checkOverAllocation() {
+    if (!currentBudget) return;
+    
+    // Clear previous timeout
+    if (overAllocationTimeout) {
+        clearTimeout(overAllocationTimeout);
+    }
+    
+    // Debounce the check to avoid too many notifications while typing
+    overAllocationTimeout = setTimeout(() => {
+        // Calculate total income from income sources
+        const totalIncome = (currentBudget.income_sources || []).reduce((sum, source) => sum + (source.amount || 0), 0);
+        const balanceForward = currentBudget.balance_brought_forward || 0;
+        const totalAvailable = totalIncome + balanceForward;
+        
+        // Calculate total allocated
+        const totalAllocated = categories.reduce((sum, category) => {
+            return sum + category.subcategories.reduce((catSum, sub) => catSum + (sub.allocated || 0), 0);
+        }, 0);
+        
+        const available = totalAvailable - totalAllocated;
+        
+        // Show error if over-allocated
+        if (available < 0) {
+            const overAmount = Math.abs(available);
+            showNotification(`Warning: You have over-allocated by ${formatCurrency(overAmount, userCurrency)}. Total allocations exceed available funds.`, 'error');
+        }
+    }, 500); // 500ms delay
 }
 
 function loadCategories() {
@@ -307,7 +382,6 @@ function renderCategories() {
                                 <div class="amount-group">
                                     <span class="amount-label">Allocated:</span>
                                     <div class="input-group">
-                                        <span class="input-prefix" data-currency-symbol>$</span>
                                         <input type="number" 
                                                class="allocation-amount" 
                                                data-subcategory-id="${sub.id}"
@@ -341,6 +415,14 @@ function renderCategories() {
     
     // Add event listeners to allocation inputs
     document.querySelectorAll('.allocation-amount').forEach(input => {
+        // Format existing values on load
+        if (input.value && input.value !== '') {
+            const value = parseFloat(input.value);
+            if (!isNaN(value)) {
+                input.value = value.toFixed(2);
+            }
+        }
+        
         input.addEventListener('input', updateAllocation);
         input.addEventListener('change', updateAllocation);
         input.addEventListener('blur', updateAllocation);
@@ -352,7 +434,13 @@ function renderCategories() {
 
 function updateAllocation(e) {
     const subcategoryId = parseInt(e.target.dataset.subcategoryId);
-    const amount = parseFloat(e.target.value) || 0;
+    let amount = parseFloat(e.target.value) || 0;
+    
+    // Don't format during typing, only on blur
+    if (e.type === 'blur') {
+        const formattedValue = amount.toFixed(2);
+        e.target.value = formattedValue;
+    }
     
     // Update the local data
     let updatedCategory = null;
@@ -384,7 +472,20 @@ function updateAllocation(e) {
     }
     
     updateTotals();
-    saveAllocations();
+    
+    // Check for over-allocation and show error in real-time
+    checkOverAllocation();
+    
+    // Update sticky badge in real-time
+    const summary = document.getElementById('budgetSummary');
+    if (summary.classList.contains('collapsed')) {
+        updateStickyBadge();
+    }
+    
+    // Only save on blur to avoid excessive API calls
+    if (e.type === 'blur') {
+        saveAllocations();
+    }
 }
 
 function updateCategoryTotals(category) {
@@ -422,20 +523,35 @@ function updateCategoryTotals(category) {
 
 function updateTotals() {
     const totalAllocated = categories.reduce((sum, category) => {
-        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.allocated, 0);
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + (sub.allocated || 0), 0);
     }, 0);
     
     const totalSpent = categories.reduce((sum, category) => {
-        return sum + category.subcategories.reduce((catSum, sub) => catSum + sub.spent, 0);
+        return sum + category.subcategories.reduce((catSum, sub) => catSum + (sub.spent || 0), 0);
     }, 0);
     
     document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
     document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
     
     if (currentBudget) {
-        const available = currentBudget.balance_to_allocate - totalAllocated;
-        document.getElementById('availableToAllocate').textContent = formatCurrency(available, userCurrency);
-        document.getElementById('availableToAllocate').className = `stat-value ${available < 0 ? 'negative' : 'positive'}`;
+        // Calculate total income from income sources
+        const totalIncome = (currentBudget.income_sources || []).reduce((sum, source) => sum + (source.amount || 0), 0);
+        const balanceForward = currentBudget.balance_brought_forward || 0;
+        const totalAvailable = totalIncome + balanceForward;
+        
+        const available = totalAvailable - totalAllocated;
+        const availableElement = document.getElementById('availableToAllocate');
+        
+        // Ensure we're working with numbers
+        const availableAmount = parseFloat(available) || 0;
+        availableElement.textContent = formatCurrency(availableAmount, userCurrency);
+        availableElement.className = `stat-value ${availableAmount < 0 ? 'negative' : 'positive'}`;
+        
+        // Update sticky badge if visible
+        const summary = document.getElementById('budgetSummary');
+        if (summary.classList.contains('collapsed')) {
+            updateStickyBadge();
+        }
     }
 }
 
@@ -664,6 +780,59 @@ function handleEditSubcategory(e) {
         console.error('Error updating subcategory:', error);
         showNotification('Error updating subcategory. Please try again.', 'error');
     });
+}
+
+function showNotification(message, type = 'info') {
+    // Remove any existing notifications
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Set all styles inline to ensure visibility
+    notification.style.cssText = `
+        position: fixed !important;
+        top: 80px !important;
+        right: 20px !important;
+        z-index: 9999 !important;
+        max-width: 300px !important;
+        word-wrap: break-word !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+        padding: 1rem 1.5rem !important;
+        border-radius: 8px !important;
+        color: white !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        line-height: 1.4 !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+        ${type === 'error' ? 
+            'background: #dc3545 !important; border-left: 4px solid #c82333 !important;' : 
+            type === 'success' ? 
+            'background: #28a745 !important; border-left: 4px solid #1e7e34 !important;' : 
+            'background: #007bff !important; border-left: 4px solid #0056b3 !important;'
+        }
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Force a reflow to ensure visibility
+    notification.offsetHeight;
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 
 function formatCurrency(amount, currency = userCurrency || 'USD') {
