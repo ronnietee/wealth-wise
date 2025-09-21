@@ -100,6 +100,122 @@
     </div>
 </div>
 
+<!-- Email Change Modal -->
+<div class="modal" id="emailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-envelope"></i> Change Email Address</h3>
+            <button class="modal-close" onclick="closeEmailModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="emailForm">
+                <div class="form-group">
+                    <label for="currentEmail">Current Email</label>
+                    <input type="email" id="currentEmail" readonly value="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">New Email Address</label>
+                    <input type="email" id="newEmail" required placeholder="Enter new email address">
+                </div>
+                <div class="form-group">
+                    <label for="confirmEmail">Confirm New Email</label>
+                    <input type="email" id="confirmEmail" required placeholder="Confirm new email address">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeEmailModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="updateEmail()">
+                <i class="fas fa-save"></i> Update Email
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Password Change Modal -->
+<div class="modal" id="passwordModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-key"></i> Change Password</h3>
+            <button class="modal-close" onclick="closePasswordModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required placeholder="Enter current password">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required placeholder="Enter new password" minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirm new password">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="updatePassword()">
+                <i class="fas fa-save"></i> Update Password
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Currency Change Modal -->
+<div class="modal" id="currencyModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-dollar-sign"></i> Change Currency</h3>
+            <button class="modal-close" onclick="closeCurrencyModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="currencyForm">
+                <div class="form-group">
+                    <label for="currencySelect">Select Currency</label>
+                    <select id="currencySelect" required>
+                        <option value="USD">USD - US Dollar ($)</option>
+                        <option value="EUR">EUR - Euro (€)</option>
+                        <option value="GBP">GBP - British Pound (£)</option>
+                        <option value="ZAR">ZAR - South African Rand (R)</option>
+                        <option value="CAD">CAD - Canadian Dollar (C$)</option>
+                        <option value="AUD">AUD - Australian Dollar (A$)</option>
+                        <option value="BWP">BWP - Botswana Pula (P)</option>
+                        <option value="ZMW">ZMW - Zambian Kwacha (K)</option>
+                        <option value="NGN">NGN - Nigerian Naira (₦)</option>
+                        <option value="KES">KES - Kenyan Shilling (KSh)</option>
+                        <option value="GHS">GHS - Ghanaian Cedi (₵)</option>
+                        <option value="UGX">UGX - Ugandan Shilling (USh)</option>
+                        <option value="TZS">TZS - Tanzanian Shilling (TSh)</option>
+                        <option value="ETB">ETB - Ethiopian Birr (Br)</option>
+                        <option value="RWF">RWF - Rwandan Franc (RF)</option>
+                        <option value="MWK">MWK - Malawian Kwacha (MK)</option>
+                        <option value="BRL">BRL - Brazilian Real (R$)</option>
+                        <option value="MXN">MXN - Mexican Peso ($)</option>
+                        <option value="PHP">PHP - Philippine Peso (₱)</option>
+                        <option value="INR">INR - Indian Rupee (₹)</option>
+                        <option value="JPY">JPY - Japanese Yen (¥)</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCurrencyModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="updateCurrency()">
+                <i class="fas fa-save"></i> Update Currency
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Reset Data Confirmation Modal -->
 <div class="modal" id="resetDataModal">
     <div class="modal-content">
@@ -138,6 +254,92 @@
 
 {% block scripts %}
 <script>
+// Modal functions
+function openEmailModal() {
+    document.getElementById('emailModal').style.display = 'block';
+}
+
+function closeEmailModal() {
+    document.getElementById('emailModal').style.display = 'none';
+    document.getElementById('emailForm').reset();
+}
+
+function openPasswordModal() {
+    document.getElementById('passwordModal').style.display = 'block';
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+    document.getElementById('passwordForm').reset();
+}
+
+function openCurrencyModal() {
+    document.getElementById('currencyModal').style.display = 'block';
+}
+
+function closeCurrencyModal() {
+    document.getElementById('currencyModal').style.display = 'none';
+    document.getElementById('currencyForm').reset();
+}
+
+// Update functions
+function updateEmail() {
+    const newEmail = document.getElementById('newEmail').value;
+    const confirmEmail = document.getElementById('confirmEmail').value;
+    
+    if (newEmail !== confirmEmail) {
+        showNotification('Email addresses do not match', 'error');
+        return;
+    }
+    
+    if (!newEmail || !confirmEmail) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
+    // Here you would make an API call to update the email
+    showNotification('Email update functionality coming soon!', 'info');
+    closeEmailModal();
+}
+
+function updatePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        showNotification('Password must be at least 8 characters long', 'error');
+        return;
+    }
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
+    // Here you would make an API call to update the password
+    showNotification('Password update functionality coming soon!', 'info');
+    closePasswordModal();
+}
+
+function updateCurrency() {
+    const currency = document.getElementById('currencySelect').value;
+    
+    if (!currency) {
+        showNotification('Please select a currency', 'error');
+        return;
+    }
+    
+    // Here you would make an API call to update the currency
+    showNotification('Currency update functionality coming soon!', 'info');
+    closeCurrencyModal();
+}
+
 // Export data functionality
 function exportData() {
     showNotification('Preparing Excel export...', 'info');
@@ -235,12 +437,28 @@ function confirmResetData() {
     }
 }
 
-// Close reset modal when clicking outside
+// Close modals when clicking outside
 window.onclick = function(event) {
-    const resetModal = document.getElementById('resetDataModal');
-    if (event.target === resetModal) {
-        closeResetModal();
-    }
+    const modals = ['resetDataModal', 'emailModal', 'passwordModal', 'currencyModal'];
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target === modal) {
+            switch(modalId) {
+                case 'resetDataModal':
+                    closeResetModal();
+                    break;
+                case 'emailModal':
+                    closeEmailModal();
+                    break;
+                case 'passwordModal':
+                    closePasswordModal();
+                    break;
+                case 'currencyModal':
+                    closeCurrencyModal();
+                    break;
+            }
+        }
+    });
 }
 </script>
 {% endblock %}

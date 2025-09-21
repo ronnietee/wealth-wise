@@ -72,6 +72,9 @@
 
     <!-- Budget Periods List -->
     <div class="card">
+        <div class="card-header">
+            <h3>Budget Periods</h3>
+        </div>
         <div class="card-body">
             <div class="table-container">
                 <table class="budgets-table">
@@ -127,22 +130,15 @@ function showNotification(message, type = 'success') {
 
 // Toggle create budget form
 function toggleCreateForm() {
-    console.log('toggleCreateForm called');
     const createCard = document.getElementById('create-budget-card');
     const createBtn = document.querySelector('.create-budget-btn');
     
-    console.log('Create card element:', createCard);
-    console.log('Create button element:', createBtn);
-    console.log('Current display style:', createCard.style.display);
-    
     if (createCard.style.display === 'none') {
-        console.log('Showing create form');
         createCard.style.display = 'block';
         createBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
         createBtn.classList.remove('btn-primary');
         createBtn.classList.add('btn-secondary');
     } else {
-        console.log('Hiding create form');
         createCard.style.display = 'none';
         createBtn.innerHTML = '<i class="fas fa-plus"></i> Create Budget';
         createBtn.classList.remove('btn-secondary');
@@ -257,7 +253,6 @@ async function loadBudgetPeriods() {
             if (periods.error) {
                 throw new Error(periods.error);
             }
-            console.log('Loaded budget periods:', periods);
             allPeriods = periods; // Store all periods for filtering
             renderBudgetPeriods(periods);
         } else {
@@ -282,34 +277,32 @@ function filterPeriodsByType(periodType) {
 
 // Render periods (extracted from loadBudgetPeriods)
 function renderBudgetPeriods(periods) {
-    console.log('Rendering budget periods:', periods);
     const periodsList = document.getElementById('budget-periods-list');
     
     if (periods.length === 0) {
-        console.log('No periods found, showing no-data message');
         periodsList.innerHTML = '<tr><td colspan="6" class="no-data">No budget periods found. Create your first budget period above.</td></tr>';
         return;
     }
     
     periodsList.innerHTML = periods.map(period => `
         <tr class="budget-period-row ${period.is_active ? 'active' : ''}">
-            <td class="period-name">${period.name}</td>
-            <td class="period-type">
+            <td class="period-name" data-label="Name">${period.name}</td>
+            <td class="period-type" data-label="Type">
                 <span class="type-badge ${period.period_type}">${period.period_type}</span>
             </td>
-            <td class="period-dates">
+            <td class="period-dates" data-label="Period">
                 ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}
             </td>
-            <td class="period-created">
+            <td class="period-created" data-label="Created">
                 ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}
             </td>
-            <td class="period-status">
+            <td class="period-status" data-label="Status">
                 ${period.is_active ? 
                     '<span class="badge badge-success">Active</span>' : 
                     '<span class="badge badge-secondary">Inactive</span>'
                 }
             </td>
-            <td class="period-actions">
+            <td class="period-actions" data-label="Actions">
                 <div class="action-buttons">
                     ${period.is_active ? 
                         '' : 
@@ -344,7 +337,6 @@ async function activateBudgetPeriod(periodId) {
             showNotification('Budget period activated successfully!', 'success');
             
             // Dispatch event to notify other pages of budget period change
-            console.log('Dispatching budgetPeriodChanged event');
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
@@ -384,12 +376,10 @@ async function deleteBudgetPeriod(periodId) {
             showNotification('Budget period and all related data deleted successfully!', 'success');
             
             // Reload the budget periods list
-            console.log('Reloading budget periods after deletion...');
             await loadBudgetPeriods();
             await loadCurrentBudget();
             
             // Dispatch event to notify other pages of budget period change
-            console.log('Dispatching budgetPeriodChanged event (deletion)');
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
@@ -404,7 +394,6 @@ async function deleteBudgetPeriod(periodId) {
 // Handle form submission
 document.getElementById('create-budget-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    console.log('Form submission started...');
     
     const formData = new FormData(e.target);
     const data = {
@@ -413,8 +402,6 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
         start_date: formData.get('start_date'),
         end_date: formData.get('end_date')
     };
-    
-    console.log('Form data:', data);
     
     try {
         const response = await fetch('/api/budget-periods', {
@@ -428,21 +415,17 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
         
         if (response.ok) {
             const newPeriod = await response.json();
-            console.log('Budget period created successfully:', newPeriod);
             showNotification('Budget period created successfully!', 'success');
             e.target.reset();
             
             // Reload the budget periods list
-            console.log('Reloading budget periods after creation...');
             await loadBudgetPeriods();
             await loadCurrentBudget();
             
             // Close the create form
-            console.log('Closing create form...');
             toggleCreateForm();
             
             // Dispatch event to notify other pages of budget period change
-            console.log('Dispatching budgetPeriodChanged event (new period)');
             document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
         } else {
             const error = await response.json();
@@ -514,111 +497,4 @@ document.getElementById('period-type').addEventListener('change', function() {
 
 </script>
 
-<style>
-.budget-period-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    background: #f9f9f9;
-}
-
-.budget-period-item.active {
-    background: #e8f5e8;
-    border-color: #4caf50;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.period-type-filter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.period-type-filter select {
-    padding: 5px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: white;
-}
-
-.period-info h4 {
-    margin: 0 0 0.5rem 0;
-    color: #333;
-}
-
-.period-info p {
-    margin: 0.25rem 0;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.period-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.badge-success {
-    background: #4caf50;
-    color: white;
-}
-
-.budget-info {
-    padding: 1rem;
-    background: #f0f8ff;
-    border-radius: 8px;
-    border-left: 4px solid #2196f3;
-}
-
-.budget-info h4 {
-    margin: 0 0 1rem 0;
-    color: #1976d2;
-}
-
-.budget-info p {
-    margin: 0.5rem 0;
-    color: #333;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .budget-period-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    
-    .period-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-}
-</style>
 {% endblock %}
