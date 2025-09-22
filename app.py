@@ -781,25 +781,27 @@ def change_password(current_user):
 @token_required
 def reset_user_data(current_user):
     try:
-        # Delete all user's transactions
-        Transaction.query.filter_by(user_id=current_user.id).delete()
+        # Delete in correct order to respect foreign key constraints
         
-        # Delete all user's budget allocations
+        # First delete transactions (they reference subcategories)
+        Transaction.query.join(Subcategory).join(Category).filter(Category.user_id == current_user.id).delete()
+        
+        # Delete budget allocations (they reference subcategories and budgets)
         BudgetAllocation.query.join(Budget).filter(Budget.user_id == current_user.id).delete()
         
-        # Delete all user's income sources
+        # Delete income sources (they reference budgets)
         IncomeSource.query.join(Budget).filter(Budget.user_id == current_user.id).delete()
         
-        # Delete all user's budgets
+        # Delete budgets (they reference budget periods)
         Budget.query.filter_by(user_id=current_user.id).delete()
         
-        # Delete all user's budget periods
+        # Delete budget periods
         BudgetPeriod.query.filter_by(user_id=current_user.id).delete()
         
-        # Delete all user's subcategories
+        # Delete subcategories (they reference categories)
         Subcategory.query.join(Category).filter(Category.user_id == current_user.id).delete()
         
-        # Delete all user's categories
+        # Finally delete categories
         Category.query.filter_by(user_id=current_user.id).delete()
         
         db.session.commit()

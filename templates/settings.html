@@ -257,29 +257,35 @@
 // Modal functions
 function openEmailModal() {
     document.getElementById('emailModal').style.display = 'block';
+    document.body.classList.add('modal-open');
 }
 
 function closeEmailModal() {
     document.getElementById('emailModal').style.display = 'none';
     document.getElementById('emailForm').reset();
+    document.body.classList.remove('modal-open');
 }
 
 function openPasswordModal() {
     document.getElementById('passwordModal').style.display = 'block';
+    document.body.classList.add('modal-open');
 }
 
 function closePasswordModal() {
     document.getElementById('passwordModal').style.display = 'none';
     document.getElementById('passwordForm').reset();
+    document.body.classList.remove('modal-open');
 }
 
 function openCurrencyModal() {
     document.getElementById('currencyModal').style.display = 'block';
+    document.body.classList.add('modal-open');
 }
 
 function closeCurrencyModal() {
     document.getElementById('currencyModal').style.display = 'none';
     document.getElementById('currencyForm').reset();
+    document.body.classList.remove('modal-open');
 }
 
 // Update functions
@@ -377,12 +383,14 @@ function exportData() {
 // Reset data functionality
 function resetData() {
     document.getElementById('resetDataModal').style.display = 'block';
+    document.body.classList.add('modal-open');
 }
 
 function closeResetModal() {
     document.getElementById('resetDataModal').style.display = 'none';
     document.getElementById('confirmReset').value = '';
     document.getElementById('confirmResetBtn').disabled = true;
+    document.body.classList.remove('modal-open');
 }
 
 // Enable reset button only when "RESET" is typed
@@ -405,6 +413,12 @@ function confirmResetData() {
     }
     
     if (confirm('Are you absolutely sure you want to reset all data? This cannot be undone!')) {
+        // Show loading state
+        const resetBtn = document.getElementById('confirmResetBtn');
+        const originalText = resetBtn.innerHTML;
+        resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+        resetBtn.disabled = true;
+        
         // Call API to reset data
         fetch('/api/user/reset-data', {
             method: 'POST',
@@ -413,8 +427,14 @@ function confirmResetData() {
                 'Authorization': 'Bearer ' + getToken()
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Reset data response:', data);
             if (data.message) {
                 showNotification(data.message, 'success');
                 closeResetModal();
@@ -433,6 +453,9 @@ function confirmResetData() {
         .catch(error => {
             console.error('Error resetting data:', error);
             showNotification('Error resetting data. Please try again.', 'error');
+            // Reset button state
+            resetBtn.innerHTML = originalText;
+            resetBtn.disabled = false;
         });
     }
 }
