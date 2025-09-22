@@ -461,6 +461,7 @@ window.addEventListener('click', function(e) {
     modals.forEach(modal => {
         if (e.target === modal) {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         }
     });
 });
@@ -472,6 +473,7 @@ document.addEventListener('keydown', function(e) {
         modals.forEach(modal => {
             if (modal.style.display === 'block') {
                 modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
         });
     }

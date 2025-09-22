@@ -178,6 +178,7 @@ function showLogin() {
     const modal = document.getElementById('authModal');
     if (modal) {
         modal.style.display = 'block';
+        document.body.classList.add('modal-open');
         switchTab('login');
     } else {
         console.error('Login modal not found');
@@ -188,6 +189,7 @@ function showHowItWorks() {
     const modal = document.getElementById('howItWorksModal');
     if (modal) {
         modal.style.display = 'block';
+        document.body.classList.add('modal-open');
     } else {
         console.error('How it works modal not found');
     }
@@ -197,6 +199,7 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
     } else {
         console.error('Modal not found:', modalId);
     }
@@ -210,6 +213,7 @@ function closeAnyModal() {
             modal.style.display = 'none';
         }
     });
+    document.body.classList.remove('modal-open');
 }
 
 // Close modal when clicking outside
@@ -218,6 +222,7 @@ window.addEventListener('click', function(e) {
     modals.forEach(modal => {
         if (e.target === modal) {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         }
     });
 });
