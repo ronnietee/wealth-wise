@@ -11,11 +11,21 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import io
+import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 app.config['APP_NAME'] = 'STEWARD'
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///wealthwise.db')
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@steward.com')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -102,6 +112,14 @@ class BudgetAllocation(db.Model):
     allocated_amount = db.Column(db.Float, default=0)
     subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
     budget_id = db.Column(db.Integer, db.ForeignKey('budget.id'), nullable=False)
+
+class PasswordResetToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     subcategory = db.relationship('Subcategory', backref='allocations')
@@ -129,6 +147,23 @@ def token_required(f):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/reset-password')
+def reset_password_page():
+    token = request.args.get('token')
+    if not token:
+        return render_template('reset_password.html', error='Invalid reset link')
+    
+    # Verify token is valid
+    reset_token = PasswordResetToken.query.filter_by(
+        token=token, 
+        used=False
+    ).first()
+    
+    if not reset_token or reset_token.expires_at < datetime.utcnow():
+        return render_template('reset_password.html', error='Invalid or expired reset link')
+    
+    return render_template('reset_password.html', token=token)
 
 @app.route('/dashboard')
 def dashboard():
@@ -218,6 +253,107 @@ def login():
         })
     
     return jsonify({'message': 'Invalid credentials'}), 401
+
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+    
+    # Find user by email
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Don't reveal if email exists or not for security
+        return jsonify({'message': 'If an account with that email exists, a password reset link has been sent.'}), 200
+    
+    # Generate reset token
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    
+    # Invalidate any existing tokens for this user
+    PasswordResetToken.query.filter_by(user_id=user.id, used=False).update({'used': True})
+    
+    # Create new reset token
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=token,
+        expires_at=expires_at
+    )
+    db.session.add(reset_token)
+    db.session.commit()
+    
+    # Create reset URL
+    reset_url = f"{request.host_url}reset-password?token={token}"
+    
+    # Send email
+    subject = "Password Reset - STEWARD"
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">STEWARD</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Christian Financial Management</p>
+        </div>
+        <div style="background: white; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #8B4513; margin-top: 0;">Password Reset Request</h2>
+            <p>Hello {user.username},</p>
+            <p>We received a request to reset your password for your STEWARD account. Click the button below to reset your password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{reset_url}" style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Reset Password</a>
+            </div>
+            <p>If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666; background: #f5f5f5; padding: 10px; border-radius: 5px;">{reset_url}</p>
+            <p><strong>This link will expire in 1 hour.</strong></p>
+            <p>If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+            <p style="color: #666; font-size: 14px; margin: 0;">Blessings,<br>The STEWARD Team</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    if send_email(user.email, subject, body):
+        return jsonify({'message': 'If an account with that email exists, a password reset link has been sent.'}), 200
+    else:
+        return jsonify({'message': 'Error sending email. Please try again later.'}), 500
+
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    token = data.get('token')
+    new_password = data.get('password')
+    
+    if not token or not new_password:
+        return jsonify({'message': 'Token and password are required'}), 400
+    
+    # Find valid token
+    reset_token = PasswordResetToken.query.filter_by(
+        token=token, 
+        used=False
+    ).first()
+    
+    if not reset_token:
+        return jsonify({'message': 'Invalid or expired reset token'}), 400
+    
+    if reset_token.expires_at < datetime.utcnow():
+        return jsonify({'message': 'Reset token has expired'}), 400
+    
+    # Update user password
+    user = User.query.get(reset_token.user_id)
+    if not user:
+        return jsonify({'message': 'User not found'}), 400
+    
+    user.password_hash = generate_password_hash(new_password)
+    
+    # Mark token as used
+    reset_token.used = True
+    
+    db.session.commit()
+    
+    return jsonify({'message': 'Password has been reset successfully'}), 200
 
 @app.route('/api/categories', methods=['GET'])
 @token_required
@@ -1300,6 +1436,32 @@ def create_default_categories(user_id):
             db.session.add(subcategory)
     
     db.session.commit()
+
+def send_email(to_email, subject, body):
+    """Send email using SMTP"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = app.config['MAIL_DEFAULT_SENDER']
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        
+        msg.attach(MIMEText(body, 'html'))
+        
+        server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
+        if app.config['MAIL_USE_TLS']:
+            server.starttls()
+        
+        if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD']:
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+        
+        text = msg.as_string()
+        server.sendmail(app.config['MAIL_DEFAULT_SENDER'], to_email, text)
+        server.quit()
+        
+        return True
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        return False
 
 if __name__ == '__main__':
     with app.app_context():

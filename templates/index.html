@@ -101,7 +101,7 @@
                         <div class="error-message" id="loginPasswordError"></div>
                     </div>
                     <div style="text-align: right; margin-bottom: 1rem;">
-                        <a href="#" style="color: #8B4513; text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
+                        <a href="#" onclick="openForgotPasswordModal()" style="color: #8B4513; text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn btn-primary btn-full">Sign In</button>
                 </form>
@@ -165,10 +165,35 @@
                     <button type="submit" class="btn btn-primary btn-full">Create Account</button>
                 </form>
             </div>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal" id="forgotPasswordModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-key"></i> Reset Password</h3>
+            <button class="modal-close" onclick="closeForgotPasswordModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Enter your email address and we'll send you a link to reset your password.</p>
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="forgotEmail">Email Address</label>
+                    <input type="email" id="forgotEmail" name="email" placeholder="Enter your email address" required>
+                    <div class="error-message" id="forgotEmailError"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-paper-plane"></i> Send Reset Link
+                </button>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- How It Works Modal -->
+<!-- How It Works Modal -->
     <div class="modal" id="howItWorksModal">
         <div class="modal-content">
             <div class="modal-header">

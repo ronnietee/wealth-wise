@@ -23,6 +23,12 @@ function setupAuthListeners() {
         registerForm.addEventListener('submit', handleRegister);
     }
     
+    // Forgot password form
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', handleForgotPassword);
+    }
+    
     // Tab switching
     const tabBtns = document.querySelectorAll('.tab-btn');
     tabBtns.forEach(btn => {
@@ -30,6 +36,45 @@ function setupAuthListeners() {
             const tab = this.textContent.toLowerCase();
             switchTab(tab);
         });
+    });
+}
+
+function handleForgotPassword(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const email = formData.get('email');
+    
+    // Validate input
+    if (!email) {
+        showNotification('Please enter your email address', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    showLoading(submitBtn);
+    
+    // Make API call
+    fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification(data.message, 'success');
+        closeForgotPasswordModal();
+    })
+    .catch(error => {
+        console.error('Forgot password error:', error);
+        showNotification('Error sending reset email. Please try again.', 'error');
+    })
+    .finally(() => {
+        hideLoading(submitBtn, originalText);
     });
 }
 
@@ -232,6 +277,18 @@ function closeAnyModal() {
     document.body.classList.remove('modal-open');
 }
 
+// Forgot Password Modal Functions
+function openForgotPasswordModal() {
+    document.getElementById('forgotPasswordModal').style.display = 'block';
+    document.body.classList.add('modal-open');
+}
+
+function closeForgotPasswordModal() {
+    document.getElementById('forgotPasswordModal').style.display = 'none';
+    document.getElementById('forgotPasswordForm').reset();
+    document.body.classList.remove('modal-open');
+}
+
 // Close modal when clicking outside
 window.addEventListener('click', function(e) {
     const modals = document.querySelectorAll('.modal');
@@ -241,6 +298,11 @@ window.addEventListener('click', function(e) {
             document.body.classList.remove('modal-open');
         }
     });
+    
+    // Handle forgot password modal specifically
+    if (e.target.id === 'forgotPasswordModal') {
+        closeForgotPasswordModal();
+    }
 });
 
 // Auto-focus on first input when modal opens
