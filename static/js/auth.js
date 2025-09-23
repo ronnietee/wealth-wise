@@ -37,16 +37,23 @@ function handleLogin(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
-    const data = {
-        username: formData.get('username'),
-        password: formData.get('password')
-    };
+    const usernameOrEmail = formData.get('username');
+    const password = formData.get('password');
     
     // Validate input
-    if (!data.username || !data.password) {
+    if (!usernameOrEmail || !password) {
         showNotification('Please fill in all fields', 'error');
         return;
     }
+    
+    // Determine if input is email or username
+    const isEmail = usernameOrEmail.includes('@');
+    const data = {
+        [isEmail ? 'email' : 'username']: usernameOrEmail,
+        password: password
+    };
+    
+    console.log('Login attempt with:', { usernameOrEmail, isEmail, data });
     
     // Show loading state
     const submitBtn = e.target.querySelector('button[type="submit"]');

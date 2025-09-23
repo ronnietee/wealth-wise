@@ -189,9 +189,19 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    user = User.query.filter_by(username=data['username']).first()
+    print(f"Login attempt with data: {data}")
+    username_or_email = data.get('username') or data.get('email')
+    password = data.get('password')
     
-    if user and check_password_hash(user.password_hash, data['password']):
+    if not username_or_email or not password:
+        return jsonify({'message': 'Username/email and password are required'}), 400
+    
+    # Try to find user by username first, then by email
+    user = User.query.filter_by(username=username_or_email).first()
+    if not user:
+        user = User.query.filter_by(email=username_or_email).first()
+    
+    if user and check_password_hash(user.password_hash, password):
         token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.utcnow() + timedelta(hours=24)
