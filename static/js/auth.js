@@ -132,8 +132,16 @@ function handleLogin(e) {
             return response.text().then(text => {
                 try {
                     const errorData = JSON.parse(text);
+                    // For 401 errors, show a user-friendly message
+                    if (response.status === 401) {
+                        throw new Error(errorData.message || 'Invalid username or password. Please check your credentials and try again.');
+                    }
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 } catch (e) {
+                    // If JSON parsing fails, show appropriate error based on status code
+                    if (response.status === 401) {
+                        throw new Error('Invalid username or password. Please check your credentials and try again.');
+                    }
                     throw new Error(`Server error: ${response.status}`);
                 }
             });
