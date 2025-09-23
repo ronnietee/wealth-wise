@@ -2627,6 +2627,8 @@ body.modal-open {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     transform: translateX(400px);
     transition: transform 0.3s ease;
+    max-width: 300px;
+    word-wrap: break-word;
 }
 
 .notification.show {
@@ -4611,31 +4613,6 @@ body.modal-open {
 }
 
 /* Notification/Error Message Positioning */
-.notification {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1001;
-    max-width: 300px;
-    word-wrap: break-word;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.notification.error {
-    background: #dc3545;
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid #c82333;
-}
-
-.notification.success {
-    background: #28a745;
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid #1e7e34;
-}
 
 .breakdown-container .budget-summary-header {
     background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);

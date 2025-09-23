@@ -61,7 +61,16 @@ function handleLogin(e) {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Login response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(errorData => {
+                console.log('Login error data:', errorData);
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.token) {
             setToken(data.token);
@@ -77,7 +86,7 @@ function handleLogin(e) {
     })
     .catch(error => {
         console.error('Login error:', error);
-        showNotification('Login failed. Please try again.', 'error');
+        showNotification(error.message || 'Login failed. Please try again.', 'error');
     })
     .finally(() => {
         hideLoading(submitBtn, originalText);

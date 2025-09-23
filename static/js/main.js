@@ -325,6 +325,8 @@ function removeToken() {
 
 // Show notification
 function showNotification(message, type = 'success') {
+    console.log('Showing notification:', message, type);
+    
     // Remove existing notifications
     const existingNotifications = document.querySelectorAll('.notification');
     existingNotifications.forEach(notification => notification.remove());
@@ -335,9 +337,18 @@ function showNotification(message, type = 'success') {
     
     document.body.appendChild(notification);
     
+    // Force reflow and add show class
+    notification.offsetHeight;
+    notification.classList.add('show');
+    
+    console.log('Notification added to DOM:', notification);
+    
     // Auto remove after 5 seconds
     setTimeout(() => {
-        notification.remove();
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
     }, 5000);
 }
 
