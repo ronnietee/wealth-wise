@@ -15,6 +15,10 @@ import secrets
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 app.config['APP_NAME'] = 'STEWARD'
@@ -120,9 +124,6 @@ class PasswordResetToken(db.Model):
     expires_at = db.Column(db.DateTime, nullable=False)
     used = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    subcategory = db.relationship('Subcategory', backref='allocations')
 
 # Authentication decorator
 def token_required(f):

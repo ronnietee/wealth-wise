@@ -64,7 +64,19 @@ function handleForgotPassword(e) {
         },
         body: JSON.stringify({ email: email })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                try {
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                } catch (e) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         showNotification(data.message, 'success');
         closeForgotPasswordModal();
@@ -116,9 +128,14 @@ function handleLogin(e) {
     .then(response => {
         console.log('Login response status:', response.status);
         if (!response.ok) {
-            return response.json().then(errorData => {
-                console.log('Login error data:', errorData);
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            // Try to parse as JSON, fallback to text if it fails
+            return response.text().then(text => {
+                try {
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                } catch (e) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
             });
         }
         return response.json();
