@@ -784,13 +784,17 @@ def reset_user_data(current_user):
         # Delete in correct order to respect foreign key constraints
         
         # First delete transactions (they reference subcategories)
-        Transaction.query.join(Subcategory).join(Category).filter(Category.user_id == current_user.id).delete()
+        # Get subcategory IDs for this user first
+        user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
+        Transaction.query.filter(Transaction.subcategory_id.in_(user_subcategory_ids)).delete(synchronize_session=False)
         
         # Delete budget allocations (they reference subcategories and budgets)
-        BudgetAllocation.query.join(Budget).filter(Budget.user_id == current_user.id).delete()
+        # Get budget IDs for this user first
+        user_budget_ids = db.session.query(Budget.id).filter(Budget.user_id == current_user.id).subquery()
+        BudgetAllocation.query.filter(BudgetAllocation.budget_id.in_(user_budget_ids)).delete(synchronize_session=False)
         
         # Delete income sources (they reference budgets)
-        IncomeSource.query.join(Budget).filter(Budget.user_id == current_user.id).delete()
+        IncomeSource.query.filter(IncomeSource.budget_id.in_(user_budget_ids)).delete(synchronize_session=False)
         
         # Delete budgets (they reference budget periods)
         Budget.query.filter_by(user_id=current_user.id).delete()
@@ -799,7 +803,9 @@ def reset_user_data(current_user):
         BudgetPeriod.query.filter_by(user_id=current_user.id).delete()
         
         # Delete subcategories (they reference categories)
-        Subcategory.query.join(Category).filter(Category.user_id == current_user.id).delete()
+        # Get category IDs for this user first
+        user_category_ids = db.session.query(Category.id).filter(Category.user_id == current_user.id).subquery()
+        Subcategory.query.filter(Subcategory.category_id.in_(user_category_ids)).delete(synchronize_session=False)
         
         # Finally delete categories
         Category.query.filter_by(user_id=current_user.id).delete()

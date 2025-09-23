@@ -428,6 +428,7 @@ function confirmResetData() {
             }
         })
         .then(response => {
+            console.log('Reset response status:', response.status);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -456,6 +457,7 @@ function confirmResetData() {
             // Reset button state
             resetBtn.innerHTML = originalText;
             resetBtn.disabled = false;
+            // Don't close modal on error so user can try again
         });
     }
 }
