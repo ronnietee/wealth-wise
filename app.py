@@ -1034,10 +1034,12 @@ def delete_user_account(current_user):
         # Delete in correct order to respect foreign key constraints
         
         # First delete transactions (they reference subcategories)
+        # Get subcategory IDs for this user first
         user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
         Transaction.query.filter(Transaction.subcategory_id.in_(user_subcategory_ids)).delete(synchronize_session=False)
         
         # Delete budget allocations (they reference subcategories and budgets)
+        # Get budget IDs for this user first
         user_budget_ids = db.session.query(Budget.id).filter(Budget.user_id == current_user.id).subquery()
         BudgetAllocation.query.filter(BudgetAllocation.budget_id.in_(user_budget_ids)).delete(synchronize_session=False)
         
@@ -1051,7 +1053,7 @@ def delete_user_account(current_user):
         BudgetPeriod.query.filter_by(user_id=current_user.id).delete()
         
         # Delete subcategories (they reference categories)
-        Subcategory.query.join(Category).filter(Category.user_id == current_user.id).delete(synchronize_session=False)
+        Subcategory.query.filter(Subcategory.category_id.in_(db.session.query(Category.id).filter(Category.user_id == current_user.id).subquery())).delete(synchronize_session=False)
         
         # Delete categories
         Category.query.filter_by(user_id=current_user.id).delete()
