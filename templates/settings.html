@@ -357,9 +357,40 @@ function updatePassword() {
         return;
     }
     
-    // Here you would make an API call to update the password
-    showNotification('Password update functionality coming soon!', 'info');
-    closePasswordModal();
+    // Make API call to update password
+    fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+            current_password: currentPassword,
+            new_password: newPassword
+        })
+    })
+    .then(response => {
+        return response.json().then(data => ({
+            ok: response.ok,
+            data: data
+        }));
+    })
+    .then(result => {
+        if (result.ok) {
+            showNotification('Password updated successfully!', 'success');
+            closePasswordModal();
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            showNotification(result.data.message || 'Failed to update password', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating password:', error);
+        showNotification('An error occurred while updating password', 'error');
+    });
 }
 
 // Password strength validation for settings
