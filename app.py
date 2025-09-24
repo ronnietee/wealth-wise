@@ -5,6 +5,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import os
+import re
 from datetime import datetime, timedelta
 from functools import wraps
 from openpyxl import Workbook
@@ -207,10 +208,27 @@ def register():
     if User.query.filter_by(email=data['email']).first():
         return jsonify({'message': 'Email already exists'}), 400
     
+    # Validate password meets stringent requirements
+    password = data['password']
+    if len(password) < 8:
+        return jsonify({'message': 'Password must be at least 8 characters long'}), 400
+    
+    if not re.search(r'[a-z]', password):
+        return jsonify({'message': 'Password must contain at least one lowercase letter'}), 400
+    
+    if not re.search(r'[A-Z]', password):
+        return jsonify({'message': 'Password must contain at least one uppercase letter'}), 400
+    
+    if not re.search(r'[0-9]', password):
+        return jsonify({'message': 'Password must contain at least one number'}), 400
+    
+    if not re.search(r'[^A-Za-z0-9]', password):
+        return jsonify({'message': 'Password must contain at least one special character'}), 400
+    
     user = User(
         username=data['username'],
         email=data['email'],
-        password_hash=generate_password_hash(data['password']),
+        password_hash=generate_password_hash(password),
         currency=data.get('currency', 'USD')
     )
     
@@ -341,6 +359,22 @@ def reset_password():
     
     if reset_token.expires_at < datetime.utcnow():
         return jsonify({'message': 'Reset token has expired'}), 400
+    
+    # Validate new password meets stringent requirements
+    if len(new_password) < 8:
+        return jsonify({'message': 'Password must be at least 8 characters long'}), 400
+    
+    if not re.search(r'[a-z]', new_password):
+        return jsonify({'message': 'Password must contain at least one lowercase letter'}), 400
+    
+    if not re.search(r'[A-Z]', new_password):
+        return jsonify({'message': 'Password must contain at least one uppercase letter'}), 400
+    
+    if not re.search(r'[0-9]', new_password):
+        return jsonify({'message': 'Password must contain at least one number'}), 400
+    
+    if not re.search(r'[^A-Za-z0-9]', new_password):
+        return jsonify({'message': 'Password must contain at least one special character'}), 400
     
     # Update user password
     user = User.query.get(reset_token.user_id)
@@ -919,7 +953,24 @@ def change_password(current_user):
     if not check_password_hash(current_user.password_hash, data['current_password']):
         return jsonify({'message': 'Current password is incorrect'}), 400
     
-    current_user.password_hash = generate_password_hash(data['new_password'])
+    # Validate new password meets stringent requirements
+    new_password = data['new_password']
+    if len(new_password) < 8:
+        return jsonify({'message': 'Password must be at least 8 characters long'}), 400
+    
+    if not re.search(r'[a-z]', new_password):
+        return jsonify({'message': 'Password must contain at least one lowercase letter'}), 400
+    
+    if not re.search(r'[A-Z]', new_password):
+        return jsonify({'message': 'Password must contain at least one uppercase letter'}), 400
+    
+    if not re.search(r'[0-9]', new_password):
+        return jsonify({'message': 'Password must contain at least one number'}), 400
+    
+    if not re.search(r'[^A-Za-z0-9]', new_password):
+        return jsonify({'message': 'Password must contain at least one special character'}), 400
+    
+    current_user.password_hash = generate_password_hash(new_password)
     db.session.commit()
     
     return jsonify({'message': 'Password changed successfully'})
