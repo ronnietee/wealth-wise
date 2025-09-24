@@ -4505,6 +4505,105 @@ body.modal-open {
     }
 }
 
+/* Danger Card Styles */
+.danger-card {
+    border: 2px solid #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffeaea 100%);
+}
+
+.danger-card .settings-card-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.danger-card .settings-card-header h2 {
+    color: white;
+}
+
+.warning-text {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    color: #856404;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.warning-text i {
+    color: #f39c12;
+    font-size: 1.1rem;
+}
+
+/* Delete Account Modal Styles */
+.danger-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    color: white !important;
+}
+
+.danger-header h3 {
+    color: white !important;
+}
+
+.danger-message {
+    text-align: center;
+    padding: 20px;
+    background: #fff5f5;
+    border: 2px solid #dc3545;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.danger-icon {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 15px;
+}
+
+.danger-message h4 {
+    color: #dc3545;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.danger-message ul {
+    text-align: left;
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.danger-message li {
+    margin: 8px 0;
+    color: #721c24;
+}
+
+.final-warning {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    color: #721c24;
+    font-weight: 600;
+}
+
+.final-warning p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Form help text styling */
+.form-help {
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 /* ========================================
    FORM INPUT STYLES (GLOBAL)
    ======================================== */

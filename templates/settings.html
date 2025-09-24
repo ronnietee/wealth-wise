@@ -84,6 +84,28 @@
             </div>
         </div>
 
+        <!-- Account Management -->
+        <div class="settings-card danger-card">
+            <div class="settings-card-header">
+                <h2><i class="fas fa-user-times"></i> Account Management</h2>
+            </div>
+            <div class="settings-card-body">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Delete Account</h3>
+                        <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+                        <div class="warning-text">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Warning:</strong> This will permanently delete your account, all budget data, transactions, and settings. This action cannot be reversed.
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="openDeleteAccountModal()">
+                        <i class="fas fa-trash-alt"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- About -->
         <div class="settings-card">
             <div class="settings-card-header">
@@ -275,6 +297,52 @@
             <button type="button" class="btn btn-secondary" onclick="closeResetModal()">Cancel</button>
             <button type="button" class="btn btn-danger" onclick="confirmResetData()" id="confirmResetBtn" disabled>
                 <i class="fas fa-trash"></i> Reset All Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal" id="deleteAccountModal">
+    <div class="modal-content">
+        <div class="modal-header danger-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Delete Account</h3>
+            <button class="modal-close" onclick="closeDeleteAccountModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="danger-message">
+                <div class="danger-icon">
+                    <i class="fas fa-skull-crossbones"></i>
+                </div>
+                <h4>This action is PERMANENT and CANNOT be undone!</h4>
+                <p>Deleting your account will permanently remove:</p>
+                <ul>
+                    <li><strong>Your entire account</strong> - username, email, password</li>
+                    <li><strong>All budget data</strong> - periods, allocations, categories</li>
+                    <li><strong>All transactions</strong> - income, expenses, transfers</li>
+                    <li><strong>All settings</strong> - currency, preferences, configurations</li>
+                    <li><strong>All historical data</strong> - reports, analytics, insights</li>
+                </ul>
+                <div class="final-warning">
+                    <p><strong>⚠️ FINAL WARNING:</strong> Once you delete your account, there is no way to recover any of your data. This action is irreversible.</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirmDelete">Type "DELETE MY ACCOUNT" to confirm:</label>
+                <input type="text" id="confirmDelete" placeholder="Type DELETE MY ACCOUNT here">
+                <small class="form-help">This is case-sensitive and must match exactly</small>
+            </div>
+            <div class="form-group">
+                <label for="deletePassword">Enter your current password:</label>
+                <input type="password" id="deletePassword" placeholder="Enter your current password">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteAccountModal()">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteAccount()" id="confirmDeleteBtn" disabled>
+                <i class="fas fa-trash-alt"></i> Permanently Delete Account
             </button>
         </div>
     </div>
@@ -590,9 +658,114 @@ function confirmResetData() {
     }
 }
 
+// Delete Account Functions
+function openDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').style.display = 'block';
+    document.body.classList.add('modal-open');
+    // Clear form
+    document.getElementById('confirmDelete').value = '';
+    document.getElementById('deletePassword').value = '';
+    document.getElementById('confirmDeleteBtn').disabled = true;
+}
+
+function closeDeleteAccountModal() {
+    document.getElementById('deleteAccountModal').style.display = 'none';
+    document.body.classList.remove('modal-open');
+    // Clear form
+    document.getElementById('confirmDelete').value = '';
+    document.getElementById('deletePassword').value = '';
+    document.getElementById('confirmDeleteBtn').disabled = true;
+}
+
+// Enable/disable delete button based on confirmation text
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmInput = document.getElementById('confirmDelete');
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (confirmInput && deleteBtn) {
+        confirmInput.addEventListener('input', function() {
+            const passwordInput = document.getElementById('deletePassword');
+            const isConfirmed = this.value === 'DELETE MY ACCOUNT';
+            const hasPassword = passwordInput.value.length > 0;
+            
+            deleteBtn.disabled = !(isConfirmed && hasPassword);
+        });
+        
+        const passwordInput = document.getElementById('deletePassword');
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const isConfirmed = confirmInput.value === 'DELETE MY ACCOUNT';
+                const hasPassword = this.value.length > 0;
+                
+                deleteBtn.disabled = !(isConfirmed && hasPassword);
+            });
+        }
+    }
+});
+
+function confirmDeleteAccount() {
+    const confirmInput = document.getElementById('confirmDelete');
+    const passwordInput = document.getElementById('deletePassword');
+    
+    if (confirmInput.value !== 'DELETE MY ACCOUNT') {
+        showNotification('Please type "DELETE MY ACCOUNT" exactly to confirm', 'error');
+        return;
+    }
+    
+    if (!passwordInput.value) {
+        showNotification('Please enter your current password', 'error');
+        return;
+    }
+    
+    if (confirm('⚠️ FINAL CONFIRMATION ⚠️\n\nAre you absolutely certain you want to permanently delete your account?\n\nThis action CANNOT be undone and will permanently remove ALL your data.\n\nType "YES" in the next prompt to proceed.')) {
+        const finalConfirm = prompt('Type "YES" to permanently delete your account:');
+        if (finalConfirm === 'YES') {
+            // Show loading state
+            const deleteBtn = document.getElementById('confirmDeleteBtn');
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting Account...';
+            deleteBtn.disabled = true;
+            
+            // Call API to delete account
+            fetch('/api/user/delete-account', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify({
+                    password: passwordInput.value
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                showNotification('Account deleted successfully. You will be redirected to the home page.', 'success');
+                closeDeleteAccountModal();
+                // Clear token and redirect
+                localStorage.removeItem('token');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error deleting account:', error);
+                showNotification('Error deleting account. Please check your password and try again.', 'error');
+                // Reset button state
+                deleteBtn.innerHTML = originalText;
+                deleteBtn.disabled = false;
+            });
+        }
+    }
+}
+
 // Close modals when clicking outside
 window.onclick = function(event) {
-    const modals = ['resetDataModal', 'emailModal', 'passwordModal', 'currencyModal'];
+    const modals = ['resetDataModal', 'emailModal', 'passwordModal', 'currencyModal', 'deleteAccountModal'];
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
         if (event.target === modal) {
@@ -608,6 +781,9 @@ window.onclick = function(event) {
                     break;
                 case 'currencyModal':
                     closeCurrencyModal();
+                    break;
+                case 'deleteAccountModal':
+                    closeDeleteAccountModal();
                     break;
             }
         }

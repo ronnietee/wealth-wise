@@ -1017,6 +1017,60 @@ def reset_user_data(current_user):
         print(f"Error in reset_user_data: {str(e)}")
         return jsonify({'message': f'Error resetting data: {str(e)}'}), 500
 
+@app.route('/api/user/delete-account', methods=['POST'])
+@token_required
+def delete_user_account(current_user):
+    try:
+        data = request.get_json()
+        password = data.get('password')
+        
+        if not password:
+            return jsonify({'message': 'Password is required'}), 400
+        
+        # Verify current password
+        if not check_password_hash(current_user.password_hash, password):
+            return jsonify({'message': 'Incorrect password'}), 400
+        
+        # Delete in correct order to respect foreign key constraints
+        
+        # First delete transactions (they reference subcategories)
+        user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
+        Transaction.query.filter(Transaction.subcategory_id.in_(user_subcategory_ids)).delete(synchronize_session=False)
+        
+        # Delete budget allocations (they reference subcategories and budgets)
+        user_budget_ids = db.session.query(Budget.id).filter(Budget.user_id == current_user.id).subquery()
+        BudgetAllocation.query.filter(BudgetAllocation.budget_id.in_(user_budget_ids)).delete(synchronize_session=False)
+        
+        # Delete income sources (they reference budgets)
+        IncomeSource.query.filter(IncomeSource.budget_id.in_(user_budget_ids)).delete(synchronize_session=False)
+        
+        # Delete budgets (they reference budget periods)
+        Budget.query.filter_by(user_id=current_user.id).delete()
+        
+        # Delete budget periods
+        BudgetPeriod.query.filter_by(user_id=current_user.id).delete()
+        
+        # Delete subcategories (they reference categories)
+        Subcategory.query.join(Category).filter(Category.user_id == current_user.id).delete(synchronize_session=False)
+        
+        # Delete categories
+        Category.query.filter_by(user_id=current_user.id).delete()
+        
+        # Delete password reset tokens
+        PasswordResetToken.query.filter_by(user_id=current_user.id).delete()
+        
+        # Finally delete the user account
+        User.query.filter_by(id=current_user.id).delete()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Account deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in delete_user_account: {str(e)}")
+        return jsonify({'message': f'Error deleting account: {str(e)}'}), 500
+
 @app.route('/api/user/export-data', methods=['GET'])
 @token_required
 def export_user_data(current_user):
