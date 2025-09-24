@@ -1073,6 +1073,166 @@ def delete_user_account(current_user):
         print(f"Error in delete_user_account: {str(e)}")
         return jsonify({'message': f'Error deleting account: {str(e)}'}), 500
 
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+@app.route('/api/contact', methods=['POST'])
+def submit_contact():
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'email', 'subject', 'message']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'message': f'{field.replace("_", " ").title()} is required'}), 400
+        
+        # Validate email format
+        email = data['email']
+        if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+            return jsonify({'message': 'Invalid email format'}), 400
+        
+        # Validate message length
+        message = data['message']
+        if len(message) < 10:
+            return jsonify({'message': 'Message must be at least 10 characters long'}), 400
+        if len(message) > 2000:
+            return jsonify({'message': 'Message must be less than 2000 characters'}), 400
+        
+        # Prepare email content
+        subject_map = {
+            'bug-report': 'Bug Report',
+            'feature-request': 'Feature Request',
+            'general-inquiry': 'General Inquiry',
+            'account-issue': 'Account Issue',
+            'billing-question': 'Billing Question',
+            'other': 'Other'
+        }
+        
+        priority_map = {
+            'low': 'Low',
+            'medium': 'Medium',
+            'high': 'High'
+        }
+        
+        email_subject = f"STEWARD Contact Form: {subject_map.get(data['subject'], 'General Inquiry')} - {priority_map.get(data.get('priority', 'medium'), 'Medium')} Priority"
+        
+        # Create HTML email content
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #8B4513; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px; }}
+                .field {{ margin-bottom: 15px; }}
+                .label {{ font-weight: bold; color: #8B4513; }}
+                .value {{ margin-top: 5px; }}
+                .message {{ background: white; padding: 15px; border-radius: 5px; border-left: 4px solid #8B4513; }}
+                .footer {{ margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 0.9em; color: #666; }}
+                .priority-high {{ color: #dc3545; font-weight: bold; }}
+                .priority-medium {{ color: #ffc107; font-weight: bold; }}
+                .priority-low {{ color: #28a745; font-weight: bold; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>STEWARD Contact Form Submission</h2>
+                </div>
+                <div class="content">
+                    <div class="field">
+                        <div class="label">Name:</div>
+                        <div class="value">{data['name']}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Email:</div>
+                        <div class="value">{data['email']}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Subject:</div>
+                        <div class="value">{subject_map.get(data['subject'], 'General Inquiry')}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Priority:</div>
+                        <div class="value priority-{data.get('priority', 'medium')}">{priority_map.get(data.get('priority', 'medium'), 'Medium')}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Message:</div>
+                        <div class="value message">{message.replace(chr(10), '<br>')}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Newsletter Subscription:</div>
+                        <div class="value">{'Yes' if data.get('newsletter') else 'No'}</div>
+                    </div>
+                    <div class="footer">
+                        <p><strong>Submitted:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                        <p><strong>IP Address:</strong> {request.remote_addr}</p>
+                        <p>This message was sent from the STEWARD contact form.</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Create plain text version
+        text_content = f"""
+STEWARD Contact Form Submission
+==============================
+
+Name: {data['name']}
+Email: {data['email']}
+Subject: {subject_map.get(data['subject'], 'General Inquiry')}
+Priority: {priority_map.get(data.get('priority', 'medium'), 'Medium')}
+
+Message:
+{message}
+
+Newsletter Subscription: {'Yes' if data.get('newsletter') else 'No'}
+
+Submitted: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+IP Address: {request.remote_addr}
+
+This message was sent from the STEWARD contact form.
+        """
+        
+        # Send email
+        admin_email = os.getenv('ADMIN_EMAIL', 'admin@steward.com')
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = email_subject
+        msg['From'] = os.getenv('SMTP_USERNAME', 'noreply@steward.com')
+        msg['To'] = admin_email
+        msg['Reply-To'] = email
+        
+        # Add both plain text and HTML versions
+        text_part = MIMEText(text_content, 'plain')
+        html_part = MIMEText(html_content, 'html')
+        
+        msg.attach(text_part)
+        msg.attach(html_part)
+        
+        # Send email
+        try:
+            with smtplib.SMTP(os.getenv('SMTP_SERVER', 'smtp.gmail.com'), int(os.getenv('SMTP_PORT', '587'))) as server:
+                server.starttls()
+                server.login(os.getenv('SMTP_USERNAME', ''), os.getenv('SMTP_PASSWORD', ''))
+                server.send_message(msg)
+            
+            return jsonify({'message': 'Message sent successfully!'})
+            
+        except Exception as email_error:
+            print(f"Error sending contact email: {str(email_error)}")
+            return jsonify({'message': 'Message received but failed to send email notification. We will still review your message.'}), 500
+        
+    except Exception as e:
+        print(f"Error in submit_contact: {str(e)}")
+        return jsonify({'message': 'An error occurred while processing your message. Please try again.'}), 500
+
 @app.route('/api/user/export-data', methods=['GET'])
 @token_required
 def export_user_data(current_user):

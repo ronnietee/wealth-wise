@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - STEWARD{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1><i class="fas fa-envelope"></i> Contact Us</h1>
+        <p>We'd love to hear from you! Send us a message and we'll respond as soon as possible.</p>
+    </div>
+
+    <div class="contact-container">
+        <div class="contact-info">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3>Email Us</h3>
+                <p>Send us an email and we'll respond within 24 hours</p>
+                <a href="mailto:support@steward.com">support@steward.com</a>
+            </div>
+
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Response Time</h3>
+                <p>We typically respond to all inquiries within 24 hours during business days</p>
+                <span class="response-time">24 hours</span>
+            </div>
+
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h3>Support</h3>
+                <p>Need help with your budget? We're here to assist you with any questions</p>
+                <span class="support-type">Technical & General Support</span>
+            </div>
+        </div>
+
+        <div class="contact-form-container">
+            <div class="contact-form-card">
+                <div class="form-header">
+                    <h2><i class="fas fa-paper-plane"></i> Send us a Message</h2>
+                    <p>Fill out the form below and we'll get back to you as soon as possible</p>
+                </div>
+
+                <form id="contactForm" class="contact-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject *</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Select a subject</option>
+                            <option value="bug-report">Bug Report</option>
+                            <option value="feature-request">Feature Request</option>
+                            <option value="general-inquiry">General Inquiry</option>
+                            <option value="account-issue">Account Issue</option>
+                            <option value="billing-question">Billing Question</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority">
+                            <option value="low">Low - General question or suggestion</option>
+                            <option value="medium" selected>Medium - Important issue or request</option>
+                            <option value="high">High - Critical issue affecting functionality</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" name="message" required placeholder="Please describe your issue, question, or feedback in detail. The more information you provide, the better we can assist you." rows="6"></textarea>
+                        <small class="form-help">Minimum 10 characters, maximum 2000 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newsletter" name="newsletter">
+                            <span class="checkmark"></span>
+                            Subscribe to our newsletter for updates and tips
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                            <i class="fas fa-eraser"></i> Clear Form
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-section">
+        <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h4>How do I reset my password?</h4>
+                <p>Click on "Forgot Password?" on the login page and follow the instructions sent to your email.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Can I export my budget data?</h4>
+                <p>Yes! Go to Settings > Data Management > Export Data to download your budget information.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How do I create a new budget period?</h4>
+                <p>Navigate to the Budgets page and click "Create New Budget" to set up a new period.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Is my data secure?</h4>
+                <p>Absolutely! We use industry-standard encryption and security measures to protect your information.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const messageField = document.getElementById('message');
+    const charCount = document.createElement('div');
+    charCount.className = 'char-count';
+    messageField.parentNode.appendChild(charCount);
+
+    // Character count for message field
+    messageField.addEventListener('input', function() {
+        const length = this.value.length;
+        charCount.textContent = `${length}/2000 characters`;
+        charCount.style.color = length > 2000 ? '#dc3545' : '#6c757d';
+        
+        if (length > 2000) {
+            this.value = this.value.substring(0, 2000);
+            charCount.textContent = '2000/2000 characters (truncated)';
+        }
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Validate required fields
+        if (!data.name || !data.email || !data.subject || !data.message) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        // Validate message length
+        if (data.message.length < 10) {
+            showNotification('Message must be at least 10 characters long', 'error');
+            return;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(data.email)) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        submitBtn.disabled = true;
+        
+        // Submit form
+        fetch('/api/contact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            showNotification('Message sent successfully! We\'ll get back to you soon.', 'success');
+            clearForm();
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+            showNotification('Failed to send message. Please try again or email us directly.', 'error');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+});
+
+function clearForm() {
+    document.getElementById('contactForm').reset();
+    const charCount = document.querySelector('.char-count');
+    if (charCount) {
+        charCount.textContent = '0/2000 characters';
+        charCount.style.color = '#6c757d';
+    }
+}
+</script>
+{% endblock %}
