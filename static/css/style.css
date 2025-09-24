@@ -843,7 +843,21 @@ body.modal-open {
     height: 70px;
 }
 
+.nav-brand {
+    display: flex;
+    align-items: center;
+}
+
 .nav-brand .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #8B4513;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.nav-logo {
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -854,8 +868,13 @@ body.modal-open {
 
 .logo-image {
     height: 40px;
+}
+
+.logo-img {
+    height: 40px;
     width: auto;
-    margin-right: 0.5rem;
+    max-width: 40px;
+    object-fit: contain;
 }
 
 .nav-menu {
