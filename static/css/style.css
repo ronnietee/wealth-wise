@@ -2652,6 +2652,27 @@ body.modal-open {
     background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
 }
 
+/* Password strength indicators */
+.strength-weak { 
+    background: #dc3545; 
+    width: 25%; 
+}
+
+.strength-fair { 
+    background: #ffc107; 
+    width: 50%; 
+}
+
+.strength-good { 
+    background: #17a2b8; 
+    width: 75%; 
+}
+
+.strength-strong { 
+    background: #28a745; 
+    width: 100%; 
+}
+
 /* Mobile Form Responsive */
 @media (max-width: 768px) {
     .form-row {

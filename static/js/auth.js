@@ -37,6 +37,12 @@ function setupAuthListeners() {
             switchTab(tab);
         });
     });
+    
+    // Password strength validation for registration
+    const regPasswordInput = document.getElementById('regPassword');
+    if (regPasswordInput) {
+        regPasswordInput.addEventListener('input', updateRegistrationPasswordStrength);
+    }
 }
 
 function handleForgotPassword(e) {
@@ -193,7 +199,7 @@ function handleRegister(e) {
     }
     
     if (!validatePassword(data.password)) {
-        showNotification('Password must be at least 6 characters long', 'error');
+        showNotification('Password does not meet requirements. Must be 8+ characters with uppercase, lowercase, number, and special character.', 'error');
         return;
     }
     
@@ -369,6 +375,40 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// Password strength validation for registration
+function updateRegistrationPasswordStrength() {
+    const password = document.getElementById('regPassword').value;
+    const strengthBar = document.getElementById('regStrengthBar');
+    const strengthText = document.getElementById('regStrengthText');
+    
+    if (password.length === 0) {
+        strengthBar.className = 'strength-fill';
+        strengthText.textContent = 'Enter a password';
+        strengthText.style.color = '#6c757d';
+        return;
+    }
+    
+    const { score } = checkPasswordStrength(password);
+    
+    // Update strength bar
+    strengthBar.className = 'strength-fill';
+    strengthBar.classList.add(getPasswordStrengthClass(score));
+    
+    // Update strength text
+    strengthText.textContent = getPasswordStrengthText(score);
+    
+    // Update text color
+    if (score <= 1) {
+        strengthText.style.color = '#dc3545';
+    } else if (score <= 2) {
+        strengthText.style.color = '#ffc107';
+    } else if (score <= 3) {
+        strengthText.style.color = '#17a2b8';
+    } else {
+        strengthText.style.color = '#28a745';
+    }
+}
 
 // Password visibility toggle (if needed)
 function togglePasswordVisibility(inputId) {

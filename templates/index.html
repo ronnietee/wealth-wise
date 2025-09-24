@@ -132,6 +132,21 @@
                     <div class="form-group">
                         <label for="regPassword">Password</label>
                         <input type="password" id="regPassword" name="password" placeholder="Create a strong password" required>
+                        <div class="password-requirements" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 0.85rem;">
+                            <div style="font-weight: 600; margin-bottom: 8px; color: #495057;">Password Requirements:</div>
+                            <ul style="margin: 0; padding-left: 16px; color: #6c757d; font-size: 0.8rem;">
+                                <li>At least 8 characters long</li>
+                                <li>Contains uppercase and lowercase letters</li>
+                                <li>Contains at least one number</li>
+                                <li>Contains at least one special character</li>
+                            </ul>
+                        </div>
+                        <div class="password-strength" style="margin-top: 8px; font-size: 0.85rem;">
+                            <div class="strength-bar" style="height: 4px; background: #e9ecef; border-radius: 2px; margin-top: 5px; overflow: hidden;">
+                                <div class="strength-fill" id="regStrengthBar" style="height: 100%; transition: all 0.3s ease; border-radius: 2px;"></div>
+                            </div>
+                            <span id="regStrengthText" style="font-size: 0.8rem;">Enter a password</span>
+                        </div>
                         <div class="error-message" id="regPasswordError"></div>
                     </div>
                     <div class="form-group">

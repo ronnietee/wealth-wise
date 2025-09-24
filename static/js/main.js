@@ -565,7 +565,49 @@ function validateEmail(email) {
 }
 
 function validatePassword(password) {
-    return password.length >= 6;
+    // Enhanced password validation - same as reset password requirements
+    if (password.length < 8) return false;
+    if (!/[a-z]/.test(password)) return false; // lowercase
+    if (!/[A-Z]/.test(password)) return false; // uppercase
+    if (!/[0-9]/.test(password)) return false; // number
+    if (!/[^A-Za-z0-9]/.test(password)) return false; // special character
+    return true;
+}
+
+function checkPasswordStrength(password) {
+    let score = 0;
+    let feedback = [];
+    
+    if (password.length >= 8) score += 1;
+    else feedback.push('At least 8 characters');
+    
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback.push('Lowercase letter');
+    
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback.push('Uppercase letter');
+    
+    if (/[0-9]/.test(password)) score += 1;
+    else feedback.push('Number');
+    
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    else feedback.push('Special character');
+    
+    return { score, feedback };
+}
+
+function getPasswordStrengthText(score) {
+    if (score <= 1) return 'Weak';
+    if (score <= 2) return 'Fair';
+    if (score <= 3) return 'Good';
+    return 'Strong';
+}
+
+function getPasswordStrengthClass(score) {
+    if (score <= 1) return 'strength-weak';
+    if (score <= 2) return 'strength-fair';
+    if (score <= 3) return 'strength-good';
+    return 'strength-strong';
 }
 
 function validateAmount(amount) {
