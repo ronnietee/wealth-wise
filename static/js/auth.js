@@ -199,7 +199,7 @@ function handleRegister(e) {
     }
     
     if (!validatePassword(data.password)) {
-        showNotification('Password does not meet requirements. Must be 8+ characters with uppercase, lowercase, number, and special character.', 'error');
+        showNotification('Password must be at least 8 characters long and contain uppercase letters, lowercase letters, numbers, and special characters.', 'error');
         return;
     }
     
