@@ -12,74 +12,64 @@
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
-    <nav class="navbar" role="navigation" aria-label="Main navigation">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <a href="/dashboard" class="logo-link">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="STEWARD Logo" class="logo-image">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <a href="/dashboard" class="sidebar-logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="STEWARD Logo" class="sidebar-logo-img">
+                    <span class="sidebar-logo-text">STEWARD</span>
                 </a>
             </div>
-            <div class="nav-menu" id="nav-menu" role="menubar">
-                <a href="/dashboard" class="nav-link" role="menuitem" aria-label="Go to Dashboard">
-                    <i class="fas fa-home" aria-hidden="true"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="/income" class="nav-link" role="menuitem" aria-label="Manage Income">
-                    <i class="fas fa-dollar-sign" aria-hidden="true"></i>
-                    <span>Income</span>
-                </a>
-                <a href="/breakdown" class="nav-link" role="menuitem" aria-label="View Budget Breakdown">
-                    <i class="fas fa-list" aria-hidden="true"></i>
-                    <span>Breakdown</span>
-                </a>
-                <a href="/transactions" class="nav-link" role="menuitem" aria-label="View Transactions">
-                    <i class="fas fa-list-alt" aria-hidden="true"></i>
-                    <span>Transactions</span>
-                </a>
-                <a href="/budgets" class="nav-link" role="menuitem" aria-label="Manage Budgets">
-                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
-                    <span>Budgets</span>
-                </a>
-                <a href="/contact" class="nav-link" role="menuitem" aria-label="Contact Us">
-                    <i class="fas fa-envelope" aria-hidden="true"></i>
-                    <span>Contact</span>
-                </a>
-                <div class="nav-actions">
-                    <div class="nav-dropdown">
-                        <button class="nav-action-btn dropdown-toggle" onclick="toggleSettingsDropdown()" role="menuitem" aria-label="Application Settings" title="Settings" aria-expanded="false" aria-haspopup="true">
-                        <i class="fas fa-cog" aria-hidden="true"></i>
-                        </button>
-                        <div class="dropdown-menu" id="settingsDropdown">
-                            <a href="/settings" class="dropdown-item">
-                                <i class="fas fa-cog"></i>
-                                Settings Page
-                            </a>
-                            <a href="#" class="dropdown-item" onclick="openEmailModal()">
-                                <i class="fas fa-envelope"></i>
-                                Change Email
-                            </a>
-                            <a href="#" class="dropdown-item" onclick="openPasswordModal()">
-                                <i class="fas fa-key"></i>
-                                Change Password
-                            </a>
-                            <a href="#" class="dropdown-item" onclick="openCurrencyModal()">
-                                <i class="fas fa-dollar-sign"></i>
-                                Change Currency
-                            </a>
-                        </div>
-                    </div>
-                    <button class="nav-action-btn logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application" title="Logout">
-                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </div>
-            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-menu">
-                <span class="bar" aria-hidden="true"></span>
-                <span class="bar" aria-hidden="true"></span>
-                <span class="bar" aria-hidden="true"></span>
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar" title="Collapse/Expand Sidebar">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
             </button>
         </div>
-    </nav>
+        
+               <nav class="sidebar-nav" role="menubar">
+                   <a href="/dashboard" class="sidebar-link" role="menuitem" aria-label="Go to Dashboard" data-page="dashboard">
+                       <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                       <span class="sidebar-link-text">Dashboard</span>
+                   </a>
+                   <a href="/income" class="sidebar-link" role="menuitem" aria-label="Manage Income" data-page="income">
+                       <i class="fas fa-coins" aria-hidden="true"></i>
+                       <span class="sidebar-link-text">Income</span>
+                   </a>
+                   <a href="/breakdown" class="sidebar-link" role="menuitem" aria-label="View Budget Breakdown" data-page="breakdown">
+                       <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                       <span class="sidebar-link-text">Breakdown</span>
+                   </a>
+                   <a href="/transactions" class="sidebar-link" role="menuitem" aria-label="View Transactions" data-page="transactions">
+                       <i class="fas fa-receipt" aria-hidden="true"></i>
+                       <span class="sidebar-link-text">Transactions</span>
+                   </a>
+                   <a href="/budgets" class="sidebar-link" role="menuitem" aria-label="Manage Budgets" data-page="budgets">
+                       <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                       <span class="sidebar-link-text">Budgets</span>
+                   </a>
+                   <a href="/contact" class="sidebar-link" role="menuitem" aria-label="Contact Us" data-page="contact">
+                       <i class="fas fa-comments" aria-hidden="true"></i>
+                       <span class="sidebar-link-text">Contact</span>
+                   </a>
+               </nav>
+        
+        <div class="sidebar-footer">
+            <div class="sidebar-actions">
+                <a href="/settings" class="sidebar-action-btn" role="menuitem" aria-label="Application Settings" title="Settings">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                    <span class="sidebar-action-text">Settings</span>
+                </a>
+                <button class="sidebar-action-btn logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application" title="Logout">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    <span class="sidebar-action-text">Logout</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
 
     <!-- Breadcrumb Navigation -->
     <div class="breadcrumb-container" id="breadcrumb-container" style="display: none;">
@@ -93,9 +83,17 @@
         </div>
     </div>
 
-    <main class="main-content" id="main-content" role="main">
-        {% block content %}{% endblock %}
-    </main>
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Mobile menu button -->
+        <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <main class="main-content" id="main-content" role="main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
     <!-- Add Expense Modal -->
     <div class="modal" id="addExpenseModal">
@@ -289,55 +287,6 @@
             loadUserSettingsForModals();
         });
 
-        // Settings dropdown functionality
-        function toggleSettingsDropdown() {
-            const dropdown = document.getElementById('settingsDropdown');
-            const button = document.querySelector('.nav-action-btn.dropdown-toggle');
-            const isOpen = dropdown.style.display === 'block';
-            
-            // Close all dropdowns first
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.style.display = 'none';
-            });
-            
-            // Toggle current dropdown
-            if (!isOpen) {
-                // Calculate position relative to button
-                const buttonRect = button.getBoundingClientRect();
-                dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-                dropdown.style.right = (window.innerWidth - buttonRect.right) + 'px';
-                dropdown.style.display = 'block';
-                // Update aria-expanded attribute
-                button.setAttribute('aria-expanded', 'true');
-            } else {
-                dropdown.style.display = 'none';
-                button.setAttribute('aria-expanded', 'false');
-            }
-        }
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.nav-dropdown')) {
-                document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                    menu.style.display = 'none';
-                });
-                // Reset aria-expanded attributes
-                document.querySelectorAll('.dropdown-toggle').forEach(button => {
-                    button.setAttribute('aria-expanded', 'false');
-                });
-            }
-        });
-
-        // Reposition dropdown on window resize
-        window.addEventListener('resize', function() {
-            const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown && dropdown.style.display === 'block') {
-                const button = document.querySelector('.nav-action-btn.dropdown-toggle');
-                const buttonRect = button.getBoundingClientRect();
-                dropdown.style.top = (buttonRect.bottom + 5) + 'px';
-                dropdown.style.right = (window.innerWidth - buttonRect.right) + 'px';
-            }
-        });
 
         // Load user settings for modals
         function loadUserSettingsForModals() {
@@ -511,6 +460,155 @@
                 closeCurrencyModal();
             }
         }
+
+        // Sidebar functionality
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const mainWrapper = document.querySelector('.main-wrapper');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            
+            // Load sidebar state from localStorage, default to pinned and expanded
+            let isPinned = localStorage.getItem('sidebarPinned');
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true'; // Default to expanded
+            
+            // Force pinned state if not set or if it's false
+            if (isPinned === null || isPinned === 'false') {
+                isPinned = 'true';
+                localStorage.setItem('sidebarPinned', 'true');
+            }
+            
+            // Clear any existing localStorage to ensure fresh start
+            if (localStorage.getItem('sidebarPinned') === 'false') {
+                localStorage.setItem('sidebarPinned', 'true');
+                isPinned = true;
+            }
+            
+            isPinned = isPinned === 'true';
+            
+            
+            if (isPinned) {
+                sidebar.classList.add('pinned');
+            }
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+            }
+            
+            // Update main content margin
+            updateMainContentMargin();
+            
+            // Toggle sidebar collapsed/expanded
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+                updateMainContentMargin();
+                
+                // Update toggle icon
+                const icon = sidebarToggle.querySelector('i');
+                if (isCollapsed) {
+                    icon.className = 'fas fa-chevron-right';
+                    sidebarToggle.title = 'Expand Sidebar';
+                } else {
+                    icon.className = 'fas fa-chevron-left';
+                    sidebarToggle.title = 'Collapse Sidebar';
+                }
+            });
+            
+            // Set initial icon state
+            const icon = sidebarToggle.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+                sidebarToggle.title = 'Expand Sidebar';
+            } else {
+                icon.className = 'fas fa-chevron-left';
+                sidebarToggle.title = 'Collapse Sidebar';
+            }
+            
+            // Mobile sidebar toggle
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('mobile');
+                mobileMenuBtn.style.display = 'block';
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            } else {
+                mobileMenuBtn.style.display = 'none';
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.add('mobile');
+                    mobileMenuBtn.style.display = 'block';
+                } else {
+                    sidebar.classList.remove('mobile', 'active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuBtn.style.display = 'none';
+                }
+                updateMainContentMargin();
+            });
+            
+            // Highlight active page
+            highlightActivePage();
+        }
+        
+        function updateMainContentMargin() {
+            const sidebar = document.getElementById('sidebar');
+            const mainWrapper = document.querySelector('.main-wrapper');
+            const isPinned = sidebar.classList.contains('pinned');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            const isMobile = window.innerWidth <= 768;
+            
+            
+            if (isMobile) {
+                mainWrapper.style.marginLeft = '0';
+            } else if (isPinned) {
+                if (isCollapsed) {
+                    mainWrapper.style.marginLeft = '60px';
+                } else {
+                    mainWrapper.style.marginLeft = '250px';
+                }
+            } else {
+                mainWrapper.style.marginLeft = '0';
+            }
+        }
+        
+        function highlightActivePage() {
+            const currentPath = window.location.pathname;
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                const linkPath = link.getAttribute('href');
+                if (currentPath === linkPath || (currentPath.startsWith(linkPath) && linkPath !== '/')) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+                updateMainContentMargin();
+            }
+        }
+        
+        
+        // Initialize sidebar when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSidebar();
+        });
     </script>
     {% block scripts %}{% endblock %}
 </body>

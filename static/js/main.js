@@ -25,10 +25,10 @@ function initializeNavigation() {
         
         // Close menu when clicking outside
         document.addEventListener('click', function(e) {
-            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
-                navToggle.classList.remove('active');
-                navMenu.classList.remove('active');
-            }
+        if (navToggle && navMenu && !navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+        }
         });
     }
     
@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Close mobile menu when clicking outside
     document.addEventListener('click', function(e) {
-        if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+        if (navToggle && navMenu && !navToggle.contains(e.target) && !navMenu.contains(e.target)) {
             navMenu.classList.remove('active');
         }
     });
@@ -529,6 +529,15 @@ async function apiCall(url, options = {}) {
         console.error('API call failed:', error);
         showNotification(error.message || 'An error occurred', 'error');
         throw error;
+    }
+}
+
+// Modal functions
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
     }
 }
 
