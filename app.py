@@ -1082,13 +1082,11 @@ def contact():
 def submit_contact():
     try:
         data = request.get_json()
-        print(f"Contact form data received: {data}")
         
         # Validate required fields
         required_fields = ['name', 'email', 'subject', 'message']
         for field in required_fields:
             if not data.get(field):
-                print(f"Missing required field: {field}")
                 return jsonify({'message': f'{field.replace("_", " ").title()} is required'}), 400
         
         # Validate email format
@@ -1221,16 +1219,11 @@ This message was sent from the STEWARD contact form.
         
         # Send email
         try:
-            print(f"Attempting to send email to: {admin_email}")
-            print(f"Using SMTP server: {os.getenv('SMTP_SERVER', 'smtp.gmail.com')}:{os.getenv('SMTP_PORT', '587')}")
-            print(f"Using SMTP username: {os.getenv('SMTP_USERNAME', '')}")
-            
             with smtplib.SMTP(os.getenv('SMTP_SERVER', 'smtp.gmail.com'), int(os.getenv('SMTP_PORT', '587'))) as server:
                 server.starttls()
                 server.login(os.getenv('SMTP_USERNAME', ''), os.getenv('SMTP_PASSWORD', ''))
                 server.send_message(msg)
             
-            print("Email sent successfully!")
             return jsonify({'message': 'Message sent successfully!'})
             
         except Exception as email_error:
