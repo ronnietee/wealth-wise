@@ -2663,6 +2663,27 @@ body.modal-open {
     text-decoration: none;
 }
 
+.footer-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.footer-logo {
+    height: 24px;
+    width: auto;
+    max-width: 24px;
+    object-fit: contain;
+}
+
+.footer-text {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #8B4513;
+}
+
 .verse {
     font-style: italic;
     color: #bdc3c7;
@@ -4938,6 +4959,15 @@ body.modal-open {
     
     .contact-icon {
         font-size: 1.5rem;
+    }
+    
+    .footer-logo {
+        height: 20px;
+        max-width: 20px;
+    }
+    
+    .footer-text {
+        font-size: 1rem;
     }
     
     .page-header h1 i {
