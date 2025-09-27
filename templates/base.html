@@ -59,10 +59,6 @@
                     <i class="fas fa-cog" aria-hidden="true"></i>
                     <span class="sidebar-action-text">Settings</span>
                 </a>
-                <button class="sidebar-action-btn logout-btn" onclick="logout()" role="menuitem" aria-label="Logout from application" title="Logout">
-                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    <span class="sidebar-action-text">Logout</span>
-                </button>
             </div>
         </div>
     </aside>
@@ -82,6 +78,18 @@
             </nav>
         </div>
     </div>
+
+    <!-- Top Banner -->
+    <header class="top-banner">
+        <div class="banner-content">
+            <div class="banner-actions">
+                <button class="banner-logout-btn" onclick="logout()" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
     <!-- Main Content Area -->
     <div class="main-wrapper">
@@ -574,6 +582,9 @@
             } else {
                 mainWrapper.style.marginLeft = '0';
             }
+            
+            // Ensure banner is always visible
+            mainWrapper.style.marginTop = '60px';
         }
         
         function highlightActivePage() {
