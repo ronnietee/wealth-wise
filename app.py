@@ -127,7 +127,18 @@ class PasswordResetToken(db.Model):
     token = db.Column(db.String(100), unique=True, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
     used = db.Column(db.Boolean, default=False)
+
+class Account(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    account_type = db.Column(db.String(50), nullable=False)  # 'checking', 'savings', 'credit', 'investment', 'cash', 'other'
+    bank_name = db.Column(db.String(100))
+    account_number = db.Column(db.String(50))  # Last 4 digits or masked
+    current_balance = db.Column(db.Float, default=0)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
 
 # Authentication decorator
 def token_required(f):
@@ -1124,6 +1135,182 @@ def delete_user_account(current_user):
         db.session.rollback()
         print(f"Error in delete_user_account: {str(e)}")
         return jsonify({'message': f'Error deleting account: {str(e)}'}), 500
+
+# Accounts API Routes
+@app.route('/api/accounts', methods=['GET'])
+@token_required
+def get_accounts(current_user):
+    accounts = Account.query.filter_by(user_id=current_user.id, is_active=True).all()
+    return jsonify([{
+        'id': account.id,
+        'name': account.name,
+        'account_type': account.account_type,
+        'bank_name': account.bank_name,
+        'account_number': account.account_number,
+        'current_balance': account.current_balance,
+        'created_at': account.created_at.isoformat(),
+        'updated_at': account.updated_at.isoformat()
+    } for account in accounts])
+
+@app.route('/api/accounts', methods=['POST'])
+@token_required
+def create_account(current_user):
+    data = request.get_json()
+    
+    # Validate required fields
+    if not data.get('name') or not data.get('account_type'):
+        return jsonify({'message': 'Account name and type are required'}), 400
+    
+    # Validate account type
+    valid_types = ['checking', 'savings', 'credit', 'investment', 'cash', 'other']
+    if data['account_type'] not in valid_types:
+        return jsonify({'message': 'Invalid account type'}), 400
+    
+    try:
+        account = Account(
+            name=data['name'],
+            account_type=data['account_type'],
+            bank_name=data.get('bank_name'),
+            account_number=data.get('account_number'),
+            current_balance=data.get('current_balance', 0),
+            user_id=current_user.id
+        )
+        
+        db.session.add(account)
+        db.session.commit()
+        
+        return jsonify({
+            'id': account.id,
+            'name': account.name,
+            'account_type': account.account_type,
+            'bank_name': account.bank_name,
+            'account_number': account.account_number,
+            'current_balance': account.current_balance,
+            'created_at': account.created_at.isoformat(),
+            'updated_at': account.updated_at.isoformat()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error creating account: {str(e)}'}), 500
+
+@app.route('/api/accounts/<int:account_id>', methods=['PUT'])
+@token_required
+def update_account(current_user, account_id):
+    account = Account.query.filter_by(id=account_id, user_id=current_user.id, is_active=True).first()
+    if not account:
+        return jsonify({'message': 'Account not found'}), 404
+    
+    data = request.get_json()
+    
+    # Validate account type if provided
+    if 'account_type' in data:
+        valid_types = ['checking', 'savings', 'credit', 'investment', 'cash', 'other']
+        if data['account_type'] not in valid_types:
+            return jsonify({'message': 'Invalid account type'}), 400
+    
+    try:
+        if 'name' in data:
+            account.name = data['name']
+        if 'account_type' in data:
+            account.account_type = data['account_type']
+        if 'bank_name' in data:
+            account.bank_name = data['bank_name']
+        if 'account_number' in data:
+            account.account_number = data['account_number']
+        if 'current_balance' in data:
+            account.current_balance = data['current_balance']
+        
+        account.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({
+            'id': account.id,
+            'name': account.name,
+            'account_type': account.account_type,
+            'bank_name': account.bank_name,
+            'account_number': account.account_number,
+            'current_balance': account.current_balance,
+            'created_at': account.created_at.isoformat(),
+            'updated_at': account.updated_at.isoformat()
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error updating account: {str(e)}'}), 500
+
+@app.route('/api/accounts/<int:account_id>', methods=['DELETE'])
+@token_required
+def delete_account(current_user, account_id):
+    account = Account.query.filter_by(id=account_id, user_id=current_user.id, is_active=True).first()
+    if not account:
+        return jsonify({'message': 'Account not found'}), 404
+    
+    try:
+        account.is_active = False
+        db.session.commit()
+        return jsonify({'message': 'Account deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error deleting account: {str(e)}'}), 500
+
+@app.route('/api/accounts/balance-summary', methods=['GET'])
+@token_required
+def get_balance_summary(current_user):
+    try:
+        # Get total of all accounts
+        accounts = Account.query.filter_by(user_id=current_user.id, is_active=True).all()
+        total_accounts_balance = sum(account.current_balance for account in accounts)
+        
+        # Get application calculated balance from active budget period
+        app_balance = 0
+        
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        
+        if active_period:
+            budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+            
+            if budget:
+                # Calculate total income from income sources
+                total_income = sum(source.amount for source in budget.income_sources)
+                total_income += budget.balance_brought_forward or 0
+                
+                # Calculate total spent from transactions within the active period
+                user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
+                total_spent = db.session.query(db.func.sum(Transaction.amount)).filter(
+                    Transaction.subcategory_id.in_(user_subcategory_ids),
+                    Transaction.transaction_date >= active_period.start_date,
+                    Transaction.transaction_date <= active_period.end_date
+                ).scalar() or 0
+                
+                app_balance = total_income - total_spent
+        
+        # Calculate alignment
+        balance_difference = total_accounts_balance - app_balance
+        alignment_percentage = (app_balance / total_accounts_balance * 100) if total_accounts_balance != 0 else 0
+        
+        return jsonify({
+            'total_accounts_balance': total_accounts_balance,
+            'app_balance': app_balance,
+            'balance_difference': balance_difference,
+            'alignment_percentage': round(alignment_percentage, 2),
+            'is_aligned': abs(balance_difference) < 0.01,  # Consider aligned if difference is less than 1 cent
+            'accounts_count': len(accounts)
+        })
+        
+    except Exception as e:
+        print(f"Error in get_balance_summary: {str(e)}")
+        return jsonify({'message': f'Error calculating balance summary: {str(e)}'}), 500
+
+@app.route('/accounts')
+def accounts_page():
+    return render_template('accounts.html')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_file('static/images/logo.png', mimetype='image/png')
 
 @app.route('/contact')
 def contact():
