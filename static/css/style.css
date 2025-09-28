@@ -1084,7 +1084,7 @@ body.modal-open {
 .sidebar-logo-text {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #8B4513;
+    color: white;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: opacity 0.3s ease;
@@ -1303,16 +1303,18 @@ body.modal-open {
     background: none;
     border: none;
     color: white;
-    font-size: 0.85rem;
-    font-weight: 400;
+    font-size: 0.75rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
+    text-transform: uppercase;
 }
 
 .banner-logout-btn:hover {
     color: rgba(255, 255, 255, 0.8);
-    text-decoration: underline;
+    background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
 }
 
 .banner-logout-btn i {
@@ -1449,7 +1451,7 @@ body.modal-open {
 
 .page-subtitle {
     color: #6c757d;
-    font-size: 1rem;
+    font-size: 0.8rem;
     margin: 0.5rem 0 0 0;
     font-weight: 400;
     line-height: 1.4;
@@ -6171,7 +6173,7 @@ body.modal-open {
 .breakdown-container .subcategory-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 1rem;
     margin-bottom: 0.75rem;
     background: #f8f9fa;
@@ -6179,6 +6181,7 @@ body.modal-open {
     border: 1px solid rgba(139, 69, 19, 0.15);
     transition: all 0.3s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    gap: 1rem;
 }
 
 .breakdown-container .subcategory-row:hover {
@@ -6188,22 +6191,21 @@ body.modal-open {
 
 .breakdown-container .subcategory-info {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
     flex: 1;
     min-width: 0;
+    flex-direction: column;
 }
 
 .breakdown-container .subcategory-name {
     font-weight: 600;
     color: #2c3e50;
     font-size: 1rem;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 1rem;
+    width: 100%;
+    word-wrap: break-word;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
 }
 
 .breakdown-container .subcategory-actions {
@@ -6228,6 +6230,7 @@ body.modal-open {
     gap: 1.25rem;
     align-items: center;
     flex-shrink: 0;
+    min-width: 300px;
 }
 
 .breakdown-container .amount-group {
@@ -6361,7 +6364,8 @@ body.modal-open {
     }
     
     .breakdown-container .subcategory-info {
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: flex-start;
         margin-bottom: 0.5rem;
     }
     
@@ -6371,6 +6375,7 @@ body.modal-open {
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
+        min-width: auto;
     }
     
     .breakdown-container .amount-group {
