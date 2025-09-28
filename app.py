@@ -43,6 +43,9 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    display_name = db.Column(db.String(100), nullable=True)
     currency = db.Column(db.String(10), default='USD')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -167,6 +170,42 @@ def reset_password_page():
     
     return render_template('reset_password.html', token=token)
 
+def get_current_user():
+    """Get current user from JWT token in Authorization header or from session"""
+    # Try to get token from Authorization header first
+    token = request.headers.get('Authorization')
+    if token:
+        try:
+            if token.startswith('Bearer '):
+                token = token[7:]
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user = User.query.get(data['user_id'])
+            if user:
+                return user
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            pass
+    
+    # Fallback to session (if implemented)
+    if 'user_id' in session:
+        return User.query.get(session['user_id'])
+    
+    return None
+
+@app.route('/api/user/profile')
+def get_user_profile():
+    user = get_current_user()
+    if not user:
+        return jsonify({'message': 'Authentication required'}), 401
+    
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'display_name': user.display_name
+    })
+
 @app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
@@ -202,6 +241,10 @@ def settings():
 def register():
     data = request.get_json()
     
+    # Validate required fields
+    if not data.get('first_name') or not data.get('last_name'):
+        return jsonify({'message': 'First name and last name are required'}), 400
+    
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'message': 'Username already exists'}), 400
     
@@ -229,6 +272,9 @@ def register():
         username=data['username'],
         email=data['email'],
         password_hash=generate_password_hash(password),
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        display_name=data.get('display_name', '').strip() or None,
         currency=data.get('currency', 'USD')
     )
     
@@ -923,6 +969,9 @@ def get_user_settings(current_user):
     return jsonify({
         'username': current_user.username,
         'email': current_user.email,
+        'first_name': current_user.first_name,
+        'last_name': current_user.last_name,
+        'display_name': current_user.display_name,
         'currency': current_user.currency
     })
 
@@ -940,6 +989,9 @@ def update_user_settings(current_user):
         if existing_user and existing_user.id != current_user.id:
             return jsonify({'message': 'Email already exists'}), 400
         current_user.email = data['email']
+    
+    if 'display_name' in data:
+        current_user.display_name = data['display_name'].strip() or None
     
     db.session.commit()
     

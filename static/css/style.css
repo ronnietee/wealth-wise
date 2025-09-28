@@ -1399,12 +1399,24 @@ body.modal-open {
 
 /* Dashboard Styles */
 .page-header {
-    background: white;
-    border-radius: 8px;
-    padding: 0.75rem 1.25rem;
-    margin: 0.75rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(139, 69, 19, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
 }
 
 .header-content {
@@ -1412,18 +1424,21 @@ body.modal-open {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .page-header h1 {
     color: #2c3e50;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     margin: 0;
     background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: -0.5px;
 }
 
 .page-header h1 i {
@@ -1434,9 +1449,10 @@ body.modal-open {
 
 .page-subtitle {
     color: #6c757d;
-    font-size: 0.9rem;
-    margin: 0.25rem 0 0 0;
+    font-size: 1rem;
+    margin: 0.5rem 0 0 0;
     font-weight: 400;
+    line-height: 1.4;
 }
 
 /* Budgets Page Styles */
@@ -2214,12 +2230,7 @@ body.modal-open {
     }
 }
 
-.budget-period-indicator {
-    background: rgba(139, 69, 19, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    border: 1px solid rgba(139, 69, 19, 0.2);
-}
+/* Budget period indicator is now plain text - no special styling needed */
 
 .current-budget {
     display: flex;
@@ -2228,13 +2239,13 @@ body.modal-open {
 }
 
 .budget-name {
-    font-weight: 600;
-    color: #8B4513;
-    font-size: 0.9rem;
+    font-weight: 500;
+    color: #666;
+    font-size: 0.85rem;
 }
 
 .budget-manage-link {
-    color: #8B4513;
+    color: #666;
     text-decoration: none;
     padding: 0.25rem;
     border-radius: 4px;
@@ -2243,8 +2254,8 @@ body.modal-open {
 }
 
 .budget-manage-link:hover {
-    background: rgba(139, 69, 19, 0.2);
-    transform: scale(1.1);
+    color: #8B4513;
+    transform: scale(1.05);
 }
 
 /* Dashboard Content */
@@ -2259,6 +2270,32 @@ body.modal-open {
     margin-bottom: 1rem;
 }
 
+/* Compact overview cards */
+.overview-card.compact {
+    padding: 1rem;
+    min-height: auto;
+}
+
+.overview-card.compact .card-header {
+    margin-bottom: 0.5rem;
+}
+
+.overview-card.compact .card-title h3 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.overview-card.compact .card-title p {
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.7;
+}
+
+.overview-card.compact .card-value .value {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
 /* Overview Cards */
 .overview-cards {
     display: grid;
@@ -2267,11 +2304,11 @@ body.modal-open {
 }
 
 .overview-card {
-    background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(139, 69, 19, 0.15);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -2288,8 +2325,9 @@ body.modal-open {
 }
 
 .overview-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: rgba(139, 69, 19, 0.25);
 }
 
 .card-header {
@@ -2300,14 +2338,15 @@ body.modal-open {
 }
 
 .card-icon {
-    width: 35px;
-    height: 35px;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .income-card .card-icon {
@@ -2320,15 +2359,17 @@ body.modal-open {
 
 .card-title h3 {
     color: #2c3e50;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
     margin: 0;
+    letter-spacing: -0.25px;
 }
 
 .card-title p {
     color: #6c757d;
-    font-size: 0.75rem;
-    margin: 0.125rem 0 0 0;
+    font-size: 0.8rem;
+    margin: 0.25rem 0 0 0;
+    font-weight: 400;
 }
 
 .card-value {
@@ -2336,10 +2377,11 @@ body.modal-open {
 }
 
 .value {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 700;
     color: #2c3e50;
     line-height: 1;
+    letter-spacing: -0.5px;
 }
 
 /* Right Content Area */
@@ -2352,10 +2394,11 @@ body.modal-open {
 /* Progress Section */
 .progress-section {
     background: white;
-    border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(139, 69, 19, 0.15);
+    margin-bottom: 1rem;
 }
 
 .progress-header {
@@ -2744,6 +2787,10 @@ body.modal-open {
     }
 
     .overview-card {
+        padding: 0.75rem;
+    }
+
+    .overview-card.compact {
         padding: 0.75rem;
     }
 

@@ -184,11 +184,13 @@ function handleRegister(e) {
         username: formData.get('username'),
         email: formData.get('email'),
         password: formData.get('password'),
+        first_name: formData.get('firstName'),
+        last_name: formData.get('lastName'),
         currency: formData.get('currency')
     };
     
     // Validate input
-    if (!data.username || !data.email || !data.password) {
+    if (!data.username || !data.email || !data.password || !data.first_name || !data.last_name) {
         showNotification('Please fill in all required fields', 'error');
         return;
     }

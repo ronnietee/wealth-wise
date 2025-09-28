@@ -8,7 +8,7 @@
         <div class="header-content">
             <div>
                 <h1>Dashboard</h1>
-                <p class="page-subtitle">Welcome back! Here's your financial overview.</p>
+                <p class="page-subtitle">Welcome back<span id="user-name"></span>! Here's your financial overview.</p>
             </div>
             <div class="budget-period-indicator">
                 <div class="current-budget">
@@ -76,7 +76,7 @@
         <div class="dashboard-grid">
         <!-- Financial Overview Cards -->
         <div class="overview-cards">
-            <div class="overview-card income-card">
+            <div class="overview-card income-card compact">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-arrow-up"></i>
@@ -91,7 +91,7 @@
                 </div>
             </div>
             
-            <div class="overview-card balance-card">
+            <div class="overview-card balance-card compact">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-wallet"></i>
@@ -107,35 +107,35 @@
             </div>
         </div>
 
-        <!-- Right Content Area -->
-        <div class="right-content">
-            <!-- Progress Visualization -->
-            <div class="progress-section">
-                <div class="progress-card">
-                    <div class="progress-header">
-                        <h3>Budget Progress</h3>
-                        <div class="progress-stats">
-                            <span id="progressPercentage">0%</span>
-                        </div>
+        <!-- Budget Progress Section -->
+        <div class="progress-section">
+            <div class="progress-card">
+                <div class="progress-header">
+                    <h3>Budget Progress</h3>
+                    <div class="progress-stats">
+                        <span id="progressPercentage">0%</span>
                     </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar">
-                            <div id="progressBar" class="progress-fill"></div>
-                        </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div id="progressBar" class="progress-fill"></div>
                     </div>
-                    <div class="progress-details">
-                        <div class="progress-item">
-                            <span class="label">Allocated:</span>
-                            <span id="allocatedAmount" class="amount">$0.00</span>
-                        </div>
-                        <div class="progress-item">
-                            <span class="label">Spent:</span>
-                            <span id="spentAmount" class="amount">$0.00</span>
-                        </div>
+                </div>
+                <div class="progress-details">
+                    <div class="progress-item">
+                        <span class="label">Allocated:</span>
+                        <span id="allocatedAmount" class="amount">$0.00</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="label">Spent:</span>
+                        <span id="spentAmount" class="amount">$0.00</span>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- Right Content Area -->
+        <div class="right-content">
             <!-- Quick Actions -->
             <div class="actions-section">
                 <div class="actions-card">
@@ -208,6 +208,9 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Load user information from JWT token
+    loadUserInfo();
+    
     // Load dashboard data immediately, currency will be loaded globally
     loadDashboardData();
     
@@ -222,6 +225,50 @@ document.addEventListener('DOMContentLoaded', function() {
         loadDashboardData();
     });
 });
+
+function loadUserInfo() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            // Decode JWT token to get user info
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload.user_id;
+            
+            // Fetch user details
+            fetch('/api/user/profile', {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                let displayName = '';
+                if (data.display_name) {
+                    displayName = data.display_name;
+                } else if (data.first_name) {
+                    displayName = data.first_name;
+                } else if (data.username) {
+                    displayName = data.username;
+                }
+                
+                if (displayName) {
+                    document.getElementById('user-name').textContent = ', ' + displayName;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading user info:', error);
+                // Fallback: try to get first name or username from token payload if available
+                if (payload.first_name) {
+                    document.getElementById('user-name').textContent = ', ' + payload.first_name;
+                } else if (payload.username) {
+                    document.getElementById('user-name').textContent = ', ' + payload.username;
+                }
+            });
+        } catch (error) {
+            console.error('Error decoding token:', error);
+        }
+    }
+}
 
 function loadDashboardData() {
     // First load user settings to get currency, then load other data
