@@ -279,6 +279,26 @@ function showLogin() {
     }
 }
 
+function showLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+    } else {
+        console.error('Login modal not found');
+    }
+}
+
+function showSignupModal() {
+    const modal = document.getElementById('signupModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+    } else {
+        console.error('Signup modal not found');
+    }
+}
+
 function showHowItWorks() {
     const modal = document.getElementById('howItWorksModal');
     if (modal) {

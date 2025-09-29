@@ -3,21 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="STEWARD - Christian Family Budgeting Tool">
     <title>STEWARD - Christian Family Budgeting</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/aptos/v1/aptos-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Aptos:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Direct Aptos font loading */
+        @import url('https://fonts.googleapis.com/css2?family=Aptos:wght@300;400;500;600;700&display=swap');
+        
+        .hero-subtitle {
+            font-family: 'Aptos', Arial, sans-serif !important;
+            font-weight: 800 !important;
+        }
+    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="landing-page">
-    <header class="hero">
-        <h1 class="hero-title-overlay">STEWARD</h1>
-        <div class="hero-content">
-            <div class="hero-text">
-                <p class="hero-subtitle">A Christian family budgeting tool designed to help you steward your finances with wisdom and faith</p>
+    <div class="top-ribbon">
+        <div class="ribbon-content">
+            <div class="ribbon-left">
+                <span class="ribbon-text">Welcome to STEWARD</span>
             </div>
+            <div class="ribbon-right">
+                <button class="ribbon-btn ribbon-login" onclick="showLoginModal()">Login</button>
+                <button class="ribbon-btn ribbon-signup" onclick="showSignupModal()">Sign Up</button>
+            </div>
+        </div>
+    </div>
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">STEWARD</h1>
+            <p class="hero-subtitle">You can't get blindsided anymore. Steward gives you full control to plan where your money goes, track expenditure and account for the last cent.</p>
             <div class="hero-actions">
-                <button class="btn btn-primary" onclick="showLogin()">Get Started</button>
-                <button class="btn btn-secondary" onclick="showHowItWorks()">How It Works</button>
+                <button class="btn-modern" onclick="showHowItWorks()">
+                    <i class="fas fa-play-circle"></i>
+                    How It Works
+                </button>
             </div>
         </div>
     </header>
@@ -72,21 +97,16 @@
         </div>
     </section>
 
-    <!-- Login/Register Modal -->
-    <div class="modal" id="authModal">
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Welcome to STEWARD</h2>
-                <button class="close-btn" onclick="closeModal('authModal'); closeAnyModal();">&times;</button>
+                <h2>Welcome Back</h2>
+                <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="welcome-message">
-                    <p>Join thousands of Christian families managing their finances with wisdom and faith.</p>
-                </div>
-                
-                <div class="auth-tabs">
-                    <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
-                    <button class="tab-btn" onclick="switchTab('register')">Create Account</button>
+                    <p>Sign in to your STEWARD account</p>
                 </div>
                 
                 <form id="loginForm" class="auth-form">
@@ -104,9 +124,27 @@
                         <a href="#" onclick="openForgotPasswordModal()" style="color: #8B4513; text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                    <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #6c757d;">
+                        Don't have an account? <a href="#" onclick="closeModal('loginModal'); showSignupModal();" style="color: #8B4513; text-decoration: none;">Sign up here</a>
+                    </div>
                 </form>
+            </div>
+        </div>
+    </div>
 
-                <form id="registerForm" class="auth-form" style="display: none;">
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Join STEWARD</h2>
+                <button class="close-btn" onclick="closeModal('signupModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="welcome-message">
+                    <p>Create your STEWARD account and start managing your finances with faith</p>
+                </div>
+                
+                <form id="registerForm" class="auth-form">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="regFirstName">First Name</label>
@@ -182,10 +220,13 @@
                         By creating an account, you agree to our <a href="#" style="color: #8B4513;">Terms of Service</a> and <a href="#" style="color: #8B4513;">Privacy Policy</a>.
                     </div>
                     <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                    <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #6c757d;">
+                        Already have an account? <a href="#" onclick="closeModal('signupModal'); showLoginModal();" style="color: #8B4513; text-decoration: none;">Sign in here</a>
+                    </div>
                 </form>
             </div>
+        </div>
     </div>
-</div>
 
 <!-- Forgot Password Modal -->
 <div class="modal" id="forgotPasswordModal">
@@ -266,6 +307,17 @@
         </div>
     </footer>
 
+    <script>
+        // Simple Aptos font loading
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force font application
+            const subtitle = document.querySelector('.hero-subtitle');
+            if (subtitle) {
+                subtitle.style.fontFamily = 'Aptos, Arial, sans-serif';
+                subtitle.style.fontWeight = '800';
+            }
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>

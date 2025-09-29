@@ -27,7 +27,7 @@ body {
     left: 0;
     width: 70%;
     height: 100vh;
-    background-image: url('/static/images/blck.png');
+    background-image: url('/static/images/wall1.png');
     /* background-image: url('/static/images/photo.png'); */
     background-size: cover;
     background-position: left center;
