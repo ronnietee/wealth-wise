@@ -324,11 +324,11 @@ body {
     left: 0;
     width: 50%;
     height: 100vh;
-    background-image: url('/static/images/wall1.png');
+    background-image: url('/static/images/wall2.png');
     background-size: cover;
     background-position: left center;
     background-repeat: no-repeat;
-    opacity: 0.4;
+    opacity: 1;
     z-index: 1;
 }
 
@@ -339,7 +339,7 @@ body {
     height: 100vh;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     position: relative;
     z-index: 5;
 }
@@ -349,7 +349,7 @@ body {
     margin: 0 auto;
     position: absolute;
     top: 60%;
-    left: 50%;
+    left: 75%;
     transform: translate(-50%, -50%);
     z-index: 50;
     text-align: center;
@@ -359,15 +359,35 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    width: 50%;
+    box-sizing: border-box;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .hero-content {
+        left: 50%;
+        width: 90%;
+        padding: 1rem;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        letter-spacing: 10px;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.9rem;
+    }
 }
 
 .hero-title {
-    font-size: 5rem;
+    font-size: 4rem;
     font-weight: 450;
-    color: rgb(9, 18, 56) !important;
+    color: rgb(3, 53, 25) !important;
     letter-spacing: 20px;
     white-space: nowrap;
-    font-family: 'Copperplate Gothic', monospace;
+    font-family: 'Copperplate Gothic';
     text-shadow: 
         4px 4px 6px rgba(0, 0, 0, 0.8),
         0 0 20px rgba(255, 255, 255, 0.5);
@@ -376,14 +396,14 @@ body {
 }
 
 .hero-subtitle {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     margin-bottom: 2rem;
-    font-weight: 550 !important;
+    font-weight: 500 !important;
     text-align: center;
-    color: #251e1e !important;
-    font-family: 'Aptos', Arial, sans-serif !important;
+    color: #161212 !important;
+    font-family: 'Century Gothic', Arial !important;
     font-display: swap;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.3px;
     line-height: 1.4;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     position: relative;
@@ -417,7 +437,7 @@ body {
 }
 
 .btn-modern {
-    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+    background: linear-gradient(135deg, rgb(1, 35, 15) 0%, rgb(3, 53, 25) 100%);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -430,7 +450,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+    box-shadow: 0 4px 15px rgba(3, 53, 25, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -452,7 +472,7 @@ body {
 
 .btn-modern:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+    box-shadow: 0 6px 20px rgba(3, 53, 25, 0.4);
 }
 
 .btn-modern:active {
