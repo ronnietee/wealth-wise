@@ -245,6 +245,8 @@ function loadUserInfo() {
                 let displayName = '';
                 if (data.display_name) {
                     displayName = data.display_name;
+                } else if (data.preferred_name) {
+                    displayName = data.preferred_name;
                 } else if (data.first_name) {
                     displayName = data.first_name;
                 } else if (data.username) {
