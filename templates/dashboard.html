@@ -242,19 +242,25 @@ function loadUserInfo() {
             })
             .then(response => response.json())
             .then(data => {
+                console.log('User profile data:', data);
                 let displayName = '';
                 if (data.display_name) {
                     displayName = data.display_name;
+                    console.log('Using display_name:', displayName);
                 } else if (data.preferred_name) {
                     displayName = data.preferred_name;
+                    console.log('Using preferred_name:', displayName);
                 } else if (data.first_name) {
                     displayName = data.first_name;
+                    console.log('Using first_name:', displayName);
                 } else if (data.username) {
                     displayName = data.username;
+                    console.log('Using username:', displayName);
                 }
                 
                 if (displayName) {
                     document.getElementById('user-name').textContent = ', ' + displayName;
+                    console.log('Set user name to:', displayName);
                 }
             })
             .catch(error => {

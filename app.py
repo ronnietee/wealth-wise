@@ -239,7 +239,8 @@ def get_user_profile():
         'email': user.email,
         'first_name': user.first_name,
         'last_name': user.last_name,
-        'display_name': user.display_name
+        'display_name': user.display_name,
+        'preferred_name': user.preferred_name
     })
 
 @app.route('/dashboard')
