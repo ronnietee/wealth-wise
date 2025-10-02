@@ -235,11 +235,7 @@ function loadUserInfo() {
             const userId = payload.user_id;
             
             // Fetch user details
-            fetch('/api/user/profile', {
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            })
+            authenticatedFetch('/api/user/profile')
             .then(response => response.json())
             .then(data => {
                 console.log('User profile data:', data);
@@ -282,11 +278,7 @@ function loadDashboardData() {
     // First load user settings to get currency, then load other data
     loadUserSettings().then(() => {
         // Load budget summary
-        fetch('/api/budget', {
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            }
-        })
+        authenticatedFetch('/api/budget')
         .then(response => {
             if (response.status === 404) {
                 // No budget found, show no budget message
@@ -328,11 +320,7 @@ function loadDashboardData() {
 }
 
 function loadUserSettings() {
-    return fetch('/api/user/settings', {
-        headers: {
-            'Authorization': 'Bearer ' + getToken()
-        }
-    })
+    return authenticatedFetch('/api/user/settings')
     .then(response => response.json())
     .then(data => {
         userCurrency = data.currency || 'USD';
@@ -346,11 +334,7 @@ function loadUserSettings() {
 }
 
 function loadCategoriesOverview() {
-    fetch('/api/categories', {
-        headers: {
-            'Authorization': 'Bearer ' + getToken()
-        }
-    })
+    authenticatedFetch('/api/categories')
     .then(response => response.json())
     .then(categories => {
         let totalAllocated = 0;
@@ -421,11 +405,7 @@ function closeModal(modalId) {
 }
 
 function loadModalCategories() {
-    fetch('/api/categories', {
-        headers: {
-            'Authorization': 'Bearer ' + getToken()
-        }
-    })
+    authenticatedFetch('/api/categories')
     .then(response => response.json())
     .then(categories => {
         const categorySelect = document.getElementById('modalCategory');
@@ -503,11 +483,10 @@ function handleModalExpenseSubmit(e) {
     submitBtn.disabled = true;
     
     // Make API call
-    fetch('/api/transactions', {
+    authenticatedFetch('/api/transactions', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + getToken()
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     })
@@ -543,11 +522,7 @@ function resetModalForm() {
 }
 
 function checkBudgetBalance() {
-    fetch('/api/budget/balance-check', {
-        headers: {
-            'Authorization': 'Bearer ' + getToken()
-        }
-    })
+    authenticatedFetch('/api/budget/balance-check')
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -595,11 +570,7 @@ function dismissBudgetAlert() {
 
 function checkOverspending() {
     console.log('Checking overspending...');
-    fetch('/api/budget/overspending-check', {
-        headers: {
-            'Authorization': 'Bearer ' + getToken()
-        }
-    })
+    authenticatedFetch('/api/budget/overspending-check')
     .then(response => {
         console.log('Overspending response status:', response.status);
         if (!response.ok) {

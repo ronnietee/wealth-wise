@@ -190,11 +190,7 @@ function getCurrencySymbol(currency) {
 // Load user settings first
 async function loadUserSettings() {
     try {
-        const response = await fetch('/api/user/settings', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authenticatedFetch('/api/user/settings');
         
         if (response.ok) {
             const settings = await response.json();
@@ -209,11 +205,7 @@ async function loadUserSettings() {
 // Load current active budget
 async function loadCurrentBudget() {
     try {
-        const response = await fetch('/api/budget', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authenticatedFetch('/api/budget');
         
         if (response.ok) {
             const budget = await response.json();
@@ -242,11 +234,7 @@ async function loadCurrentBudget() {
 // Load all budget periods
 async function loadBudgetPeriods() {
     try {
-        const response = await fetch('/api/budget-periods', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await authenticatedFetch('/api/budget-periods');
         
         if (response.ok) {
             const periods = await response.json();
@@ -322,10 +310,9 @@ function renderBudgetPeriods(periods) {
 // Activate a budget period
 async function activateBudgetPeriod(periodId) {
     try {
-        const response = await fetch(`/api/budget-periods/${periodId}/activate`, {
+        const response = await authenticatedFetch(`/api/budget-periods/${periodId}/activate`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -365,11 +352,8 @@ async function deleteBudgetPeriod(periodId) {
     }
     
     try {
-        const response = await fetch(`/api/budget-periods/${periodId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+        const response = await authenticatedFetch(`/api/budget-periods/${periodId}`, {
+            method: 'DELETE'
         });
         
         if (response.ok) {
@@ -404,10 +388,9 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
     };
     
     try {
-        const response = await fetch('/api/budget-periods', {
+        const response = await authenticatedFetch('/api/budget-periods', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
