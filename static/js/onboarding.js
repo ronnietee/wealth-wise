@@ -563,14 +563,19 @@ class OnboardingFlow {
             const result = await response.json();
 
             if (result.success) {
-                // Store JWT token for API access
-                if (result.token) {
-                    localStorage.setItem('token', result.token);
-                    localStorage.setItem('steward_token', result.token);
+                if (result.email_verification_required) {
+                    // Show email verification step instead of welcome page
+                    this.showEmailVerificationStep(result);
+                } else {
+                    // Store JWT token for API access (for existing users)
+                    if (result.token) {
+                        localStorage.setItem('token', result.token);
+                        localStorage.setItem('steward_token', result.token);
+                    }
+                    
+                    // Show welcome page (step 5) after successful account creation
+                    this.showStep(5);
                 }
-                
-                // Show welcome page (step 5) after successful account creation
-                this.showStep(5);
             } else {
                 // Show specific error message from server
                 this.showError(result.message || 'Account creation failed');
@@ -583,6 +588,52 @@ class OnboardingFlow {
             finishBtn.textContent = originalText;
             finishBtn.disabled = false;
         }
+    }
+
+    showEmailVerificationStep(result) {
+        // Hide all steps
+        for (let i = 1; i <= this.totalSteps; i++) {
+            document.getElementById(`step${i}`).style.display = 'none';
+        }
+        
+        // Hide navigation
+        document.querySelector('.onboarding-navigation').style.display = 'none';
+        
+        // Create email verification step
+        const verificationStep = document.createElement('div');
+        verificationStep.id = 'step-verification';
+        verificationStep.className = 'onboarding-step verification-step';
+        verificationStep.innerHTML = `
+            <div class="verification-content">
+                <div class="verification-icon">
+                    <i class="fas fa-envelope-open"></i>
+                </div>
+                <h2>Check Your Email</h2>
+                <p class="verification-message">${result.message}</p>
+                <div class="verification-details">
+                    <p>We've sent a verification link to:</p>
+                    <p class="email-address">${result.user.email}</p>
+                    <p class="verification-note">Please check your inbox and click the verification link to complete your account setup.</p>
+                </div>
+                <div class="verification-actions">
+                    <button onclick="resendVerificationEmail('${result.user.email}')" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i>
+                        Resend Verification Email
+                    </button>
+                    <button onclick="goToLogin()" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Go to Login
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Insert after the last step
+        const lastStep = document.getElementById(`step${this.totalSteps}`);
+        lastStep.parentNode.insertBefore(verificationStep, lastStep.nextSibling);
+        
+        // Show the verification step
+        verificationStep.style.display = 'block';
     }
 
     showError(message) {
@@ -615,6 +666,42 @@ class OnboardingFlow {
         const metaToken = document.querySelector('meta[name="csrf-token"]');
         return metaToken ? metaToken.getAttribute('content') : 'dummy_token';
     }
+}
+
+// Global functions for email verification
+function resendVerificationEmail(email) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    button.disabled = true;
+    
+    fetch('/api/resend-verification', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Verification email sent successfully! Please check your inbox.');
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error resending verification:', error);
+        alert('Error sending verification email. Please try again.');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function goToLogin() {
+    window.location.href = '/?showLogin=true';
 }
 
 // Initialize onboarding flow when DOM is loaded

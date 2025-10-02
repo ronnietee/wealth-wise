@@ -56,6 +56,7 @@ class User(db.Model):
     preferred_name = db.Column(db.String(100), nullable=True, default=None)
     referral_source = db.Column(db.String(100), nullable=True, default=None)
     referral_details = db.Column(db.Text, nullable=True, default=None)
+    email_verified = db.Column(db.Boolean, default=False)
     
     # Relationships
     categories = db.relationship('Category', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -139,6 +140,14 @@ class PasswordResetToken(db.Model):
     token = db.Column(db.String(100), unique=True, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
     used = db.Column(db.Boolean, default=False)
+
+class EmailVerification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    verified = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -344,6 +353,14 @@ def login():
         print(f"User found: {user.username if user else 'None'}")
         
         if user and check_password_hash(user.password_hash, password):
+            # Check if email is verified
+            if not user.email_verified:
+                return jsonify({
+                    'message': 'Please verify your email address before logging in. Check your inbox for a verification link.',
+                    'email_verification_required': True,
+                    'email': user.email
+                }), 403
+            
             token = jwt.encode({
                 'user_id': user.id,
                 'exp': datetime.utcnow() + timedelta(hours=24)
@@ -2098,6 +2115,59 @@ def send_email(to_email, subject, body):
         print(f"Error sending email: {str(e)}")
         return False
 
+def send_verification_email(user, verification_token):
+    """Send email verification email"""
+    verification_url = f"{request.url_root}verify-email?token={verification_token}"
+    
+    subject = "Verify Your Email - STEWARD"
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #8B4513; margin-bottom: 10px;">STEWARD</h1>
+            <p style="color: #666; font-size: 16px;">Christian Family Budgeting</p>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #333; margin-bottom: 15px;">Welcome to STEWARD!</h2>
+            <p style="color: #555; line-height: 1.6; margin-bottom: 15px;">
+                Hi {user.preferred_name or user.first_name},
+            </p>
+            <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
+                Thank you for signing up for STEWARD! To complete your account setup and start managing your finances, 
+                please verify your email address by clicking the button below.
+            </p>
+            
+            <div style="text-align: center; margin: 25px 0;">
+                <a href="{verification_url}" 
+                   style="background-color: #8B4513; color: white; padding: 12px 30px; text-decoration: none; 
+                          border-radius: 5px; font-weight: bold; display: inline-block;">
+                    Verify Email Address
+                </a>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                If the button doesn't work, you can copy and paste this link into your browser:<br>
+                <a href="{verification_url}" style="color: #8B4513; word-break: break-all;">{verification_url}</a>
+            </p>
+        </div>
+        
+        <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px;">
+            <p>This verification link will expire in 24 hours.</p>
+            <p>If you didn't create an account with STEWARD, please ignore this email.</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="color: #8B4513; font-style: italic; margin: 0;">
+                "The plans of the diligent lead to profit as surely as haste leads to poverty." - Proverbs 21:5
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return send_email(user.email, subject, body)
+
 # Onboarding Routes
 @app.route('/onboarding')
 def onboarding():
@@ -2224,33 +2294,128 @@ def complete_onboarding():
         
         db.session.commit()
         
-        # Log the user in
-        session['user_id'] = user.id
-        session['username'] = user.username
-        session['logged_in'] = True
+        # Create email verification token
+        verification_token = secrets.token_urlsafe(32)
+        verification = EmailVerification(
+            user_id=user.id,
+            token=verification_token,
+            expires_at=datetime.utcnow() + timedelta(hours=24)
+        )
+        db.session.add(verification)
+        db.session.commit()
         
-        # Generate JWT token for API access
-        token = jwt.encode({
-            'user_id': user.id,
-            'exp': datetime.utcnow() + timedelta(hours=24)
-        }, app.config['SECRET_KEY'], algorithm='HS256')
+        # Send verification email
+        email_sent = send_verification_email(user, verification_token)
         
-        return jsonify({
-            'success': True,
-            'message': 'Account created successfully',
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'currency': user.currency
-            },
-            'token': token
-        })
+        if email_sent:
+            return jsonify({
+                'success': True,
+                'message': 'Account created successfully! Please check your email to verify your account.',
+                'email_verification_required': True,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'currency': user.currency
+                }
+            })
+        else:
+            # If email fails, still create account but mark as unverified
+            return jsonify({
+                'success': True,
+                'message': 'Account created successfully! Please check your email to verify your account.',
+                'email_verification_required': True,
+                'email_sent': False,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'currency': user.currency
+                }
+            })
         
     except Exception as e:
         db.session.rollback()
         print(f"Onboarding error: {str(e)}")
         return jsonify({'success': False, 'message': 'An error occurred during account creation'}), 500
+
+@app.route('/verify-email')
+def verify_email():
+    """Email verification page"""
+    token = request.args.get('token')
+    if not token:
+        return render_template('email_verification.html', 
+                             success=False, 
+                             message='Invalid verification link')
+    
+    # Find verification token
+    verification = EmailVerification.query.filter_by(token=token, verified=False).first()
+    
+    if not verification:
+        return render_template('email_verification.html', 
+                             success=False, 
+                             message='Invalid or expired verification link')
+    
+    # Check if token is expired
+    if verification.expires_at < datetime.utcnow():
+        return render_template('email_verification.html', 
+                             success=False, 
+                             message='Verification link has expired. Please request a new one.')
+    
+    # Verify the user's email
+    user = User.query.get(verification.user_id)
+    if user:
+        user.email_verified = True
+        verification.verified = True
+        db.session.commit()
+        
+        return render_template('email_verification.html', 
+                             success=True, 
+                             message='Email verified successfully! You can now log in to your account.')
+    else:
+        return render_template('email_verification.html', 
+                             success=False, 
+                             message='User not found')
+
+@app.route('/api/resend-verification', methods=['POST'])
+def resend_verification():
+    """Resend verification email"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({'success': False, 'message': 'Email is required'}), 400
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        if user.email_verified:
+            return jsonify({'success': False, 'message': 'Email already verified'}), 400
+        
+        # Create new verification token
+        verification_token = secrets.token_urlsafe(32)
+        verification = EmailVerification(
+            user_id=user.id,
+            token=verification_token,
+            expires_at=datetime.utcnow() + timedelta(hours=24)
+        )
+        db.session.add(verification)
+        db.session.commit()
+        
+        # Send verification email
+        email_sent = send_verification_email(user, verification_token)
+        
+        if email_sent:
+            return jsonify({'success': True, 'message': 'Verification email sent successfully'})
+        else:
+            return jsonify({'success': False, 'message': 'Failed to send verification email'}), 500
+            
+    except Exception as e:
+        print(f"Error resending verification: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred'}), 500
 
 if __name__ == '__main__':
     with app.app_context():

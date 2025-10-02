@@ -138,6 +138,11 @@ function handleLogin(e) {
             return response.text().then(text => {
                 try {
                     const errorData = JSON.parse(text);
+                    // For 403 errors (email verification required), handle specially
+                    if (response.status === 403 && errorData.email_verification_required) {
+                        showEmailVerificationMessage(errorData.message, errorData.email);
+                        return;
+                    }
                     // For 401 errors, show a user-friendly message
                     if (response.status === 401) {
                         throw new Error(errorData.message || 'Invalid username or password. Please check your credentials and try again.');
@@ -463,6 +468,95 @@ function validateForm(form) {
     return isValid;
 }
 
+function showEmailVerificationMessage(message, email) {
+    // Hide the login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.style.display = 'none';
+    }
+    
+    // Create verification message
+    const verificationDiv = document.createElement('div');
+    verificationDiv.id = 'email-verification-message';
+    verificationDiv.className = 'verification-message';
+    verificationDiv.innerHTML = `
+        <div class="verification-content">
+            <div class="verification-icon">
+                <i class="fas fa-envelope-open"></i>
+            </div>
+            <h3>Email Verification Required</h3>
+            <p>${message}</p>
+            <div class="verification-details">
+                <p>We've sent a verification link to:</p>
+                <p class="email-address">${email}</p>
+                <p class="verification-note">Please check your inbox and click the verification link to complete your account setup.</p>
+            </div>
+            <div class="verification-actions">
+                <button onclick="resendVerificationFromLogin('${email}')" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i>
+                    Resend Verification Email
+                </button>
+                <button onclick="backToLogin()" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Login
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Insert after the login form
+    const authModal = document.getElementById('authModal');
+    if (authModal) {
+        const modalBody = authModal.querySelector('.modal-body');
+        modalBody.appendChild(verificationDiv);
+    }
+}
+
+function resendVerificationFromLogin(email) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    button.disabled = true;
+    
+    fetch('/api/resend-verification', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showNotification('Verification email sent successfully! Please check your inbox.', 'success');
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error resending verification:', error);
+        showNotification('Error sending verification email. Please try again.', 'error');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function backToLogin() {
+    // Hide verification message
+    const verificationDiv = document.getElementById('email-verification-message');
+    if (verificationDiv) {
+        verificationDiv.remove();
+    }
+    
+    // Show login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.style.display = 'block';
+    }
+}
+
 // Add error styling
 const style = document.createElement('style');
 style.textContent = `
@@ -475,6 +569,90 @@ style.textContent = `
         color: #ff6b6b;
         font-size: 0.875rem;
         margin-top: 0.25rem;
+    }
+    
+    .verification-message {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .verification-content {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .verification-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #8B4513, #A0522D);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 24px;
+    }
+    
+    .verification-content h3 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    
+    .verification-content p {
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+    
+    .verification-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    .verification-details p {
+        margin: 0 0 8px 0;
+        color: #555;
+        font-size: 14px;
+    }
+    
+    .email-address {
+        font-weight: 600;
+        color: #8B4513 !important;
+        font-size: 16px;
+    }
+    
+    .verification-note {
+        font-style: italic;
+        color: #777 !important;
+        font-size: 13px;
+    }
+    
+    .verification-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .verification-actions .btn {
+        min-width: 150px;
+        font-size: 14px;
+        padding: 10px 16px;
+    }
+    
+    @media (max-width: 480px) {
+        .verification-actions {
+            flex-direction: column;
+        }
+        
+        .verification-actions .btn {
+            width: 100%;
+        }
     }
 `;
 document.head.appendChild(style);

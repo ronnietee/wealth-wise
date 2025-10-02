@@ -300,5 +300,89 @@
             window.location.href = '/dashboard';
         }
     </script>
+
+    <style>
+        .verification-step {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .verification-content {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .verification-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            color: white;
+            font-size: 32px;
+        }
+
+        .verification-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .verification-message {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .verification-details {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .verification-details p {
+            margin: 0 0 10px 0;
+            color: #555;
+        }
+
+        .email-address {
+            font-weight: 600;
+            color: #8B4513 !important;
+            font-size: 18px;
+        }
+
+        .verification-note {
+            font-style: italic;
+            color: #777 !important;
+            font-size: 14px;
+        }
+
+        .verification-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .verification-actions .btn {
+            min-width: 180px;
+        }
+
+        @media (max-width: 480px) {
+            .verification-actions {
+                flex-direction: column;
+            }
+            
+            .verification-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </body>
 </html>
