@@ -474,13 +474,9 @@ class OnboardingFlow {
 
     saveCurrentStepData() {
         const currentForm = document.querySelector(`#step${this.currentStep} form`);
-        if (!currentForm) {
-            console.log('No form found for step', this.currentStep);
-            return;
-        }
+        if (!currentForm) return;
 
         const formData = new FormData(currentForm);
-        console.log('Saving data for step', this.currentStep);
         
         // Convert FormData to object
         const stepData = {};
@@ -496,7 +492,6 @@ class OnboardingFlow {
                 stepData[key] = value;
             }
         }
-        console.log('Step data collected:', stepData);
 
         this.formData = { ...this.formData, ...stepData };
     }
@@ -547,7 +542,6 @@ class OnboardingFlow {
 
         // Save final step data
         this.saveCurrentStepData();
-        console.log('Final form data before API call:', this.formData);
 
         // Show loading state
         const finishBtn = document.getElementById('finishBtn');
@@ -557,11 +551,6 @@ class OnboardingFlow {
 
         try {
             // Send data to backend
-            console.log('=== ONBOARDING API CALL START ===');
-            console.log('Sending onboarding request with data:', this.formData);
-            console.log('Form data keys:', Object.keys(this.formData));
-            console.log('CSRF Token:', this.getCsrfToken());
-            
             const response = await fetch('/api/onboarding/complete', {
                 method: 'POST',
                 headers: {
@@ -570,45 +559,25 @@ class OnboardingFlow {
                 },
                 body: JSON.stringify(this.formData)
             });
-            console.log('Onboarding response status:', response.status);
-            console.log('Response OK:', response.ok);
 
             const result = await response.json();
-            console.log('Onboarding API response:', result);
-            console.log('Response success:', result.success);
-            console.log('Response token exists:', !!result.token);
 
             if (result.success) {
-                console.log('Success block executing...');
                 // Store JWT token for API access
                 if (result.token) {
-                    console.log('Storing token:', result.token.substring(0, 20) + '...');
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('steward_token', result.token);
-                    console.log('Token stored successfully');
-                    
-                    // Verify token was stored
-                    const storedToken = localStorage.getItem('token');
-                    console.log('Verification - token in localStorage:', !!storedToken);
-                } else {
-                    console.error('No token in API response!');
                 }
                 
                 // Show welcome page (step 5) after successful account creation
-                console.log('Showing step 5...');
                 this.showStep(5);
             } else {
-                console.error('API returned success=false');
-                console.error('Error message:', result.message);
                 // Show specific error message from server
                 this.showError(result.message || 'Account creation failed');
                 return;
             }
         } catch (error) {
-            console.error('=== ONBOARDING ERROR ===');
             console.error('Onboarding error:', error);
-            console.error('Error details:', error.message);
-            console.error('Error stack:', error.stack);
             this.showError('Network error. Please check your connection and try again.');
         } finally {
             finishBtn.textContent = originalText;

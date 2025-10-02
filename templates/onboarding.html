@@ -288,27 +288,16 @@
     <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
     <script>
         function goToDashboard() {
-            // Debug: Check if token exists before redirect
             const token = localStorage.getItem('token');
-            const stewardToken = localStorage.getItem('steward_token');
-            
-            console.log('Before redirect to dashboard:');
-            console.log('Token exists:', !!token);
-            console.log('Steward token exists:', !!stewardToken);
-            console.log('Token value:', token);
             
             if (!token) {
-                console.log('No token found! Redirecting to login page...');
-                // Redirect to login page instead of showing error
+                // Redirect to login page if no token found
                 window.location.href = '/?showLogin=true';
                 return;
             }
             
-            // Add a small delay to ensure token is fully stored
-            setTimeout(() => {
-                console.log('Redirecting to dashboard...');
-                window.location.href = '/dashboard';
-            }, 100);
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
         }
     </script>
 </body>

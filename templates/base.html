@@ -286,11 +286,6 @@
         // Get authentication token from localStorage
         function getToken() {
             const token = localStorage.getItem('token');
-            const stewardToken = localStorage.getItem('steward_token');
-            console.log('getToken() called:');
-            console.log('  - token found:', !!token);
-            console.log('  - steward_token found:', !!stewardToken);
-            console.log('  - token value:', token ? token.substring(0, 20) + '...' : 'null');
             return token;
         }
 
