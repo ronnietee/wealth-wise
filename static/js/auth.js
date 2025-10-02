@@ -17,11 +17,6 @@ function setupAuthListeners() {
         loginForm.addEventListener('submit', handleLogin);
     }
     
-    // Register form
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-    }
     
     // Forgot password form
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
@@ -38,11 +33,6 @@ function setupAuthListeners() {
         });
     });
     
-    // Password strength validation for registration
-    const regPasswordInput = document.getElementById('regPassword');
-    if (regPasswordInput) {
-        regPasswordInput.addEventListener('input', updateRegistrationPasswordStrength);
-    }
 }
 
 function handleForgotPassword(e) {
@@ -181,74 +171,6 @@ function handleLogin(e) {
     });
 }
 
-function handleRegister(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const data = {
-        username: formData.get('username'),
-        email: formData.get('email'),
-        password: formData.get('password'),
-        first_name: formData.get('firstName'),
-        last_name: formData.get('lastName'),
-        currency: formData.get('currency')
-    };
-    
-    // Validate input
-    if (!data.username || !data.email || !data.password || !data.first_name || !data.last_name) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-    
-    if (!validateEmail(data.email)) {
-        showNotification('Please enter a valid email address', 'error');
-        return;
-    }
-    
-    if (!validatePassword(data.password)) {
-        showNotification('Password must be at least 8 characters long and contain uppercase letters, lowercase letters, numbers, and special characters.', 'error');
-        return;
-    }
-    
-    // Show loading state
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    showLoading(submitBtn);
-    
-    // Make API call
-    fetch('/api/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            return response.json().then(data => {
-                throw new Error(data.message || 'Registration failed');
-            });
-        }
-    })
-    .then(data => {
-        showNotification('Account created successfully! Please login.', 'success');
-        
-        // Switch to login tab
-        setTimeout(() => {
-            switchTab('login');
-            e.target.reset();
-        }, 1000);
-    })
-    .catch(error => {
-        console.error('Registration error:', error);
-        showNotification(error.message || 'Registration failed. Please try again.', 'error');
-    })
-    .finally(() => {
-        hideLoading(submitBtn, originalText);
-    });
-}
 
 function switchTab(tab) {
     // Update tab buttons
@@ -262,14 +184,9 @@ function switchTab(tab) {
     
     // Show/hide forms
     const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
     
     if (tab === 'login') {
         if (loginForm) loginForm.style.display = 'block';
-        if (registerForm) registerForm.style.display = 'none';
-    } else if (tab === 'register') {
-        if (loginForm) loginForm.style.display = 'none';
-        if (registerForm) registerForm.style.display = 'block';
     }
 }
 
@@ -294,15 +211,6 @@ function showLoginModal() {
     }
 }
 
-function showSignupModal() {
-    const modal = document.getElementById('signupModal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.classList.add('modal-open');
-    } else {
-        console.error('Signup modal not found');
-    }
-}
 
 function showHowItWorks() {
     const modal = document.getElementById('howItWorksModal');
@@ -396,46 +304,10 @@ document.addEventListener('keydown', function(e) {
         if (form && form.id === 'loginForm') {
             e.preventDefault();
             handleLogin({ preventDefault: () => {}, target: form });
-        } else if (form && form.id === 'registerForm') {
-            e.preventDefault();
-            handleRegister({ preventDefault: () => {}, target: form });
         }
     }
 });
 
-// Password strength validation for registration
-function updateRegistrationPasswordStrength() {
-    const password = document.getElementById('regPassword').value;
-    const strengthBar = document.getElementById('regStrengthBar');
-    const strengthText = document.getElementById('regStrengthText');
-    
-    if (password.length === 0) {
-        strengthBar.className = 'strength-fill';
-        strengthText.textContent = 'Enter a password';
-        strengthText.style.color = '#6c757d';
-        return;
-    }
-    
-    const { score } = checkPasswordStrength(password);
-    
-    // Update strength bar
-    strengthBar.className = 'strength-fill';
-    strengthBar.classList.add(getPasswordStrengthClass(score));
-    
-    // Update strength text
-    strengthText.textContent = getPasswordStrengthText(score);
-    
-    // Update text color
-    if (score <= 1) {
-        strengthText.style.color = '#dc3545';
-    } else if (score <= 2) {
-        strengthText.style.color = '#ffc107';
-    } else if (score <= 3) {
-        strengthText.style.color = '#17a2b8';
-    } else {
-        strengthText.style.color = '#28a745';
-    }
-}
 
 // Password visibility toggle (if needed)
 function togglePasswordVisibility(inputId) {
