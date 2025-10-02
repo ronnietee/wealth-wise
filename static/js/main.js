@@ -310,17 +310,19 @@ function checkAuth() {
 
 // Get token from localStorage
 function getToken() {
-    return localStorage.getItem('token');
+    return localStorage.getItem('steward_token') || localStorage.getItem('token');
 }
 
 // Set token in localStorage
 function setToken(token) {
     localStorage.setItem('token', token);
+    localStorage.setItem('steward_token', token);
 }
 
 // Remove token from localStorage
 function removeToken() {
     localStorage.removeItem('token');
+    localStorage.removeItem('steward_token');
 }
 
 // Show notification

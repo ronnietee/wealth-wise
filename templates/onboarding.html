@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to STEWARD - Onboarding</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="csrf-token" content="dummy_token">
+</head>
+<body class="onboarding-body">
+    <div class="onboarding-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="currentStep">1</span> of <span id="totalSteps">5</span>
+            </div>
+        </div>
+
+        <!-- Onboarding Content -->
+        <div class="onboarding-content">
+            <!-- Step 1: Personal Information -->
+            <div class="onboarding-step" id="step1">
+                <div class="step-header">
+                    <h2>Tell us more about yourself</h2>
+                    <p>Let's get to know you better</p>
+                </div>
+                <form class="onboarding-form" id="personalInfoForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country of Residence *</label>
+                        <select id="country" name="country" required>
+                            <option value="">Select your country</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="AU">Australia</option>
+                            <option value="ZA">South Africa</option>
+                            <option value="NG">Nigeria</option>
+                            <option value="KE">Kenya</option>
+                            <option value="GH">Ghana</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="preferredName">What would you like us to call you? *</label>
+                        <input type="text" id="preferredName" name="preferredName" placeholder="e.g., John, Johnny, Mr. Smith" required>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 2: Password Setup -->
+            <div class="onboarding-step" id="step2" style="display: none;">
+                <div class="step-header">
+                    <h2>Set up your strong password</h2>
+                    <p>Choose a secure password to protect your account</p>
+                </div>
+                <form class="onboarding-form" id="passwordForm">
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <div class="strength-text" id="strengthText">Enter a password</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                    <div class="password-requirements">
+                        <h4>Password Requirements:</h4>
+                        <ul>
+                            <li id="req-length">At least 8 characters</li>
+                            <li id="req-uppercase">One uppercase letter</li>
+                            <li id="req-lowercase">One lowercase letter</li>
+                            <li id="req-number">One number</li>
+                            <li id="req-special">One special character</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 3: How did you hear about us -->
+            <div class="onboarding-step" id="step3" style="display: none;">
+                <div class="step-header">
+                    <h2>How did you hear about us?</h2>
+                    <p>Help us understand how you discovered STEWARD</p>
+                </div>
+                <form class="onboarding-form" id="referralForm">
+                    <div class="form-group">
+                        <label>How did you hear about STEWARD? *</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="referralSource" value="social-media" required>
+                                <span class="radio-custom"></span>
+                                Social Media (Facebook, Instagram, Twitter, LinkedIn)
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="referralSource" value="search-engine" required>
+                                <span class="radio-custom"></span>
+                                Search Engine (Google, Bing, etc.)
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="referralSource" value="friend-family" required>
+                                <span class="radio-custom"></span>
+                                Friend or Family Member
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="referralSource" value="advertisement" required>
+                                <span class="radio-custom"></span>
+                                Advertisement (Online/Offline)
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="referralSource" value="blog-website" required>
+                                <span class="radio-custom"></span>
+                                Blog or Website
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="referralSource" value="other" required>
+                                <span class="radio-custom"></span>
+                                Other
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group" id="referralDetails" style="display: none;">
+                        <label for="referralDetailsText">Please specify</label>
+                        <input type="text" id="referralDetailsText" name="referralDetailsText" placeholder="Tell us more...">
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 4: Currency and Categories -->
+            <div class="onboarding-step" id="step4" style="display: none;">
+                <div class="step-header">
+                    <h2>Let's get into the details</h2>
+                    <p>Set up your currency and spending categories</p>
+                </div>
+                <form class="onboarding-form" id="detailsForm">
+                    <div class="form-group">
+                        <label for="currency">What currency do you want to use? *</label>
+                        <select id="currency" name="currency" required>
+                            <option value="">Select your currency</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                            <option value="ZAR">ZAR - South African Rand</option>
+                            <option value="NGN">NGN - Nigerian Naira</option>
+                            <option value="KES">KES - Kenyan Shilling</option>
+                            <option value="GHS">GHS - Ghanaian Cedi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select your spending categories *</label>
+                        <p class="category-subtitle">Choose the categories that apply to your spending habits</p>
+                        <div class="category-grid">
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="housing">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-home"></i>
+                                <span>Housing</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="transportation">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-car"></i>
+                                <span>Transportation</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="food">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-utensils"></i>
+                                <span>Food & Dining</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="utilities">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-bolt"></i>
+                                <span>Utilities</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="healthcare">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-heartbeat"></i>
+                                <span>Healthcare</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="entertainment">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-film"></i>
+                                <span>Entertainment</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="shopping">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-shopping-bag"></i>
+                                <span>Shopping</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="education">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-graduation-cap"></i>
+                                <span>Education</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="savings">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-piggy-bank"></i>
+                                <span>Savings</span>
+                            </label>
+                            <label class="category-option">
+                                <input type="checkbox" name="categories" value="giving">
+                                <span class="category-custom"></span>
+                                <i class="fas fa-hands-helping"></i>
+                                <span>Giving</span>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 5: Welcome Message -->
+            <div class="onboarding-step" id="step5" style="display: none;">
+                <div class="step-header">
+                    <h2>Welcome to STEWARD!</h2>
+                    <p>You're all set up and ready to take control of your finances</p>
+                </div>
+                <div class="welcome-content">
+                    <div class="welcome-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="welcome-message">
+                        <h3>Account Created Successfully!</h3>
+                        <p>Your STEWARD account has been created and you're ready to start managing your finances effectively.</p>
+                        <div class="welcome-features">
+                            <div class="feature-item">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>Create and manage budgets</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-receipt"></i>
+                                <span>Track your transactions</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-university"></i>
+                                <span>Monitor your accounts</span>
+                            </div>
+                        </div>
+                        <div class="welcome-actions">
+                            <button class="btn-primary" onclick="goToDashboard()">
+                                <i class="fas fa-arrow-right"></i>
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="onboarding-navigation">
+            <button type="button" class="btn-secondary" id="backBtn" style="display: none;">Back</button>
+            <button type="button" class="btn-primary" id="nextBtn">Next</button>
+            <button type="button" class="btn-primary" id="finishBtn" style="display: none;">Get Started</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+    <script>
+        function goToDashboard() {
+            // Debug: Check if token exists before redirect
+            const token = localStorage.getItem('token');
+            const stewardToken = localStorage.getItem('steward_token');
+            
+            console.log('Before redirect to dashboard:');
+            console.log('Token exists:', !!token);
+            console.log('Steward token exists:', !!stewardToken);
+            console.log('Token value:', token);
+            
+            if (!token) {
+                console.log('No token found! Redirecting to login page...');
+                // Redirect to login page instead of showing error
+                window.location.href = '/?showLogin=true';
+                return;
+            }
+            
+            // Add a small delay to ensure token is fully stored
+            setTimeout(() => {
+                console.log('Redirecting to dashboard...');
+                window.location.href = '/dashboard';
+            }, 100);
+        }
+    </script>
+</body>
+</html>

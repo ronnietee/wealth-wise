@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="STEWARD - Christian Family Budgeting Tool">
+    <meta name="csrf-token" content="dummy_token">
     <title>STEWARD - Christian Family Budgeting</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +31,7 @@
             </div>
             <div class="ribbon-right">
                 <button class="ribbon-btn ribbon-login" onclick="showLoginModal()">Login</button>
-                <button class="ribbon-btn ribbon-signup" onclick="showSignupModal()">Get Started</button>
+                <button class="ribbon-btn ribbon-signup" onclick="window.location.href='/onboarding'">Get Started</button>
             </div>
         </div>
     </div>
@@ -101,13 +102,13 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Welcome Back</h2>
+                <div class="modal-header-content">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="STEWARD Logo" class="modal-header-logo">
+                    <h2>Welcome Back</h2>
+                </div>
                 <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="welcome-message">
-                    <p>Sign in to your STEWARD account</p>
-                </div>
                 
                 <form id="loginForm" class="auth-form">
                     <div class="form-group">
@@ -120,8 +121,13 @@
                         <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required>
                         <div class="error-message" id="loginPasswordError"></div>
                     </div>
-                    <div style="text-align: right; margin-bottom: 1rem;">
-                        <a href="#" onclick="openForgotPasswordModal()" style="color: #8B4513; text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
+                    <div class="form-group remember-me-group">
+                        <label class="remember-me-label">
+                            <input type="checkbox" id="rememberMe" name="rememberMe" class="remember-me-checkbox">
+                            <span class="checkmark"></span>
+                            <span class="remember-me-text">Remember Me</span>
+                        </label>
+                        <a href="#" onclick="openForgotPasswordModal()" class="forgot-password-link">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn btn-primary btn-full">Sign In</button>
                     <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #6c757d;">
@@ -255,41 +261,81 @@
 
 <!-- How It Works Modal -->
     <div class="modal" id="howItWorksModal">
-        <div class="modal-content">
+        <div class="modal-content roadmap-modal">
             <div class="modal-header">
-                <h2>How STEWARD Works</h2>
+                <h2>How it Works</h2>
                 <button class="close-btn" onclick="closeModal('howItWorksModal'); closeAnyModal();">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="steps">
-                    <div class="step">
+                <div class="roadmap-container">
+                    <div class="roadmap-step">
                         <div class="step-number">1</div>
+                        <div class="step-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
                         <div class="step-content">
-                            <h3>Set Up Your Budget</h3>
-                            <p>Start by entering your monthly income and any balance brought forward from the previous month.</p>
+                            <h3>Setup</h3>
+                            <p>Create spending categories and subcategories. Choose from templates or add your own.</p>
                         </div>
                     </div>
-                    <div class="step">
+                    
+                    <div class="roadmap-step">
                         <div class="step-number">2</div>
+                        <div class="step-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
                         <div class="step-content">
-                            <h3>Allocate Your Money</h3>
-                            <p>Distribute your available funds across different categories like tithe, groceries, home expenses, and more.</p>
+                            <h3>Budget</h3>
+                            <p>Create your budget for monthly, quarterly, yearly, or custom periods.</p>
                         </div>
                     </div>
-                    <div class="step">
+                    
+                    <div class="roadmap-step">
                         <div class="step-number">3</div>
+                        <div class="step-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
                         <div class="step-content">
-                            <h3>Track Your Spending</h3>
-                            <p>Record your daily expenses and see how they affect your budget in real-time.</p>
+                            <h3>Income</h3>
+                            <p>Define your income sources and amounts.</p>
                         </div>
                     </div>
-                    <div class="step">
+                    
+                    <div class="roadmap-step">
                         <div class="step-number">4</div>
+                        <div class="step-icon">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
                         <div class="step-content">
-                            <h3>Stay on Track</h3>
-                            <p>Monitor your progress with visual summaries and adjust your allocations as needed throughout the month.</p>
+                            <h3>Breakdown</h3>
+                            <p>Allocate your income to subcategories.</p>
                         </div>
                     </div>
+                    
+                    <div class="roadmap-step">
+                        <div class="step-number">5</div>
+                        <div class="step-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="step-content">
+                            <h3>Transactions</h3>
+                            <p>Record your expenditure.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="roadmap-step">
+                        <div class="step-number">6</div>
+                        <div class="step-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="step-content">
+                            <h3>Accounts</h3>
+                            <p>Track account balances and check budget alignment.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="roadmap-footer">
+                    <button class="get-started-btn" onclick="closeModal('howItWorksModal'); window.location.href='/onboarding'">Get Started</button>
                 </div>
             </div>
         </div>
@@ -316,7 +362,149 @@
                 subtitle.style.fontFamily = 'Aptos, Arial, sans-serif';
                 subtitle.style.fontWeight = '800';
             }
+            
+            // Load saved credentials
+            loadSavedCredentials();
         });
+
+        // Remember Me functionality (Production Ready)
+        function loadSavedCredentials() {
+            const savedUsername = localStorage.getItem('steward_username');
+            const rememberMe = localStorage.getItem('steward_remember') === 'true';
+            
+            // Only load username for security (never store passwords in localStorage)
+            if (savedUsername && rememberMe) {
+                document.getElementById('loginUsername').value = savedUsername;
+                document.getElementById('rememberMe').checked = true;
+            }
+        }
+
+        function saveCredentials() {
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const username = document.getElementById('loginUsername').value;
+            
+            if (rememberMe && username) {
+                // Only save username, never save passwords in localStorage
+                localStorage.setItem('steward_username', username);
+                localStorage.setItem('steward_remember', 'true');
+            } else {
+                localStorage.removeItem('steward_username');
+                localStorage.removeItem('steward_remember');
+            }
+        }
+
+        // Add event listener to login form
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we should show the login modal
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('showLogin') === 'true') {
+                showLoginModal();
+            }
+            
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Save remember me preference
+                    saveCredentials();
+                    
+                    // Get form data
+                    const formData = new FormData(loginForm);
+                    const loginData = {
+                        username: formData.get('username'),
+                        password: formData.get('password'),
+                        remember: formData.get('rememberMe') === 'on'
+                    };
+                    
+                    // Show loading state
+                    const submitBtn = loginForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Signing In...';
+                    submitBtn.disabled = true;
+                    
+                    // Submit to backend
+                    fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify(loginData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Close modal and redirect
+                            closeModal('loginModal');
+                            window.location.href = data.redirect || '/dashboard';
+                        } else {
+                            // Show error message
+                            showLoginError(data.message || 'Invalid credentials');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Login error:', error);
+                        showLoginError('Login failed. Please try again.');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    });
+                });
+            }
+        });
+
+        // Get CSRF token
+        function getCsrfToken() {
+            // Try to get from meta tag first
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) {
+                return metaToken.getAttribute('content');
+            }
+            
+            // Fallback: fetch from API
+            return fetch('/api/csrf-token')
+                .then(response => response.json())
+                .then(data => data.csrf_token)
+                .catch(() => '');
+        }
+
+        // Show login error
+        function showLoginError(message) {
+            // Remove any existing error messages
+            const existingError = document.querySelector('.login-error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'login-error-message';
+            errorDiv.style.cssText = `
+                background: #f8d7da;
+                color: #721c24;
+                padding: 0.75rem;
+                border-radius: 4px;
+                margin-bottom: 1rem;
+                border: 1px solid #f5c6cb;
+                font-size: 0.9rem;
+            `;
+            errorDiv.textContent = message;
+            
+            // Insert before the form
+            const form = document.getElementById('loginForm');
+            form.parentNode.insertBefore(errorDiv, form);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>

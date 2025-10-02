@@ -191,11 +191,6 @@
 let accounts = [];
 
 // Get JWT token from localStorage
-function getToken() {
-    const token = localStorage.getItem('token');
-    console.log('getToken() called, token found:', !!token);
-    return token;
-}
 
 // Function declarations (moved up so they can be assigned to window)
 function openAddAccountModal() {

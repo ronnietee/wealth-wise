@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
+# # from flask_wtf.csrf import CSRFProtect, generate_csrf
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import os
@@ -36,6 +37,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 CORS(app)
+# csrf = CSRFProtect(app)
 
 # Database Models
 class User(db.Model):
@@ -49,11 +51,21 @@ class User(db.Model):
     currency = db.Column(db.String(10), default='USD')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Onboarding fields (optional for existing users)
+    country = db.Column(db.String(100), nullable=True, default=None)
+    preferred_name = db.Column(db.String(100), nullable=True, default=None)
+    referral_source = db.Column(db.String(100), nullable=True, default=None)
+    referral_details = db.Column(db.Text, nullable=True, default=None)
+    
     # Relationships
     categories = db.relationship('Category', backref='user', lazy=True, cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')
     budgets = db.relationship('Budget', backref='user', lazy=True, cascade='all, delete-orphan')
     budget_periods = db.relationship('BudgetPeriod', backref='user', lazy=True, cascade='all, delete-orphan')
+    
+    def set_password(self, password):
+        """Set password hash for the user"""
+        self.password_hash = generate_password_hash(password)
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -181,9 +193,20 @@ def reset_password_page():
     
     return render_template('reset_password.html', token=token)
 
+def validate_session():
+    """Validate current session and clear if invalid"""
+    if 'user_id' in session and 'logged_in' in session:
+        user = User.query.get(session['user_id'])
+        if not user:
+            # User no longer exists, clear session
+            session.clear()
+            return False
+        return True
+    return False
+
 def get_current_user():
     """Get current user from JWT token in Authorization header or from session"""
-    # Try to get token from Authorization header first
+    # Try to get token from Authorization header first (for API calls)
     token = request.headers.get('Authorization')
     if token:
         try:
@@ -196,9 +219,11 @@ def get_current_user():
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             pass
     
-    # Fallback to session (if implemented)
-    if 'user_id' in session:
-        return User.query.get(session['user_id'])
+    # Fallback to session (for web interface)
+    if validate_session():
+        user = User.query.get(session['user_id'])
+        if user:
+            return user
     
     return None
 
@@ -299,13 +324,57 @@ def register():
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    try:
+        data = request.get_json()
+        print(f"Login attempt with data: {data}")
+        username_or_email = data.get('username') or data.get('email')
+        password = data.get('password')
+        
+        print(f"Looking for user with: {username_or_email}")
+        
+        if not username_or_email or not password:
+            return jsonify({'message': 'Username/email and password are required'}), 400
+        
+        # Try to find user by username first, then by email
+        user = User.query.filter_by(username=username_or_email).first()
+        if not user:
+            user = User.query.filter_by(email=username_or_email).first()
+        
+        print(f"User found: {user.username if user else 'None'}")
+        
+        if user and check_password_hash(user.password_hash, password):
+            token = jwt.encode({
+                'user_id': user.id,
+                'exp': datetime.utcnow() + timedelta(hours=24)
+            }, app.config['SECRET_KEY'], algorithm='HS256')
+            
+            return jsonify({
+                'token': token,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'currency': user.currency
+                }
+            })
+        
+        return jsonify({'message': 'Invalid credentials'}), 401
+        
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        return jsonify({'message': 'Server error occurred'}), 500
+
+# New frontend-compatible login route
+@app.route('/login', methods=['POST'])
+def frontend_login():
+    """Login route for frontend form submission with session management"""
     data = request.get_json()
-    print(f"Login attempt with data: {data}")
-    username_or_email = data.get('username') or data.get('email')
+    username_or_email = data.get('username')
     password = data.get('password')
+    remember = data.get('remember', False)
     
     if not username_or_email or not password:
-        return jsonify({'message': 'Username/email and password are required'}), 400
+        return jsonify({'success': False, 'message': 'Username/email and password are required'}), 400
     
     # Try to find user by username first, then by email
     user = User.query.filter_by(username=username_or_email).first()
@@ -313,13 +382,57 @@ def login():
         user = User.query.filter_by(email=username_or_email).first()
     
     if user and check_password_hash(user.password_hash, password):
+        # Create session with unique identifier for this device
+        import uuid
+        session_id = str(uuid.uuid4())
+        
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['logged_in'] = True
+        session['session_id'] = session_id
+        
+        # Set session expiration based on remember me
+        if remember:
+            # Remember for 30 days
+            session.permanent = True
+            app.permanent_session_lifetime = timedelta(days=30)
+        else:
+            # Session expires when browser closes
+            session.permanent = False
+        
+        # Generate JWT token for API calls
         token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.utcnow() + timedelta(hours=24)
         }, app.config['SECRET_KEY'], algorithm='HS256')
         
         return jsonify({
-            'token': token,
+            'success': True,
+            'message': 'Login successful',
+            'redirect': '/dashboard',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'currency': user.currency
+            },
+            'token': token
+        })
+    
+    return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+
+@app.route('/api/csrf-token', methods=['GET'])
+def get_csrf_token():
+    """Get CSRF token for frontend forms"""
+    return jsonify({'csrf_token': 'dummy_token'})  # Temporary for testing
+
+@app.route('/api/session/validate', methods=['GET'])
+def validate_user_session():
+    """Validate current user session and return user info"""
+    user = get_current_user()
+    if user:
+        return jsonify({
+            'valid': True,
             'user': {
                 'id': user.id,
                 'username': user.username,
@@ -327,8 +440,20 @@ def login():
                 'currency': user.currency
             }
         })
-    
-    return jsonify({'message': 'Invalid credentials'}), 401
+    else:
+        return jsonify({'valid': False, 'message': 'Session expired or invalid'}), 401
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    """Logout route to clear session"""
+    session.clear()
+    return jsonify({'success': True, 'message': 'Logged out successfully', 'redirect': '/'})
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    """API logout route"""
+    session.clear()
+    return jsonify({'success': True, 'message': 'Logged out successfully'})
 
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
@@ -1970,6 +2095,160 @@ def send_email(to_email, subject, body):
     except Exception as e:
         print(f"Error sending email: {str(e)}")
         return False
+
+# Onboarding Routes
+@app.route('/onboarding')
+def onboarding():
+    """Onboarding page for new users"""
+    return render_template('onboarding.html')
+
+@app.route('/api/validate-email', methods=['POST'])
+def validate_email():
+    """Validate if email already exists"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({'exists': False, 'message': 'Email is required'}), 400
+        
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=email).first()
+        
+        return jsonify({
+            'exists': existing_user is not None,
+            'message': 'Email already exists' if existing_user else 'Email is available'
+        })
+        
+    except Exception as e:
+        print(f"Email validation error: {str(e)}")
+        return jsonify({'exists': False, 'message': 'Validation error'}), 500
+
+@app.route('/api/onboarding/complete', methods=['POST'])
+def complete_onboarding():
+    """Complete the onboarding process and create user account"""
+    try:
+        data = request.get_json()
+        
+        # Extract form data
+        personal_info = {
+            'firstName': data.get('firstName'),
+            'lastName': data.get('lastName'),
+            'email': data.get('email'),
+            'country': data.get('country'),
+            'preferredName': data.get('preferredName')
+        }
+        
+        password_info = {
+            'password': data.get('password'),
+            'confirmPassword': data.get('confirmPassword')
+        }
+        
+        referral_info = {
+            'referralSource': data.get('referralSource'),
+            'referralDetailsText': data.get('referralDetailsText')
+        }
+        
+        details_info = {
+            'currency': data.get('currency'),
+            'categories': data.get('categories', [])
+        }
+        
+        # Validate required fields
+        required_fields = ['firstName', 'lastName', 'email', 'password', 'currency']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'success': False, 'message': f'{field} is required'}), 400
+        
+        # Validate password match
+        if password_info['password'] != password_info['confirmPassword']:
+            return jsonify({'success': False, 'message': 'Passwords do not match'}), 400
+        
+        # Check if user already exists
+        existing_user = User.query.filter_by(email=personal_info['email']).first()
+        if existing_user:
+            return jsonify({'success': False, 'message': 'An account with this email already exists'}), 400
+        
+        # Create username from email or preferred name
+        username = personal_info['preferredName'] or personal_info['email'].split('@')[0]
+        
+        # Ensure username is unique
+        counter = 1
+        original_username = username
+        while User.query.filter_by(username=username).first():
+            username = f"{original_username}{counter}"
+            counter += 1
+        
+        # Create new user
+        user = User(
+            username=username,
+            email=personal_info['email'],
+            first_name=personal_info['firstName'],
+            last_name=personal_info['lastName'],
+            country=personal_info['country'],
+            preferred_name=personal_info['preferredName'],
+            currency=details_info['currency'],
+            referral_source=referral_info['referralSource'],
+            referral_details=referral_info['referralDetailsText']
+        )
+        user.set_password(password_info['password'])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        # Create default categories for the user
+        default_categories = {
+            'housing': 'Housing',
+            'transportation': 'Transportation',
+            'food': 'Food & Dining',
+            'utilities': 'Utilities',
+            'healthcare': 'Healthcare',
+            'entertainment': 'Entertainment',
+            'shopping': 'Shopping',
+            'education': 'Education',
+            'savings': 'Savings',
+            'giving': 'Giving'
+        }
+        
+        selected_categories = details_info['categories']
+        for category_key in selected_categories:
+            if category_key in default_categories:
+                category = Category(
+                    name=default_categories[category_key],
+                    user_id=user.id,
+                    is_template=True
+                )
+                db.session.add(category)
+        
+        db.session.commit()
+        
+        # Log the user in
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['logged_in'] = True
+        
+        # Generate JWT token for API access
+        token = jwt.encode({
+            'user_id': user.id,
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm='HS256')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Account created successfully',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'currency': user.currency
+            },
+            'token': token
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Onboarding error: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred during account creation'}), 500
 
 if __name__ == '__main__':
     with app.app_context():
