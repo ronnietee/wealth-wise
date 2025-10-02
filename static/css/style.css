@@ -1176,11 +1176,7 @@ body.modal-open {
     font-size: 0.9rem;
     color: #2c3e50;
     margin: 0;
-}
-
-.remember-me-text {
     white-space: nowrap;
-    margin-left: 0.5rem;
 }
 
 .remember-me-checkbox {
@@ -1192,12 +1188,13 @@ body.modal-open {
     height: 18px;
     border: 2px solid #e9ecef;
     border-radius: 4px;
-    margin-right: 0.5rem;
+    margin-right: 8px;
     position: relative;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .remember-me-checkbox:checked + .checkmark {
