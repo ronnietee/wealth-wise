@@ -325,6 +325,17 @@ class OnboardingFlow {
             }
         }
 
+        // Username (optional)
+        const username = document.getElementById('username').value.trim();
+        if (username) {
+            // Validate username format if provided
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            if (!usernameRegex.test(username)) {
+                this.showFieldError('username', 'Username must be 3-20 characters, letters, numbers, and underscores only');
+                isValid = false;
+            }
+        }
+
         // Country
         const country = document.getElementById('country').value;
         if (!country) {
@@ -332,12 +343,8 @@ class OnboardingFlow {
             isValid = false;
         }
 
-        // Preferred Name
+        // Preferred Name (optional)
         const preferredName = document.getElementById('preferredName').value.trim();
-        if (!preferredName) {
-            this.showFieldError('preferredName', 'Preferred name is required');
-            isValid = false;
-        }
 
         return isValid;
     }
@@ -429,6 +436,52 @@ class OnboardingFlow {
         return isValid;
     }
 
+    setupCategoryInteractions() {
+        // Handle category header clicks to toggle subcategories
+        const categoryHeaders = document.querySelectorAll('.category-header');
+        categoryHeaders.forEach(header => {
+            const checkbox = header.querySelector('input[type="checkbox"]');
+            const categorySection = header.closest('.category-section');
+            const subcategories = categorySection.querySelector('.subcategories');
+            
+            // Toggle subcategories when category is unchecked
+            checkbox.addEventListener('change', function() {
+                if (!this.checked) {
+                    // Uncheck all subcategories when parent is unchecked
+                    const subcategoryCheckboxes = subcategories.querySelectorAll('input[type="checkbox"]');
+                    subcategoryCheckboxes.forEach(subCheckbox => {
+                        subCheckbox.checked = false;
+                    });
+                    categorySection.classList.add('disabled');
+                } else {
+                    categorySection.classList.remove('disabled');
+                }
+            });
+        });
+
+        // Handle subcategory changes
+        const subcategoryCheckboxes = document.querySelectorAll('input[name="subcategories"]');
+        subcategoryCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const categorySection = this.closest('.category-section');
+                const categoryCheckbox = categorySection.querySelector('.category-header input[type="checkbox"]');
+                const subcategoryCheckboxes = categorySection.querySelectorAll('input[name="subcategories"]');
+                const checkedSubcategories = categorySection.querySelectorAll('input[name="subcategories"]:checked');
+                
+                // If any subcategory is checked, check the parent category
+                if (checkedSubcategories.length > 0) {
+                    categoryCheckbox.checked = true;
+                    categorySection.classList.remove('disabled');
+                }
+                // If no subcategories are checked, uncheck the parent category
+                else if (checkedSubcategories.length === 0) {
+                    categoryCheckbox.checked = false;
+                    categorySection.classList.add('disabled');
+                }
+            });
+        });
+    }
+
     clearAllFieldErrors() {
         // Clear all field errors
         const errorElements = document.querySelectorAll('.field-error');
@@ -450,6 +503,12 @@ class OnboardingFlow {
         // Show current step
         document.getElementById(`step${stepNumber}`).style.display = 'block';
         this.currentStep = stepNumber;
+        
+        // Setup step-specific interactions
+        if (stepNumber === 4) {
+            // Setup category interactions for step 4
+            setTimeout(() => this.setupCategoryInteractions(), 100);
+        }
         
         // Update UI
         this.updateProgress();

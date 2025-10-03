@@ -2241,8 +2241,16 @@ def complete_onboarding():
         if existing_user:
             return jsonify({'success': False, 'message': 'An account with this email already exists'}), 400
         
-        # Create username from email or preferred name
-        username = personal_info['preferredName'] or personal_info['email'].split('@')[0]
+        # Create username from provided username, preferred name, or email
+        provided_username = personal_info.get('username', '').strip()
+        if provided_username:
+            # Validate username format if provided
+            import re
+            if not re.match(r'^[a-zA-Z0-9_]{3,20}$', provided_username):
+                return jsonify({'success': False, 'message': 'Username must be 3-20 characters, letters, numbers, and underscores only'}), 400
+            username = provided_username
+        else:
+            username = personal_info.get('preferredName') or personal_info['email'].split('@')[0]
         
         # Ensure username is unique
         counter = 1
@@ -2268,29 +2276,108 @@ def complete_onboarding():
         db.session.add(user)
         db.session.commit()
         
-        # Create default categories for the user
-        default_categories = {
-            'housing': 'Housing',
-            'transportation': 'Transportation',
-            'food': 'Food & Dining',
-            'utilities': 'Utilities',
-            'healthcare': 'Healthcare',
-            'entertainment': 'Entertainment',
-            'shopping': 'Shopping',
-            'education': 'Education',
-            'savings': 'Savings',
-            'giving': 'Giving'
+        # Create categories and subcategories based on user selection
+        category_mapping = {
+            'faithful-stewardship': {
+                'name': 'Faithful Stewardship',
+                'subcategories': {
+                    'tithe': 'Tithe',
+                    'offering': 'Offering',
+                    'social-responsibility': 'Social Responsibility'
+                }
+            },
+            'groceries': {
+                'name': 'Groceries',
+                'subcategories': {
+                    'food-home-essentials': 'Food & Home Essentials',
+                    'dining-out': 'Dining out'
+                }
+            },
+            'housing': {
+                'name': 'Housing',
+                'subcategories': {
+                    'mortgage-rent': 'Mortgage/Rent',
+                    'hoa-fees-levies': 'HOA Fees/Levies',
+                    'electricity-bill': 'Electricity Bill',
+                    'water-bill': 'Water Bill',
+                    'home-maintenance': 'Home maintenance',
+                    'home-insurance': 'Home Insurance',
+                    'internet': 'Internet'
+                }
+            },
+            'transportation': {
+                'name': 'Transportation',
+                'subcategories': {
+                    'loan-repayment': 'Loan repayment',
+                    'insurance': 'Insurance',
+                    'fuel': 'Fuel',
+                    'car-tracker': 'Car Tracker',
+                    'car-wash': 'Car wash'
+                }
+            },
+            'monthly-commitments': {
+                'name': 'Monthly Commitments',
+                'subcategories': {
+                    'life-cover': 'Life cover',
+                    'funeral-plan': 'Funeral Plan',
+                    'credit-card-repayment': 'Credit card repayment',
+                    'monthly-banking-fees': 'Monthly Banking Fees'
+                }
+            },
+            'leisure-entertainment': {
+                'name': 'Leisure/Entertainment',
+                'subcategories': {
+                    'spotify': 'Spotify',
+                    'weekend-adventures': 'Weekend adventures'
+                }
+            },
+            'personal-care': {
+                'name': 'Personal Care',
+                'subcategories': {
+                    'gym-membership': 'Gym membership',
+                    'haircuts': 'Haircuts',
+                    'clothing': 'Clothing'
+                }
+            },
+            'savings-goals': {
+                'name': 'Savings Goals',
+                'subcategories': {
+                    'emergency-fund': 'Emergency fund',
+                    'general-savings': 'General Savings',
+                    'short-term-goal': 'Short term goal'
+                }
+            },
+            'once-off-expenses': {
+                'name': 'Once-off expenses (populated as it happens)',
+                'subcategories': {
+                    'asset-purchase': 'Asset purchase',
+                    'emergency': 'Emergency'
+                }
+            }
         }
         
-        selected_categories = details_info['categories']
+        selected_categories = details_info.get('categories', [])
+        selected_subcategories = details_info.get('subcategories', [])
+        
         for category_key in selected_categories:
-            if category_key in default_categories:
+            if category_key in category_mapping:
+                category_data = category_mapping[category_key]
                 category = Category(
-                    name=default_categories[category_key],
+                    name=category_data['name'],
                     user_id=user.id,
                     is_template=True
                 )
                 db.session.add(category)
+                db.session.flush()  # Get the category ID
+                
+                # Add selected subcategories for this category
+                for subcategory_key in selected_subcategories:
+                    if subcategory_key in category_data['subcategories']:
+                        subcategory = Subcategory(
+                            name=category_data['subcategories'][subcategory_key],
+                            category_id=category.id
+                        )
+                        db.session.add(subcategory)
         
         db.session.commit()
         
