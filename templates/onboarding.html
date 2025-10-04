@@ -807,6 +807,7 @@
             transition: all 0.2s ease;
             font-size: 0.9rem;
             flex-direction: row;
+            position: relative;
         }
 
         .subcategory-item:hover {
@@ -814,7 +815,10 @@
         }
 
         .subcategory-item input[type="checkbox"] {
-            display: none;
+            display: none !important;
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
         }
 
         .subcategory-item .checkbox-custom {
@@ -826,6 +830,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            order: 1;
         }
 
         .subcategory-item input[type="checkbox"]:checked + .checkbox-custom {
@@ -895,6 +900,7 @@
 
         .subcategory-item span:last-child {
             flex: 1;
+            order: 2;
         }
 
         /* Disable subcategories when parent category is unchecked */
