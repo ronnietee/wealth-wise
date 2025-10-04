@@ -994,6 +994,7 @@
             const subcategoryItem = document.createElement('label');
             subcategoryItem.className = 'subcategory-item';
             subcategoryItem.setAttribute('data-subcategory-id', subcategoryId);
+            subcategoryItem.style.cssText = 'display: flex; align-items: center; gap: 8px;';
             
             subcategoryItem.innerHTML = `
                 <input type="checkbox" name="subcategories" value="${subcategoryId}" checked style="display: none;">
@@ -1007,6 +1008,7 @@
             const addPlaceholderNew = document.createElement('label');
             addPlaceholderNew.className = 'subcategory-item add-subcategory-item';
             addPlaceholderNew.setAttribute('onclick', `addSubcategory('${categoryId}')`);
+            addPlaceholderNew.style.cssText = 'display: flex; align-items: center; gap: 8px;';
             addPlaceholderNew.innerHTML = `
                 <span class="checkbox-custom" style="width: 16px; height: 16px; border: 2px dashed #8B4513; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: transparent;"></span>
                 <span class="subcategory-text" style="flex: 1; color: #8B4513; font-style: italic;">+ Add subcategory</span>
