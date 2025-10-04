@@ -131,26 +131,27 @@ function handleLogin(e) {
                     // For 403 errors (email verification required), handle specially
                     if (response.status === 403 && errorData.email_verification_required) {
                         showEmailVerificationMessage(errorData.message, errorData.email);
-                        return;
+                        return Promise.reject(new Error('Email verification required'));
                     }
                     // For 401 errors, show a user-friendly message
                     if (response.status === 401) {
-                        throw new Error(errorData.message || 'Invalid username or password. Please check your credentials and try again.');
+                        return Promise.reject(new Error(errorData.message || 'Invalid username or password. Please check your credentials and try again.'));
                     }
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                    return Promise.reject(new Error(errorData.message || `HTTP error! status: ${response.status}`));
                 } catch (e) {
                     // If JSON parsing fails, show appropriate error based on status code
                     if (response.status === 401) {
-                        throw new Error('Invalid username or password. Please check your credentials and try again.');
+                        return Promise.reject(new Error('Invalid username or password. Please check your credentials and try again.'));
                     }
-                    throw new Error(`Server error: ${response.status}`);
+                    return Promise.reject(new Error(`Server error: ${response.status}`));
                 }
             });
         }
         return response.json();
     })
     .then(data => {
-        if (data.token) {
+        console.log('Login response data:', data);
+        if (data && data.token) {
             setToken(data.token);
             showNotification('Login successful!', 'success');
             
@@ -159,7 +160,8 @@ function handleLogin(e) {
                 window.location.href = '/dashboard';
             }, 1000);
         } else {
-            showNotification(data.message || 'Login failed', 'error');
+            console.error('No token in response:', data);
+            showNotification(data?.message || 'Login failed - no token received', 'error');
         }
     })
     .catch(error => {

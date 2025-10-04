@@ -262,10 +262,15 @@ function loadUserInfo() {
             .catch(error => {
                 console.error('Error loading user info:', error);
                 // Fallback: try to get first name or username from token payload if available
-                if (payload.first_name) {
-                    document.getElementById('user-name').textContent = ', ' + payload.first_name;
-                } else if (payload.username) {
-                    document.getElementById('user-name').textContent = ', ' + payload.username;
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.first_name) {
+                        document.getElementById('user-name').textContent = ', ' + payload.first_name;
+                    } else if (payload.username) {
+                        document.getElementById('user-name').textContent = ', ' + payload.username;
+                    }
+                } catch (tokenError) {
+                    console.error('Error decoding token in fallback:', tokenError);
                 }
             });
         } catch (error) {

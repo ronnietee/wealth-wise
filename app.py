@@ -2196,17 +2196,52 @@ def validate_email():
         print(f"Email validation error: {str(e)}")
         return jsonify({'exists': False, 'message': 'Validation error'}), 500
 
+@app.route('/api/validate-username', methods=['POST'])
+def validate_username():
+    """Validate if username already exists"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        
+        if not username:
+            return jsonify({'exists': False, 'message': 'Username is required'}), 400
+        
+        # Validate username format
+        import re
+        if not re.match(r'^[a-zA-Z0-9_]{3,20}$', username):
+            return jsonify({'exists': True, 'message': 'Username must be 3-20 characters, letters, numbers, and underscores only'}), 400
+        
+        # Check if username already exists
+        existing_user = User.query.filter_by(username=username).first()
+        
+        return jsonify({
+            'exists': existing_user is not None,
+            'message': 'Username already exists' if existing_user else 'Username is available'
+        })
+        
+    except Exception as e:
+        print(f"Username validation error: {str(e)}")
+        return jsonify({'exists': False, 'message': 'Validation error'}), 500
+
 @app.route('/api/onboarding/complete', methods=['POST'])
 def complete_onboarding():
     """Complete the onboarding process and create user account"""
     try:
         data = request.get_json()
         
+        # Debug: Log received data
+        print("=== ONBOARDING DATA RECEIVED ===")
+        print("Categories:", data.get('categories', []))
+        print("Subcategories:", data.get('subcategories', []))
+        print("Full data keys:", list(data.keys()))
+        print("================================")
+        
         # Extract form data
         personal_info = {
             'firstName': data.get('firstName'),
             'lastName': data.get('lastName'),
             'email': data.get('email'),
+            'username': data.get('username'),
             'country': data.get('country'),
             'preferredName': data.get('preferredName')
         }
@@ -2223,7 +2258,8 @@ def complete_onboarding():
         
         details_info = {
             'currency': data.get('currency'),
-            'categories': data.get('categories', [])
+            'categories': data.get('categories', []),
+            'subcategories': data.get('subcategories', [])
         }
         
         # Validate required fields

@@ -597,6 +597,10 @@ class OnboardingFlow {
         }
 
         this.formData = { ...this.formData, ...stepData };
+        
+        // Debug: Log the collected data
+        console.log('Step data collected:', stepData);
+        console.log('Total form data so far:', this.formData);
     }
 
     updateProgress() {
