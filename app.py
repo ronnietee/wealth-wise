@@ -2396,8 +2396,10 @@ def complete_onboarding():
         selected_subcategories = details_info.get('subcategories', [])
         
         for category_key in selected_categories:
+            print(f"Processing category: {category_key}")
             if category_key in category_mapping:
                 category_data = category_mapping[category_key]
+                print(f"Category data: {category_data}")
                 category = Category(
                     name=category_data['name'],
                     user_id=user.id,
@@ -2405,15 +2407,25 @@ def complete_onboarding():
                 )
                 db.session.add(category)
                 db.session.flush()  # Get the category ID
+                print(f"Created category with ID: {category.id}")
                 
                 # Add selected subcategories for this category
+                subcategories_added = 0
                 for subcategory_key in selected_subcategories:
+                    print(f"Checking subcategory: {subcategory_key}")
                     if subcategory_key in category_data['subcategories']:
                         subcategory = Subcategory(
                             name=category_data['subcategories'][subcategory_key],
                             category_id=category.id
                         )
                         db.session.add(subcategory)
+                        subcategories_added += 1
+                        print(f"Added subcategory: {subcategory_key} -> {category_data['subcategories'][subcategory_key]}")
+                    else:
+                        print(f"Subcategory {subcategory_key} not found in category {category_key}")
+                print(f"Total subcategories added for {category_key}: {subcategories_added}")
+            else:
+                print(f"Category {category_key} not found in mapping")
         
         db.session.commit()
         
