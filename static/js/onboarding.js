@@ -603,6 +603,19 @@ class OnboardingFlow {
             }
         }
 
+        // Special handling for step 4 (categories and subcategories)
+        if (this.currentStep === 4) {
+            // Manually collect categories and subcategories to ensure they're captured
+            const categories = Array.from(document.querySelectorAll('input[name="categories"]:checked')).map(cb => cb.value);
+            const subcategories = Array.from(document.querySelectorAll('input[name="subcategories"]:checked')).map(cb => cb.value);
+            
+            console.log('Manually collected categories:', categories);
+            console.log('Manually collected subcategories:', subcategories);
+            
+            stepData.categories = categories;
+            stepData.subcategories = subcategories;
+        }
+
         this.formData = { ...this.formData, ...stepData };
         
         // Debug: Log the collected data
