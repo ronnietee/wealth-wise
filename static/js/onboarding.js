@@ -4,6 +4,10 @@ class OnboardingFlow {
         this.currentStep = 1;
         this.totalSteps = 5;
         this.formData = {};
+        this.emailValidationTimeout = null;
+        this.usernameValidationTimeout = null;
+        this.emailValidationState = 'valid';
+        this.usernameValidationState = 'valid';
         this.init();
     }
 
@@ -22,17 +26,42 @@ class OnboardingFlow {
         document.getElementById('finishBtn').addEventListener('click', () => this.finishOnboarding());
 
         // Form validation with real-time checking
-        document.getElementById('personalInfoForm').addEventListener('input', () => this.validateCurrentStep());
+        document.getElementById('personalInfoForm').addEventListener('input', (e) => {
+            // Validate all fields in real-time
+            this.validateCurrentStep();
+        });
         document.getElementById('passwordForm').addEventListener('input', () => this.validateCurrentStep());
         document.getElementById('referralForm').addEventListener('change', () => this.validateCurrentStep());
+        document.getElementById('referralForm').addEventListener('input', () => this.validateCurrentStep());
         document.getElementById('detailsForm').addEventListener('change', () => this.validateCurrentStep());
+        document.getElementById('detailsForm').addEventListener('input', () => this.validateCurrentStep());
 
         // Password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', () => this.validatePasswordMatch());
 
         // Real-time email validation
         document.getElementById('email').addEventListener('blur', () => this.validateEmail());
-        document.getElementById('email').addEventListener('input', () => this.validateEmail());
+        document.getElementById('email').addEventListener('input', () => {
+            // Reset validation state when user starts typing
+            this.emailValidationState = 'valid';
+            this.validateEmail();
+        });
+        
+        // Real-time username validation
+        document.getElementById('username').addEventListener('blur', () => {
+            const username = document.getElementById('username').value.trim();
+            if (username) {
+                this.validateUsername(username);
+            }
+        });
+        document.getElementById('username').addEventListener('input', () => {
+            // Reset validation state when user starts typing
+            this.usernameValidationState = 'valid';
+            const username = document.getElementById('username').value.trim();
+            if (username) {
+                this.validateUsername(username);
+            }
+        });
         
         // Real-time category validation
         document.querySelectorAll('input[name="categories"]').forEach(checkbox => {
@@ -133,6 +162,7 @@ class OnboardingFlow {
         
         if (!email) {
             this.clearFieldError('email');
+            this.emailValidationState = 'valid';
             return;
         }
 
@@ -140,6 +170,7 @@ class OnboardingFlow {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             this.showFieldError('email', 'Please enter a valid email address');
+            this.emailValidationState = 'invalid';
             return;
         }
 
@@ -164,91 +195,110 @@ class OnboardingFlow {
                 
                 if (result.exists) {
                     this.showFieldError('email', 'An account with this email already exists');
+                    this.emailValidationState = 'invalid';
                 } else {
                     this.clearFieldError('email');
+                    this.emailValidationState = 'valid';
                 }
             } catch (error) {
                 console.error('Email validation error:', error);
                 // Don't show error for network issues, just clear any existing errors
                 this.clearFieldError('email');
+                this.emailValidationState = 'valid';
+            }
+        }, 500); // 500ms delay
+    }
+
+    async validateUsername(username) {
+        if (!username) {
+            this.clearFieldError('username');
+            this.usernameValidationState = 'valid';
+            return;
+        }
+
+        // Clear any existing timeout
+        if (this.usernameValidationTimeout) {
+            clearTimeout(this.usernameValidationTimeout);
+        }
+
+        // Debounce the API call
+        this.usernameValidationTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch('/api/validate-username', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({ username: username })
+                });
+
+                const result = await response.json();
+                
+                if (result.exists) {
+                    this.showFieldError('username', 'This username is already taken');
+                    this.usernameValidationState = 'invalid';
+                } else {
+                    this.clearFieldError('username');
+                    this.usernameValidationState = 'valid';
+                }
+            } catch (error) {
+                console.error('Username validation error:', error);
+                // Don't show error for network issues, just clear any existing errors
+                this.clearFieldError('username');
+                this.usernameValidationState = 'valid';
             }
         }, 500); // 500ms delay
     }
 
     showFieldError(fieldId, message) {
         const field = document.getElementById(fieldId);
+        if (!field) return;
+        
         const errorId = `${fieldId}-error`;
         
         // Remove existing error
         this.clearFieldError(fieldId);
         
-        // Special handling for different field types
-        if (fieldId === 'categories') {
-            // Handle category grid error
-            const categoryGrid = document.querySelector('.category-grid');
-            categoryGrid.classList.add('error');
-            
-            // Create error message
-            const errorDiv = document.createElement('div');
-            errorDiv.id = errorId;
-            errorDiv.className = 'field-error';
-            errorDiv.textContent = message;
-            
-            // Insert error after category grid
-            categoryGrid.parentNode.insertBefore(errorDiv, categoryGrid.nextSibling);
-        } else if (fieldId === 'referralSource') {
-            // Handle referral source error
-            const radioGroup = document.querySelector('.radio-group');
-            radioGroup.style.border = '2px solid #dc3545';
-            radioGroup.style.borderRadius = '8px';
-            radioGroup.style.padding = '0.5rem';
-            radioGroup.style.background = 'rgba(220, 53, 69, 0.05)';
-            
-            // Create error message
-            const errorDiv = document.createElement('div');
-            errorDiv.id = errorId;
-            errorDiv.className = 'field-error';
-            errorDiv.textContent = message;
-            
-            // Insert error after radio group
-            radioGroup.parentNode.insertBefore(errorDiv, radioGroup.nextSibling);
-        } else if (field) {
-            // Regular field error
-            field.style.borderColor = '#dc3545';
-            
-            // Create error message
-            const errorDiv = document.createElement('div');
-            errorDiv.id = errorId;
-            errorDiv.className = 'field-error';
-            errorDiv.textContent = message;
-            
-            // Insert error after field
-            field.parentNode.insertBefore(errorDiv, field.nextSibling);
-        }
+        // Add red border to field
+        field.classList.add('error');
+        field.style.borderColor = '#e53e3e';
+        field.style.boxShadow = '0 0 0 3px rgba(229, 62, 62, 0.1)';
+        
+        // Create error message
+        const errorDiv = document.createElement('div');
+        errorDiv.id = errorId;
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.style.color = '#e53e3e';
+        errorDiv.style.fontSize = '0.9rem';
+        errorDiv.style.marginTop = '0.5rem';
+        errorDiv.style.fontWeight = '600';
+        errorDiv.style.padding = '0.5rem 0.75rem';
+        errorDiv.style.background = 'rgba(229, 62, 62, 0.05)';
+        errorDiv.style.borderRadius = '8px';
+        errorDiv.style.borderLeft = '3px solid #e53e3e';
+        
+        // Insert error after field
+        field.parentNode.insertBefore(errorDiv, field.nextSibling);
     }
 
     clearFieldError(fieldId) {
         const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        // Remove error styling from field
+        field.classList.remove('error');
+        field.style.borderColor = '';
+        field.style.boxShadow = '';
+        
+        // Remove error message
         const errorId = `${fieldId}-error`;
         const errorDiv = document.getElementById(errorId);
         
         if (errorDiv) {
             errorDiv.remove();
-        }
-        
-        // Special handling for different field types
-        if (fieldId === 'categories') {
-            const categoryGrid = document.querySelector('.category-grid');
-            categoryGrid.classList.remove('error');
-        } else if (fieldId === 'referralSource') {
-            const radioGroup = document.querySelector('.radio-group');
-            radioGroup.style.border = '';
-            radioGroup.style.borderRadius = '';
-            radioGroup.style.padding = '';
-            radioGroup.style.background = '';
-        } else if (field) {
-            // Reset field styling
-            field.style.borderColor = '#e9ecef';
         }
     }
 
@@ -303,6 +353,8 @@ class OnboardingFlow {
         if (!firstName) {
             this.showFieldError('firstName', 'First name is required');
             isValid = false;
+        } else {
+            this.clearFieldError('firstName');
         }
 
         // Last Name
@@ -310,6 +362,8 @@ class OnboardingFlow {
         if (!lastName) {
             this.showFieldError('lastName', 'Last name is required');
             isValid = false;
+        } else {
+            this.clearFieldError('lastName');
         }
 
         // Email
@@ -322,6 +376,14 @@ class OnboardingFlow {
             if (!emailRegex.test(email)) {
                 this.showFieldError('email', 'Please enter a valid email address');
                 isValid = false;
+            } else {
+                // Check email validation state - if it's invalid, show error
+                if (this.emailValidationState === 'invalid') {
+                    this.showFieldError('email', 'An account with this email already exists');
+                    isValid = false;
+                } else {
+                    this.clearFieldError('email');
+                }
             }
         }
 
@@ -333,7 +395,17 @@ class OnboardingFlow {
             if (!usernameRegex.test(username)) {
                 this.showFieldError('username', 'Username must be 3-20 characters, letters, numbers, and underscores only');
                 isValid = false;
+            } else {
+                // Check username validation state - if it's invalid, show error
+                if (this.usernameValidationState === 'invalid') {
+                    this.showFieldError('username', 'This username is already taken');
+                    isValid = false;
+                } else {
+                    this.clearFieldError('username');
+                }
             }
+        } else {
+            this.clearFieldError('username');
         }
 
         // Country
@@ -341,6 +413,8 @@ class OnboardingFlow {
         if (!country) {
             this.showFieldError('country', 'Please select your country');
             isValid = false;
+        } else {
+            this.clearFieldError('country');
         }
 
         // Preferred Name (optional)
@@ -383,6 +457,8 @@ class OnboardingFlow {
             } else if (!requirements.special) {
                 this.showFieldError('password', 'Password must contain at least one special character');
                 isValid = false;
+            } else {
+                this.clearFieldError('password');
             }
         }
 
@@ -393,6 +469,8 @@ class OnboardingFlow {
         } else if (password !== confirmPassword) {
             this.showFieldError('confirmPassword', 'Passwords do not match');
             isValid = false;
+        } else {
+            this.clearFieldError('confirmPassword');
         }
 
         return isValid;
@@ -405,11 +483,16 @@ class OnboardingFlow {
         if (!referralSource) {
             this.showFieldError('referralSource', 'Please select how you heard about us');
             isValid = false;
-        } else if (referralSource.value === 'other') {
-            const referralDetails = document.getElementById('referralDetailsText').value.trim();
-            if (!referralDetails) {
-                this.showFieldError('referralDetailsText', 'Please specify how you heard about us');
-                isValid = false;
+        } else {
+            this.clearFieldError('referralSource');
+            if (referralSource.value === 'other') {
+                const referralDetails = document.getElementById('referralDetailsText').value.trim();
+                if (!referralDetails) {
+                    this.showFieldError('referralDetailsText', 'Please specify how you heard about us');
+                    isValid = false;
+                } else {
+                    this.clearFieldError('referralDetailsText');
+                }
             }
         }
 
@@ -424,6 +507,8 @@ class OnboardingFlow {
         if (!currency) {
             this.showFieldError('currency', 'Please select your currency');
             isValid = false;
+        } else {
+            this.clearFieldError('currency');
         }
 
         // Categories
@@ -431,6 +516,8 @@ class OnboardingFlow {
         if (selectedCategories.length === 0) {
             this.showFieldError('categories', 'Please select at least one spending category');
             isValid = false;
+        } else {
+            this.clearFieldError('categories');
         }
 
         return isValid;
@@ -483,15 +570,17 @@ class OnboardingFlow {
     }
 
     clearAllFieldErrors() {
-        // Clear all field errors
-        const errorElements = document.querySelectorAll('.field-error');
-        errorElements.forEach(error => error.remove());
+        // Clear email and username validation errors
+        const emailError = document.getElementById('email-error');
+        const usernameError = document.getElementById('username-error');
         
-        // Reset all field borders
-        const allInputs = document.querySelectorAll('input, select');
-        allInputs.forEach(input => {
-            input.style.borderColor = '#e9ecef';
-        });
+        if (emailError) {
+            emailError.remove();
+        }
+        if (usernameError) {
+            usernameError.remove();
+        }
+        // Don't clear other field errors - asterisks already indicate required fields
     }
 
     showStep(stepNumber) {
