@@ -109,7 +109,6 @@
             <div class="onboarding-step" id="step3" style="display: none;">
                 <div class="step-header">
                     <h2>How did you hear about us?</h2>
-                    <p>Help us understand how you discovered STEWARD</p>
                 </div>
                 <form class="onboarding-form" id="referralForm">
                     <div class="form-group">
@@ -178,487 +177,308 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Customize your spending categories *</label>
-                        <p class="category-subtitle">We've prepared some preset categories for you. You can uncheck any you don't need, edit names, or add your own subcategories. Don't worry - you can always modify these later!</p>
+                        <label>Select your spending categories *</label>
+                        <p class="category-subtitle">Choose the categories that apply to your spending. You can always modify these later in your settings.</p>
                         
-                        <!-- Add Category Button -->
-                        <div class="category-actions">
-                            <button type="button" class="add-category-btn" onclick="addNewCategory()">
-                                <i class="fas fa-plus"></i>
-                                Add New Category
-                            </button>
-                        </div>
-                        
-                        <div class="preset-categories" id="categoriesContainer">
+                        <div class="categories-grid" id="categoriesContainer">
                             <!-- Faithful Stewardship -->
-                            <div class="category-section" data-category-id="faithful-stewardship">
-                                <div class="category-header" onclick="toggleCategory('faithful-stewardship')">
-                                    <label class="category-checkbox" onclick="event.stopPropagation()">
+                            <div class="category-card" data-category-id="faithful-stewardship">
+                                <div class="category-main">
+                                    <label class="category-checkbox">
                                         <input type="checkbox" name="categories" value="faithful-stewardship" checked>
-                                        <span class="category-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-church"></i>
-                                        <input type="text" class="category-name-input" value="Faithful Stewardship" readonly onclick="event.stopPropagation()">
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-church"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Faithful Stewardship</h4>
+                                            <p>Tithe, Offering, Social Responsibility</p>
+                                        </div>
                                     </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('faithful-stewardship'); event.stopPropagation()" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('faithful-stewardship'); event.stopPropagation()" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
                                 </div>
-                                <div class="subcategories expanded">
-                                    <div class="subcategory-item" data-subcategory-id="tithe">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="tithe" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Tithe" readonly>
-                                        </label>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="offering">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="offering" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Offering" readonly>
-                                        </label>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="social-responsibility">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="social-responsibility" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Social Responsibility" readonly>
-                                        </label>
-                                    </div>
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="tithe" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Tithe</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="offering" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Offering</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="social-responsibility" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Social Responsibility</span>
+                                    </label>
                                 </div>
                             </div>
 
                             <!-- Groceries -->
-                            <div class="category-section" data-category-id="groceries">
-                                <div class="category-header" onclick="toggleCategory('groceries')">
-                                    <label class="category-checkbox" onclick="event.stopPropagation()">
+                            <div class="category-card" data-category-id="groceries">
+                                <div class="category-main">
+                                    <label class="category-checkbox">
                                         <input type="checkbox" name="categories" value="groceries" checked>
-                                        <span class="category-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-shopping-cart"></i>
-                                        <input type="text" class="category-name-input" value="Groceries" readonly onclick="event.stopPropagation()">
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Groceries</h4>
+                                            <p>Food, Dining, Home Essentials</p>
+                                        </div>
                                     </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('groceries'); event.stopPropagation()" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('groceries'); event.stopPropagation()" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
                                 </div>
-                                <div class="subcategories expanded">
-                                    <div class="subcategory-item" data-subcategory-id="food-home-essentials">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="food-home-essentials" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Food & Home Essentials" readonly>
-                                        </label>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="dining-out">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="dining-out" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Dining out" readonly>
-                                        </label>
-                                    </div>
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="food-home-essentials" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Food & Home Essentials</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="dining-out" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Dining Out</span>
+                                    </label>
                                 </div>
                             </div>
 
                             <!-- Housing -->
-                            <div class="category-section" data-category-id="housing">
-                                <div class="category-header" onclick="toggleCategory('housing')">
-                                    <label class="category-checkbox" onclick="event.stopPropagation()">
+                            <div class="category-card" data-category-id="housing">
+                                <div class="category-main">
+                                    <label class="category-checkbox">
                                         <input type="checkbox" name="categories" value="housing" checked>
-                                        <span class="category-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-home"></i>
-                                        <input type="text" class="category-name-input" value="Housing" readonly onclick="event.stopPropagation()">
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Housing</h4>
+                                            <p>Rent, Utilities, Maintenance</p>
+                                        </div>
                                     </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('housing'); event.stopPropagation()" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('housing'); event.stopPropagation()" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
-                                    <i class="fas fa-chevron-down dropdown-arrow"></i>
                                 </div>
-                                <div class="subcategories">
-                                    <div class="subcategory-item" data-subcategory-id="mortgage-rent">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="mortgage-rent" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Mortgage/Rent" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('mortgage-rent')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('mortgage-rent')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="hoa-fees-levies">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="hoa-fees-levies" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="HOA Fees/Levies" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('hoa-fees-levies')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('hoa-fees-levies')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="electricity-bill">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="electricity-bill" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Electricity Bill" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('electricity-bill')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('electricity-bill')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="water-bill">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="water-bill" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Water Bill" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('water-bill')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('water-bill')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="home-maintenance">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="home-maintenance" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Home maintenance" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('home-maintenance')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('home-maintenance')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="home-insurance">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="home-insurance" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Home Insurance" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('home-insurance')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('home-insurance')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="subcategory-item" data-subcategory-id="internet">
-                                        <label class="subcategory-option">
-                                            <input type="checkbox" name="subcategories" value="internet" checked>
-                                            <span class="subcategory-custom"></span>
-                                            <input type="text" class="subcategory-name-input" value="Internet" readonly>
-                                        </label>
-                                        <div class="subcategory-actions">
-                                            <button type="button" class="btn-icon edit-subcategory" onclick="editSubcategory('internet')" title="Edit subcategory">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button" class="btn-icon delete-subcategory" onclick="deleteSubcategory('internet')" title="Delete subcategory">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="mortgage-rent" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Mortgage/Rent</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="electricity-bill" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Electricity</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="water-bill" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Water</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="internet" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Internet</span>
+                                    </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="home-maintenance" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Maintenance</span>
+                                    </label>
                                 </div>
                             </div>
 
                             <!-- Transportation -->
-                            <div class="category-section" data-category-id="transportation">
-                                <div class="category-header">
+                            <div class="category-card" data-category-id="transportation">
+                                <div class="category-main">
                                     <label class="category-checkbox">
                                         <input type="checkbox" name="categories" value="transportation" checked>
-                                        <span class="category-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-car"></i>
-                                        <input type="text" class="category-name-input" value="Transportation" readonly>
-                                    </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('transportation')" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('transportation')" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon delete-category" onclick="deleteCategory('transportation')" title="Delete category">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-car"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Transportation</h4>
+                                            <p>Vehicle, Fuel, Insurance</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="subcategories">
-                                    <label class="subcategory-option">
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="loan-repayment" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Loan repayment</span>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Loan Repayment</span>
                                     </label>
-                                    <label class="subcategory-option">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="insurance" checked>
-                                        <span class="subcategory-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                         <span>Insurance</span>
                                     </label>
-                                    <label class="subcategory-option">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="fuel" checked>
-                                        <span class="subcategory-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                         <span>Fuel</span>
-                                    </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="car-tracker" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Car Tracker</span>
-                                    </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="car-wash" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Car wash</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Monthly Commitments -->
-                            <div class="category-section" data-category-id="monthly-commitments">
-                                <div class="category-header">
+                            <div class="category-card" data-category-id="monthly-commitments">
+                                <div class="category-main">
                                     <label class="category-checkbox">
                                         <input type="checkbox" name="categories" value="monthly-commitments" checked>
-                                        <span class="category-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-calendar-check"></i>
-                                        <input type="text" class="category-name-input" value="Monthly Commitments" readonly>
-                                    </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('monthly-commitments')" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('monthly-commitments')" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon delete-category" onclick="deleteCategory('monthly-commitments')" title="Delete category">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Monthly Commitments</h4>
+                                            <p>Insurance, Subscriptions, Fees</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="subcategories">
-                                    <label class="subcategory-option">
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="life-cover" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Life cover</span>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Life Cover</span>
                                     </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="funeral-plan" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Funeral Plan</span>
-                                    </label>
-                                    <label class="subcategory-option">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="credit-card-repayment" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Credit card repayment</span>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Credit Card Repayment</span>
                                     </label>
-                                    <label class="subcategory-option">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="monthly-banking-fees" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Monthly Banking Fees</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Leisure/Entertainment -->
-                            <div class="category-section" data-category-id="leisure-entertainment">
-                                <div class="category-header">
-                                    <label class="category-checkbox">
-                                        <input type="checkbox" name="categories" value="leisure-entertainment" checked>
-                                        <span class="category-custom"></span>
-                                    </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-gamepad"></i>
-                                        <input type="text" class="category-name-input" value="Leisure/Entertainment" readonly>
-                                    </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('leisure-entertainment')" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('leisure-entertainment')" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon delete-category" onclick="deleteCategory('leisure-entertainment')" title="Delete category">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="subcategories">
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="spotify" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Spotify</span>
-                                    </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="weekend-adventures" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Weekend adventures</span>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Banking Fees</span>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Personal Care -->
-                            <div class="category-section" data-category-id="personal-care">
-                                <div class="category-header">
+                            <div class="category-card" data-category-id="personal-care">
+                                <div class="category-main">
                                     <label class="category-checkbox">
                                         <input type="checkbox" name="categories" value="personal-care" checked>
-                                        <span class="category-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-user"></i>
-                                        <input type="text" class="category-name-input" value="Personal Care" readonly>
-                                    </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('personal-care')" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('personal-care')" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon delete-category" onclick="deleteCategory('personal-care')" title="Delete category">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Personal Care</h4>
+                                            <p>Health, Grooming, Fitness</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="subcategories">
-                                    <label class="subcategory-option">
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="gym-membership" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Gym membership</span>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Gym Membership</span>
                                     </label>
-                                    <label class="subcategory-option">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="haircuts" checked>
-                                        <span class="subcategory-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                         <span>Haircuts</span>
                                     </label>
-                                    <label class="subcategory-option">
+                                    <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="clothing" checked>
-                                        <span class="subcategory-custom"></span>
+                                        <span class="checkbox-custom"></span>
                                         <span>Clothing</span>
                                     </label>
                                 </div>
                             </div>
 
-                            <!-- Savings Goals -->
-                            <div class="category-section" data-category-id="savings-goals">
-                                <div class="category-header">
+                            <!-- Leisure/Entertainment -->
+                            <div class="category-card" data-category-id="leisure-entertainment">
+                                <div class="category-main">
                                     <label class="category-checkbox">
-                                        <input type="checkbox" name="categories" value="savings-goals" checked>
-                                        <span class="category-custom"></span>
+                                        <input type="checkbox" name="categories" value="leisure-entertainment" checked>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-piggy-bank"></i>
-                                        <input type="text" class="category-name-input" value="Savings Goals" readonly>
-                                    </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('savings-goals')" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('savings-goals')" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon delete-category" onclick="deleteCategory('savings-goals')" title="Delete category">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-gamepad"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Leisure & Entertainment</h4>
+                                            <p>Subscriptions, Activities, Fun</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="subcategories">
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="emergency-fund" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Emergency fund</span>
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="spotify" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Spotify</span>
                                     </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="general-savings" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>General Savings</span>
-                                    </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="short-term-goal" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Short term goal</span>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="weekend-adventures" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Weekend Adventures</span>
                                     </label>
                                 </div>
                             </div>
 
-                            <!-- Once-off expenses -->
-                            <div class="category-section" data-category-id="once-off-expenses">
-                                <div class="category-header">
+                            <!-- Savings Goals -->
+                            <div class="category-card" data-category-id="savings-goals">
+                                <div class="category-main">
                                     <label class="category-checkbox">
-                                        <input type="checkbox" name="categories" value="once-off-expenses" checked>
-                                        <span class="category-custom"></span>
+                                        <input type="checkbox" name="categories" value="savings-goals" checked>
+                                        <span class="checkbox-custom"></span>
                                     </label>
-                                    <div class="category-content">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        <input type="text" class="category-name-input" value="Once-off expenses (populated as it happens)" readonly>
-                                    </div>
-                                    <div class="category-actions">
-                                        <button type="button" class="btn-icon edit-category" onclick="editCategory('once-off-expenses')" title="Edit category">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('once-off-expenses')" title="Add subcategory">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        <button type="button" class="btn-icon delete-category" onclick="deleteCategory('once-off-expenses')" title="Delete category">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <div class="category-info">
+                                        <div class="category-icon">
+                                            <i class="fas fa-piggy-bank"></i>
+                                        </div>
+                                        <div class="category-details">
+                                            <h4>Savings Goals</h4>
+                                            <p>Emergency Fund, Future Plans</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="subcategories">
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="asset-purchase" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Asset purchase</span>
+                                <div class="subcategories-list">
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="emergency-fund" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Emergency Fund</span>
                                     </label>
-                                    <label class="subcategory-option">
-                                        <input type="checkbox" name="subcategories" value="emergency" checked>
-                                        <span class="subcategory-custom"></span>
-                                        <span>Emergency</span>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="general-savings" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>General Savings</span>
                                     </label>
+                                    <label class="subcategory-item">
+                                        <input type="checkbox" name="subcategories" value="short-term-goal" checked>
+                                        <span class="checkbox-custom"></span>
+                                        <span>Short Term Goals</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Add Custom Category -->
+                            <div class="category-card add-category-card" onclick="addNewCategory()">
+                                <div class="add-category-content">
+                                    <div class="add-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="add-text">
+                                        <h4>Add Custom Category</h4>
+                                        <p>Create your own spending category</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -819,264 +639,238 @@
             font-style: italic;
         }
 
-        /* Preset Categories Styling */
-        .preset-categories {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 1rem;
-            background: #fafafa;
+        /* New Category Grid Styling */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
         }
 
-        .category-section {
-            margin-bottom: 0.75rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+        .category-card {
             background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
             overflow: hidden;
-            transition: all 0.2s ease;
         }
 
-        .category-section:hover {
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-            border-color: #d1d5db;
+        .category-card:hover {
+            border-color: #8B4513;
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.15);
+            transform: translateY(-2px);
         }
 
-        .category-actions {
-            margin-bottom: 0;
-        }
-
-        .category-header {
+        .category-card.add-category-card {
+            border: 2px dashed #8B4513;
+            background: linear-gradient(135deg, #fef7f0 0%, #f8f4f0 100%);
+            cursor: pointer;
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
-            background: #f8fafc;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
+            justify-content: center;
+            min-height: 120px;
         }
 
-        .category-header:hover {
-            background: #f1f5f9;
+        .category-card.add-category-card:hover {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
         }
 
-        .category-header.collapsed .dropdown-arrow {
-            transform: rotate(-90deg);
+        .category-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
         .category-checkbox {
             display: flex;
             align-items: center;
             cursor: pointer;
-            margin-right: 1rem;
+            margin-top: 0.25rem;
         }
 
         .category-checkbox input[type="checkbox"] {
             display: none;
         }
 
-        .category-custom {
+        .checkbox-custom {
             width: 20px;
             height: 20px;
             border: 2px solid #8B4513;
-            border-radius: 4px;
+            border-radius: 6px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            background: white;
         }
 
-        .category-checkbox input[type="checkbox"]:checked + .category-custom {
+        .category-checkbox input[type="checkbox"]:checked + .checkbox-custom {
             background: #8B4513;
             border-color: #8B4513;
         }
 
-        .category-checkbox input[type="checkbox"]:checked + .category-custom::after {
+        .category-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
             content: '✓';
             color: white;
             font-size: 12px;
             font-weight: bold;
         }
 
-        .category-content {
+        .category-info {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            gap: 0.75rem;
             flex: 1;
         }
 
-        .category-content i {
-            margin-right: 0.5rem;
-            color: #64748b;
-            width: 16px;
-            font-size: 1rem;
-        }
-
-        .category-name-input {
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            color: #1e293b;
-            padding: 0.25rem 0;
-            flex: 1;
-            font-size: 0.95rem;
-        }
-
-        .category-name-input:focus {
-            outline: none;
-            background: white;
-            border: 1px solid #3b82f6;
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        .dropdown-arrow {
-            margin-left: 0.5rem;
-            color: #64748b;
-            font-size: 0.8rem;
-            transition: transform 0.2s ease;
-        }
-
-
-        .category-actions {
-            display: flex;
-            gap: 0.25rem;
-            opacity: 0;
-            transition: all 0.2s ease;
-        }
-
-        .category-section:hover .category-actions {
-            opacity: 1;
-        }
-
-        .btn-icon {
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            font-size: 0.8rem;
-            width: 24px;
-            height: 24px;
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
         }
 
-        .btn-icon:hover {
-            background: #f1f5f9;
-            color: #475569;
+        .category-details h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
         }
 
-        .subcategories {
-            padding: 0.5rem 1rem 0.75rem 2rem;
-            background: white;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+        .category-details p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #64748b;
+            line-height: 1.4;
         }
 
-        .subcategories.expanded {
-            max-height: 500px;
+        .subcategories-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-left: 2.5rem;
         }
 
         .subcategory-item {
             display: flex;
             align-items: center;
-            margin-bottom: 0.25rem;
+            gap: 0.75rem;
             padding: 0.5rem;
-            border-radius: 4px;
+            border-radius: 8px;
+            cursor: pointer;
             transition: all 0.2s ease;
+            font-size: 0.9rem;
         }
 
         .subcategory-item:hover {
             background: #f8fafc;
         }
 
-        .subcategory-option {
+        .subcategory-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .subcategory-item .checkbox-custom {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #64748b;
+            border-radius: 4px;
+        }
+
+        .subcategory-item input[type="checkbox"]:checked + .checkbox-custom {
+            background: #64748b;
+            border-color: #64748b;
+        }
+
+        .subcategory-item input[type="checkbox"]:checked + .checkbox-custom::after {
+            content: '✓';
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .add-category-content {
+            text-align: center;
+        }
+
+        .add-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            flex: 1;
-            cursor: pointer;
-            font-size: 0.9rem;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: #8B4513;
+            transition: all 0.3s ease;
         }
 
-        .subcategory-option input[type="checkbox"] {
-            margin-right: 0.5rem;
-            transform: scale(0.9);
-        }
-
-        .subcategory-custom {
-            margin-right: 0.5rem;
-        }
-
-        .subcategory-name-input {
-            border: none;
-            background: transparent;
-            color: #475569;
-            padding: 0.125rem 0;
-            flex: 1;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .subcategory-name-input:focus {
-            outline: none;
-            background: white;
-            border: 1px solid #3b82f6;
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        .add-category-btn {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        .add-category-card:hover .add-icon {
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
-            padding: 0.625rem 1.25rem;
-            border-radius: 6px;
-            cursor: pointer;
+        }
+
+        .add-text h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
             font-weight: 600;
-            transition: all 0.2s ease;
-            margin-bottom: 1rem;
+            color: #8B4513;
+        }
+
+        .add-category-card:hover .add-text h4 {
+            color: white;
+        }
+
+        .add-text p {
+            margin: 0;
             font-size: 0.9rem;
-            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+            color: #64748b;
         }
 
-        .add-category-btn:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-        }
-
-        .add-category-btn:active {
-            transform: translateY(0);
+        .add-category-card:hover .add-text p {
+            color: rgba(255, 255, 255, 0.8);
         }
 
         /* Disable subcategories when parent category is unchecked */
-        .category-section:has(.category-header input[type="checkbox"]:not(:checked)) .subcategories {
+        .category-card:has(.category-checkbox input[type="checkbox"]:not(:checked)) .subcategories-list {
             opacity: 0.5;
             pointer-events: none;
         }
 
         /* Fallback for browsers that don't support :has() */
-        .category-section.disabled .subcategories {
+        .category-card.disabled .subcategories-list {
             opacity: 0.5;
             pointer-events: none;
         }
 
         @media (max-width: 768px) {
-            .subcategories {
+            .categories-grid {
                 grid-template-columns: 1fr;
-                margin-left: 20px;
+                gap: 1rem;
             }
             
-            .preset-categories {
-                max-height: 400px;
+            .category-card {
+                padding: 1rem;
+            }
+            
+            .subcategories-list {
+                margin-left: 2rem;
             }
         }
     </style>
@@ -1093,73 +887,38 @@
             if (!categoryName) return;
 
             const categoriesContainer = document.getElementById('categoriesContainer');
-            const categorySection = document.createElement('div');
-            categorySection.className = 'category-section';
-            categorySection.setAttribute('data-category-id', categoryId);
+            const categoryCard = document.createElement('div');
+            categoryCard.className = 'category-card';
+            categoryCard.setAttribute('data-category-id', categoryId);
             
-            categorySection.innerHTML = `
-                <div class="category-header" onclick="toggleCategory('${categoryId}')">
-                    <label class="category-checkbox" onclick="event.stopPropagation()">
+            categoryCard.innerHTML = `
+                <div class="category-main">
+                    <label class="category-checkbox">
                         <input type="checkbox" name="categories" value="${categoryId}" checked>
-                        <span class="category-custom"></span>
+                        <span class="checkbox-custom"></span>
                     </label>
-                    <div class="category-content">
-                        <i class="fas fa-folder"></i>
-                        <input type="text" class="category-name-input" value="${categoryName}" readonly onclick="event.stopPropagation()">
+                    <div class="category-info">
+                        <div class="category-icon">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="category-details">
+                            <h4>${categoryName}</h4>
+                            <p>Custom category</p>
+                        </div>
                     </div>
-                    <div class="category-actions">
-                        <button type="button" class="btn-icon edit-category" onclick="editCategory('${categoryId}'); event.stopPropagation()" title="Edit category">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn-icon add-subcategory" onclick="addSubcategory('${categoryId}'); event.stopPropagation()" title="Add subcategory">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    <i class="fas fa-chevron-down dropdown-arrow"></i>
                 </div>
-                <div class="subcategories expanded"></div>
+                <div class="subcategories-list">
+                    <label class="subcategory-item" onclick="addSubcategory('${categoryId}')">
+                        <span class="checkbox-custom" style="border-style: dashed; background: transparent;"></span>
+                        <span style="color: #8B4513; font-style: italic;">+ Add subcategory</span>
+                    </label>
+                </div>
             `;
             
-            categoriesContainer.appendChild(categorySection);
+            // Insert before the add category card
+            const addCard = categoriesContainer.querySelector('.add-category-card');
+            categoriesContainer.insertBefore(categoryCard, addCard);
             setupCategoryInteractions();
-        }
-
-        function editCategory(categoryId) {
-            const categorySection = document.querySelector(`[data-category-id="${categoryId}"]`);
-            const nameInput = categorySection.querySelector('.category-name-input');
-            const currentName = nameInput.value;
-            
-            nameInput.removeAttribute('readonly');
-            nameInput.focus();
-            nameInput.select();
-            
-            const saveEdit = () => {
-                nameInput.setAttribute('readonly', 'readonly');
-                if (nameInput.value.trim() === '') {
-                    nameInput.value = currentName;
-                }
-            };
-            
-            nameInput.addEventListener('blur', saveEdit, { once: true });
-            nameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    saveEdit();
-                }
-            });
-        }
-
-        function toggleCategory(categoryId) {
-            const categorySection = document.querySelector(`[data-category-id="${categoryId}"]`);
-            const subcategories = categorySection.querySelector('.subcategories');
-            const header = categorySection.querySelector('.category-header');
-            
-            if (subcategories.classList.contains('expanded')) {
-                subcategories.classList.remove('expanded');
-                header.classList.add('collapsed');
-            } else {
-                subcategories.classList.add('expanded');
-                header.classList.remove('collapsed');
-            }
         }
 
         function addSubcategory(categoryId) {
@@ -1168,53 +927,89 @@
             const subcategoryName = prompt('Enter subcategory name:');
             if (!subcategoryName) return;
 
-            const categorySection = document.querySelector(`[data-category-id="${categoryId}"]`);
-            const subcategoriesContainer = categorySection.querySelector('.subcategories');
+            const categoryCard = document.querySelector(`[data-category-id="${categoryId}"]`);
+            const subcategoriesList = categoryCard.querySelector('.subcategories-list');
             
-            const subcategoryItem = document.createElement('div');
+            // Remove the "Add subcategory" placeholder if it exists
+            const addPlaceholder = subcategoriesList.querySelector('.subcategory-item[onclick*="addSubcategory"]');
+            if (addPlaceholder) {
+                addPlaceholder.remove();
+            }
+            
+            const subcategoryItem = document.createElement('label');
             subcategoryItem.className = 'subcategory-item';
             subcategoryItem.setAttribute('data-subcategory-id', subcategoryId);
             
             subcategoryItem.innerHTML = `
-                <label class="subcategory-option">
-                    <input type="checkbox" name="subcategories" value="${subcategoryId}" checked>
-                    <span class="subcategory-custom"></span>
-                    <input type="text" class="subcategory-name-input" value="${subcategoryName}" readonly>
-                </label>
+                <input type="checkbox" name="subcategories" value="${subcategoryId}" checked>
+                <span class="checkbox-custom"></span>
+                <span>${subcategoryName}</span>
             `;
             
-            subcategoriesContainer.appendChild(subcategoryItem);
+            subcategoriesList.appendChild(subcategoryItem);
+            
+            // Add the "Add subcategory" placeholder back
+            const addPlaceholderNew = document.createElement('label');
+            addPlaceholderNew.className = 'subcategory-item';
+            addPlaceholderNew.setAttribute('onclick', `addSubcategory('${categoryId}')`);
+            addPlaceholderNew.innerHTML = `
+                <span class="checkbox-custom" style="border-style: dashed; background: transparent;"></span>
+                <span style="color: #8B4513; font-style: italic;">+ Add subcategory</span>
+            `;
+            subcategoriesList.appendChild(addPlaceholderNew);
             
             // Ensure parent category is checked
-            const categoryCheckbox = categorySection.querySelector('.category-checkbox input[type="checkbox"]');
+            const categoryCheckbox = categoryCard.querySelector('.category-checkbox input[type="checkbox"]');
             categoryCheckbox.checked = true;
-            categorySection.classList.remove('disabled');
+            categoryCard.classList.remove('disabled');
         }
 
-        function editSubcategory(subcategoryId) {
-            const subcategoryItem = document.querySelector(`[data-subcategory-id="${subcategoryId}"]`);
-            const nameInput = subcategoryItem.querySelector('.subcategory-name-input');
-            const currentName = nameInput.value;
-            
-            nameInput.removeAttribute('readonly');
-            nameInput.focus();
-            nameInput.select();
-            
-            const saveEdit = () => {
-                nameInput.setAttribute('readonly', 'readonly');
-                if (nameInput.value.trim() === '') {
-                    nameInput.value = currentName;
-                }
-            };
-            
-            nameInput.addEventListener('blur', saveEdit, { once: true });
-            nameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    saveEdit();
-                }
+        function setupCategoryInteractions() {
+            // Handle category checkbox changes
+            document.querySelectorAll('.category-checkbox input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const categoryCard = this.closest('.category-card');
+                    const subcategoriesList = categoryCard.querySelector('.subcategories-list');
+                    
+                    if (!this.checked) {
+                        // Uncheck all subcategories when parent is unchecked
+                        const subcategoryCheckboxes = subcategoriesList.querySelectorAll('input[type="checkbox"]');
+                        subcategoryCheckboxes.forEach(subCheckbox => {
+                            subCheckbox.checked = false;
+                        });
+                        categoryCard.classList.add('disabled');
+                    } else {
+                        categoryCard.classList.remove('disabled');
+                    }
+                });
+            });
+
+            // Handle subcategory changes
+            document.querySelectorAll('.subcategory-item input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const categoryCard = this.closest('.category-card');
+                    const categoryCheckbox = categoryCard.querySelector('.category-checkbox input[type="checkbox"]');
+                    const subcategoryCheckboxes = categoryCard.querySelectorAll('.subcategory-item input[type="checkbox"]');
+                    const checkedSubcategories = categoryCard.querySelectorAll('.subcategory-item input[type="checkbox"]:checked');
+                    
+                    // If any subcategory is checked, check the parent category
+                    if (checkedSubcategories.length > 0) {
+                        categoryCheckbox.checked = true;
+                        categoryCard.classList.remove('disabled');
+                    }
+                    // If no subcategories are checked, uncheck the parent category
+                    else if (checkedSubcategories.length === 0) {
+                        categoryCheckbox.checked = false;
+                        categoryCard.classList.add('disabled');
+                    }
+                });
             });
         }
 
+        // Initialize category interactions when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setupCategoryInteractions();
+        });
     </script>
 </body>
 </html>

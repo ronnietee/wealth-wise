@@ -511,7 +511,7 @@ class OnboardingFlow {
             this.clearFieldError('currency');
         }
 
-        // Categories
+        // Categories - check if at least one category is selected
         const selectedCategories = document.querySelectorAll('input[name="categories"]:checked');
         if (selectedCategories.length === 0) {
             this.showFieldError('categories', 'Please select at least one spending category');
@@ -523,51 +523,6 @@ class OnboardingFlow {
         return isValid;
     }
 
-    setupCategoryInteractions() {
-        // Handle category header clicks to toggle subcategories
-        const categoryHeaders = document.querySelectorAll('.category-header');
-        categoryHeaders.forEach(header => {
-            const checkbox = header.querySelector('input[type="checkbox"]');
-            const categorySection = header.closest('.category-section');
-            const subcategories = categorySection.querySelector('.subcategories');
-            
-            // Toggle subcategories when category is unchecked
-            checkbox.addEventListener('change', function() {
-                if (!this.checked) {
-                    // Uncheck all subcategories when parent is unchecked
-                    const subcategoryCheckboxes = subcategories.querySelectorAll('input[type="checkbox"]');
-                    subcategoryCheckboxes.forEach(subCheckbox => {
-                        subCheckbox.checked = false;
-                    });
-                    categorySection.classList.add('disabled');
-                } else {
-                    categorySection.classList.remove('disabled');
-                }
-            });
-        });
-
-        // Handle subcategory changes
-        const subcategoryCheckboxes = document.querySelectorAll('input[name="subcategories"]');
-        subcategoryCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const categorySection = this.closest('.category-section');
-                const categoryCheckbox = categorySection.querySelector('.category-header input[type="checkbox"]');
-                const subcategoryCheckboxes = categorySection.querySelectorAll('input[name="subcategories"]');
-                const checkedSubcategories = categorySection.querySelectorAll('input[name="subcategories"]:checked');
-                
-                // If any subcategory is checked, check the parent category
-                if (checkedSubcategories.length > 0) {
-                    categoryCheckbox.checked = true;
-                    categorySection.classList.remove('disabled');
-                }
-                // If no subcategories are checked, uncheck the parent category
-                else if (checkedSubcategories.length === 0) {
-                    categoryCheckbox.checked = false;
-                    categorySection.classList.add('disabled');
-                }
-            });
-        });
-    }
 
     clearAllFieldErrors() {
         // Clear email and username validation errors
@@ -595,8 +550,8 @@ class OnboardingFlow {
         
         // Setup step-specific interactions
         if (stepNumber === 4) {
-            // Setup category interactions for step 4
-            setTimeout(() => this.setupCategoryInteractions(), 100);
+            // Category interactions are handled in the HTML file
+            // No additional setup needed for the new card-based design
         }
         
         // Update UI
