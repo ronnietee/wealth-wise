@@ -202,21 +202,21 @@
                                     <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="tithe" checked>
                                         <span class="checkbox-custom"></span>
-                                        <span>Tithe</span>
+                                        <span class="subcategory-text">Tithe</span>
                                     </label>
                                     <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="offering" checked>
                                         <span class="checkbox-custom"></span>
-                                        <span>Offering</span>
+                                        <span class="subcategory-text">Offering</span>
                                     </label>
                                     <label class="subcategory-item">
                                         <input type="checkbox" name="subcategories" value="social-responsibility" checked>
                                         <span class="checkbox-custom"></span>
-                                        <span>Social Responsibility</span>
+                                        <span class="subcategory-text">Social Responsibility</span>
                                     </label>
                                     <label class="subcategory-item add-subcategory-item" onclick="addSubcategory('faithful-stewardship')">
                                         <span class="checkbox-custom" style="border-style: dashed; background: transparent;"></span>
-                                        <span style="color: #8B4513; font-style: italic;">+ Add subcategory</span>
+                                        <span class="subcategory-text" style="color: #8B4513; font-style: italic;">+ Add subcategory</span>
                                     </label>
                                 </div>
                             </div>
@@ -806,7 +806,6 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 0.9rem;
-            flex-direction: row;
             position: relative;
         }
 
@@ -898,7 +897,7 @@
             background: rgba(139, 69, 19, 0.05);
         }
 
-        .subcategory-item span:last-child {
+        .subcategory-text {
             flex: 1;
             order: 2;
         }
@@ -999,7 +998,7 @@
             subcategoryItem.innerHTML = `
                 <input type="checkbox" name="subcategories" value="${subcategoryId}" checked>
                 <span class="checkbox-custom"></span>
-                <span>${subcategoryName}</span>
+                <span class="subcategory-text">${subcategoryName}</span>
             `;
             
             subcategoriesList.appendChild(subcategoryItem);
@@ -1010,7 +1009,7 @@
             addPlaceholderNew.setAttribute('onclick', `addSubcategory('${categoryId}')`);
             addPlaceholderNew.innerHTML = `
                 <span class="checkbox-custom" style="border-style: dashed; background: transparent;"></span>
-                <span style="color: #8B4513; font-style: italic;">+ Add subcategory</span>
+                <span class="subcategory-text" style="color: #8B4513; font-style: italic;">+ Add subcategory</span>
             `;
             subcategoriesList.appendChild(addPlaceholderNew);
             
