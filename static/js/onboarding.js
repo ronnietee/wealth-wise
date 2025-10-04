@@ -581,6 +581,13 @@ class OnboardingFlow {
 
         const formData = new FormData(currentForm);
         
+        // Debug: Log all form data entries
+        console.log('=== FORM DATA ENTRIES ===');
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+        console.log('========================');
+        
         // Convert FormData to object
         const stepData = {};
         for (let [key, value] of formData.entries()) {
