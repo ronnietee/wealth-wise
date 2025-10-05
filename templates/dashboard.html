@@ -142,23 +142,14 @@
             <div class="progress-card">
                 <div class="progress-header">
                     <h3>Budget Progress</h3>
-                    <div class="progress-stats">
+                </div>
+                <div class="score-card">
+                    <div class="score-percentage">
                         <span id="progressPercentage">0%</span>
                     </div>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar">
-                        <div id="progressBar" class="progress-fill"></div>
-                    </div>
-                </div>
-                <div class="progress-details">
-                    <div class="progress-item">
-                        <span class="label">Allocated:</span>
-                        <span id="allocatedAmount" class="amount">$0.00</span>
-                    </div>
-                    <div class="progress-item">
-                        <span class="label">Spent:</span>
-                        <span id="spentAmount" class="amount">$0.00</span>
+                    <div class="score-details">
+                        <span class="score-label">Total Spent</span>
+                        <span id="totalSpent" class="score-amount">$0.00</span>
                     </div>
                 </div>
             </div>
@@ -417,28 +408,24 @@ function loadCategoriesOverview() {
 }
 
 function updateProgressVisualization(allocated, spent) {
-    // Update progress details
-    document.getElementById('allocatedAmount').textContent = formatCurrency(allocated, userCurrency);
-    document.getElementById('spentAmount').textContent = formatCurrency(spent, userCurrency);
-    
     // Calculate progress percentage based on Total Income - Spent
     const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
-    const remaining = totalIncome - spent;
     const percentage = totalIncome > 0 ? Math.min((spent / totalIncome) * 100, 100) : 0;
     document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
     
-    // Update progress bar
-    const progressBar = document.getElementById('progressBar');
-    progressBar.style.width = percentage + '%';
+    // Update total spent amount
+    document.getElementById('totalSpent').textContent = formatCurrency(spent, userCurrency);
     
-    // Add color coding based on progress
-    progressBar.className = 'progress-fill';
+    // Add color coding based on spending level
+    const scorePercentage = document.getElementById('progressPercentage').parentElement;
+    scorePercentage.className = 'score-percentage';
+    
     if (percentage > 90) {
-        progressBar.classList.add('over-budget');
+        scorePercentage.classList.add('high-spending');
     } else if (percentage > 75) {
-        progressBar.classList.add('warning');
+        scorePercentage.classList.add('moderate-spending');
     } else {
-        progressBar.classList.add('on-track');
+        scorePercentage.classList.add('low-spending');
     }
 }
 
