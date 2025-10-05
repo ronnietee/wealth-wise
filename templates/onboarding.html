@@ -992,6 +992,12 @@
             const subcategoryId = `custom-subcategory-${categoryId}-${subcategoryCounter}`;
             const subcategoryName = prompt('Enter subcategory name:');
             if (!subcategoryName) return;
+            
+            // Store the subcategory name for later use
+            if (!window.customSubcategoryNames) {
+                window.customSubcategoryNames = {};
+            }
+            window.customSubcategoryNames[subcategoryId] = subcategoryName;
 
             const categoryCard = document.querySelector(`[data-category-id="${categoryId}"]`);
             const subcategoriesList = categoryCard.querySelector('.subcategories-list');

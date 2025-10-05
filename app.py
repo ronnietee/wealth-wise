@@ -2394,6 +2394,7 @@ def complete_onboarding():
         
         selected_categories = details_info.get('categories', [])
         selected_subcategories = details_info.get('subcategories', [])
+        custom_subcategory_names = data.get('custom_subcategory_names', {})
         
         # Process custom categories and their subcategories together
         print(f"All selected subcategories: {selected_subcategories}")
@@ -2456,18 +2457,15 @@ def complete_onboarding():
                 if category_key in custom_category_subcategories:
                     print(f"Found custom subcategories for predefined category {category_key}: {custom_category_subcategories[category_key]}")
                     for subcategory_key in custom_category_subcategories[category_key]:
-                        # Extract subcategory name from the key
-                        # Format: custom-subcategory-{predefined_category}-{counter}
-                        parts = subcategory_key.split('-')
-                        if len(parts) >= 4:
-                            subcategory_name = '-'.join(parts[3:]).replace('-', ' ').title()
-                            subcategory = Subcategory(
-                                name=subcategory_name,
-                                category_id=category.id
-                            )
-                            db.session.add(subcategory)
-                            subcategories_added += 1
-                            print(f"Added custom subcategory to predefined category: {subcategory_key} -> {subcategory_name}")
+                        # Get the actual subcategory name from the frontend
+                        subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
+                        subcategory = Subcategory(
+                            name=subcategory_name,
+                            category_id=category.id
+                        )
+                        db.session.add(subcategory)
+                        subcategories_added += 1
+                        print(f"Added custom subcategory to predefined category: {subcategory_key} -> {subcategory_name}")
                 
                 print(f"Total subcategories added for {category_key}: {subcategories_added}")
             elif category_key.startswith('custom-category-'):
@@ -2493,18 +2491,15 @@ def complete_onboarding():
                 if category_key in custom_category_subcategories:
                     print(f"Found subcategories for {category_key}: {custom_category_subcategories[category_key]}")
                     for subcategory_key in custom_category_subcategories[category_key]:
-                        # Extract subcategory name from the key
-                        # Format: custom-subcategory-custom-category-{number}-{counter}
-                        parts = subcategory_key.split('-')
-                        if len(parts) >= 5:
-                            subcategory_name = '-'.join(parts[5:]).replace('-', ' ').title()
-                            subcategory = Subcategory(
-                                name=subcategory_name,
-                                category_id=category.id
-                            )
-                            db.session.add(subcategory)
-                            subcategories_added += 1
-                            print(f"Added custom subcategory: {subcategory_key} -> {subcategory_name}")
+                        # Get the actual subcategory name from the frontend
+                        subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
+                        subcategory = Subcategory(
+                            name=subcategory_name,
+                            category_id=category.id
+                        )
+                        db.session.add(subcategory)
+                        subcategories_added += 1
+                        print(f"Added custom subcategory: {subcategory_key} -> {subcategory_name}")
                 else:
                     print(f"No subcategories found for category {category_key}")
                 
