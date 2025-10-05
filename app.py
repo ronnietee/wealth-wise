@@ -2443,7 +2443,9 @@ def complete_onboarding():
                 print(f"Category {category_key} not found in mapping and not a custom category")
         
         # Handle custom subcategories that don't belong to any category
+        print(f"All selected subcategories: {selected_subcategories}")
         custom_subcategories = [sub for sub in selected_subcategories if sub.startswith('custom-subcategory-')]
+        print(f"Found custom subcategories: {custom_subcategories}")
         if custom_subcategories:
             print(f"Processing {len(custom_subcategories)} custom subcategories")
             # Create a general category for custom subcategories
