@@ -2398,6 +2398,7 @@ def complete_onboarding():
         for category_key in selected_categories:
             print(f"Processing category: {category_key}")
             if category_key in category_mapping:
+                # Handle predefined categories
                 category_data = category_mapping[category_key]
                 print(f"Category data: {category_data}")
                 category = Category(
@@ -2424,8 +2425,46 @@ def complete_onboarding():
                     else:
                         print(f"Subcategory {subcategory_key} not found in category {category_key}")
                 print(f"Total subcategories added for {category_key}: {subcategories_added}")
+            elif category_key.startswith('custom-category-'):
+                # Handle custom categories
+                print(f"Processing custom category: {category_key}")
+                # For now, create a basic custom category without subcategories
+                # The subcategories will be handled separately
+                category = Category(
+                    name=f'Custom Category {category_key.split("-")[-1]}',
+                    user_id=user.id,
+                    is_template=False
+                )
+                db.session.add(category)
+                db.session.flush()  # Get the category ID
+                print(f"Created custom category with ID: {category.id}")
+                print(f"Total subcategories added for custom category {category_key}: 0")
             else:
-                print(f"Category {category_key} not found in mapping")
+                print(f"Category {category_key} not found in mapping and not a custom category")
+        
+        # Handle custom subcategories that don't belong to any category
+        custom_subcategories = [sub for sub in selected_subcategories if sub.startswith('custom-subcategory-')]
+        if custom_subcategories:
+            print(f"Processing {len(custom_subcategories)} custom subcategories")
+            # Create a general category for custom subcategories
+            other_category = Category(
+                name='Other',
+                user_id=user.id,
+                is_template=False
+            )
+            db.session.add(other_category)
+            db.session.flush()
+            print(f"Created 'Other' category with ID: {other_category.id}")
+            
+            for subcategory_key in custom_subcategories:
+                # Extract subcategory name from the key
+                subcategory_name = subcategory_key.replace('custom-subcategory-', '').replace('-', ' ').title()
+                subcategory = Subcategory(
+                    name=subcategory_name,
+                    category_id=other_category.id
+                )
+                db.session.add(subcategory)
+                print(f"Added custom subcategory: {subcategory_key} -> {subcategory_name}")
         
         db.session.commit()
         
