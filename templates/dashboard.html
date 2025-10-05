@@ -134,6 +134,22 @@
             </div>
         </div>
 
+        <!-- Budget Allocation Chart Section -->
+        <div class="chart-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Budget Allocation</h3>
+                    <p>Distribution of your budget across categories</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="budgetChart" width="400" height="400"></canvas>
+                </div>
+                <div class="chart-legend" id="chartLegend">
+                    <!-- Legend will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
         <!-- Right Content Area -->
         <div class="right-content">
             <!-- Quick Actions -->
@@ -312,6 +328,7 @@ function loadDashboardData() {
             
             // Load other data now that we have a budget
             loadCategoriesOverview();
+            loadBudgetChart();
             checkBudgetBalance();
             checkOverspending();
         })
@@ -675,6 +692,117 @@ function hideNoBudgetMessage() {
     if (noBudgetMessage) {
         noBudgetMessage.style.display = 'none';
     }
+}
+
+// Chart functionality
+let budgetChart = null;
+
+function loadBudgetChart() {
+    authenticatedFetch('/api/categories')
+    .then(response => response.json())
+    .then(categories => {
+        // Prepare data for the chart
+        const chartData = prepareChartData(categories);
+        createBudgetChart(chartData);
+    })
+    .catch(error => {
+        console.error('Error loading chart data:', error);
+    });
+}
+
+function prepareChartData(categories) {
+    const data = [];
+    const labels = [];
+    const colors = [
+        '#8B4513', '#D2691E', '#CD853F', '#DEB887', '#F4A460',
+        '#DAA520', '#B8860B', '#BC8F8F', '#A0522D', '#8B7355',
+        '#A0522D', '#CD853F', '#DEB887', '#F5DEB3', '#FFE4B5',
+        '#FFEBCD', '#FFF8DC', '#F0E68C', '#BDB76B', '#9ACD32'
+    ];
+    
+    let totalAllocated = 0;
+    
+    categories.forEach((category, index) => {
+        const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + (sub.allocated || 0), 0);
+        
+        if (categoryAllocated > 0) {
+            data.push(categoryAllocated);
+            labels.push(category.name);
+            totalAllocated += categoryAllocated;
+        }
+    });
+    
+    return {
+        data: data,
+        labels: labels,
+        colors: colors.slice(0, data.length),
+        totalAllocated: totalAllocated
+    };
+}
+
+function createBudgetChart(chartData) {
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (budgetChart) {
+        budgetChart.destroy();
+    }
+    
+    budgetChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                data: chartData.data,
+                backgroundColor: chartData.colors,
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false // We'll create a custom legend
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const percentage = ((value / chartData.totalAllocated) * 100).toFixed(1);
+                            return `${context.label}: ${formatCurrency(value, userCurrency)} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+    
+    // Create custom legend
+    createCustomLegend(chartData);
+}
+
+function createCustomLegend(chartData) {
+    const legendContainer = document.getElementById('chartLegend');
+    legendContainer.innerHTML = '';
+    
+    chartData.labels.forEach((label, index) => {
+        const value = chartData.data[index];
+        const percentage = ((value / chartData.totalAllocated) * 100).toFixed(1);
+        
+        const legendItem = document.createElement('div');
+        legendItem.className = 'legend-item';
+        legendItem.innerHTML = `
+            <div class="legend-color" style="background-color: ${chartData.colors[index]}"></div>
+            <span class="legend-label">${label}</span>
+            <span class="legend-value">${formatCurrency(value, userCurrency)} (${percentage}%)</span>
+        `;
+        
+        legendContainer.appendChild(legendItem);
+    });
 }
 </script>
 {% endblock %}
