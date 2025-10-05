@@ -2414,6 +2414,7 @@ def complete_onboarding():
                 custom_category_subcategories[parent_category_id].append(subcategory_key)
         
         print(f"Custom category subcategories mapping: {custom_category_subcategories}")
+        print(f"Selected categories: {selected_categories}")
         
         for category_key in selected_categories:
             print(f"Processing category: {category_key}")
@@ -2464,7 +2465,9 @@ def complete_onboarding():
                 
                 # Add subcategories for this custom category
                 subcategories_added = 0
+                print(f"Looking for subcategories for category {category_key} in mapping: {custom_category_subcategories}")
                 if category_key in custom_category_subcategories:
+                    print(f"Found subcategories for {category_key}: {custom_category_subcategories[category_key]}")
                     for subcategory_key in custom_category_subcategories[category_key]:
                         # Extract subcategory name from the key
                         # Format: custom-subcategory-custom-category-{number}-{counter}
@@ -2478,6 +2481,8 @@ def complete_onboarding():
                             db.session.add(subcategory)
                             subcategories_added += 1
                             print(f"Added custom subcategory: {subcategory_key} -> {subcategory_name}")
+                else:
+                    print(f"No subcategories found for category {category_key}")
                 
                 print(f"Total subcategories added for custom category {category_key}: {subcategories_added}")
             else:
