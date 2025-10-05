@@ -2405,9 +2405,10 @@ def complete_onboarding():
         for subcategory_key in custom_subcategories:
             # Extract the parent category ID from the subcategory key
             # Format: custom-subcategory-{parent_category_id}-{subcategory_counter}
+            # Example: custom-subcategory-custom-category-1-2
             parts = subcategory_key.split('-')
-            if len(parts) >= 4:  # custom-subcategory-{parent}-{counter}
-                parent_category_id = f"{parts[1]}-{parts[2]}"  # Extract the parent category ID
+            if len(parts) >= 5:  # custom-subcategory-custom-category-{number}-{counter}
+                parent_category_id = f"{parts[2]}-{parts[3]}-{parts[4]}"  # Extract custom-category-{number}
                 if parent_category_id not in custom_category_subcategories:
                     custom_category_subcategories[parent_category_id] = []
                 custom_category_subcategories[parent_category_id].append(subcategory_key)
@@ -2466,10 +2467,10 @@ def complete_onboarding():
                 if category_key in custom_category_subcategories:
                     for subcategory_key in custom_category_subcategories[category_key]:
                         # Extract subcategory name from the key
-                        # Format: custom-subcategory-{parent_category_id}-{subcategory_counter}
+                        # Format: custom-subcategory-custom-category-{number}-{counter}
                         parts = subcategory_key.split('-')
-                        if len(parts) >= 4:
-                            subcategory_name = '-'.join(parts[3:]).replace('-', ' ').title()
+                        if len(parts) >= 5:
+                            subcategory_name = '-'.join(parts[5:]).replace('-', ' ').title()
                             subcategory = Subcategory(
                                 name=subcategory_name,
                                 category_id=category.id
