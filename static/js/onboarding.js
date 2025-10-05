@@ -614,6 +614,12 @@ class OnboardingFlow {
             
             stepData.categories = categories;
             stepData.subcategories = subcategories;
+            
+            // Include custom category names if they exist
+            if (window.customCategoryNames) {
+                stepData.custom_category_names = window.customCategoryNames;
+                console.log('Custom category names:', window.customCategoryNames);
+            }
         }
 
         this.formData = { ...this.formData, ...stepData };

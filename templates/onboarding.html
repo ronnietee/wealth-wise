@@ -945,6 +945,12 @@
             const categoryId = `custom-category-${categoryCounter}`;
             const categoryName = prompt('Enter category name:');
             if (!categoryName) return;
+            
+            // Store the category name for later use
+            if (!window.customCategoryNames) {
+                window.customCategoryNames = {};
+            }
+            window.customCategoryNames[categoryId] = categoryName;
 
             const categoriesContainer = document.getElementById('categoriesContainer');
             const categoryCard = document.createElement('div');
@@ -983,7 +989,7 @@
 
         function addSubcategory(categoryId) {
             subcategoryCounter++;
-            const subcategoryId = `custom-subcategory-${subcategoryCounter}`;
+            const subcategoryId = `custom-subcategory-${categoryId}-${subcategoryCounter}`;
             const subcategoryName = prompt('Enter subcategory name:');
             if (!subcategoryName) return;
 

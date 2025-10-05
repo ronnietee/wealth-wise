@@ -2395,31 +2395,24 @@ def complete_onboarding():
         selected_categories = details_info.get('categories', [])
         selected_subcategories = details_info.get('subcategories', [])
         
-        # Handle custom subcategories first (before processing categories)
+        # Process custom categories and their subcategories together
         print(f"All selected subcategories: {selected_subcategories}")
         custom_subcategories = [sub for sub in selected_subcategories if sub.startswith('custom-subcategory-')]
         print(f"Found custom subcategories: {custom_subcategories}")
-        if custom_subcategories:
-            print(f"Processing {len(custom_subcategories)} custom subcategories")
-            # Create a general category for custom subcategories
-            other_category = Category(
-                name='Other',
-                user_id=user.id,
-                is_template=False
-            )
-            db.session.add(other_category)
-            db.session.flush()
-            print(f"Created 'Other' category with ID: {other_category.id}")
-            
-            for subcategory_key in custom_subcategories:
-                # Extract subcategory name from the key
-                subcategory_name = subcategory_key.replace('custom-subcategory-', '').replace('-', ' ').title()
-                subcategory = Subcategory(
-                    name=subcategory_name,
-                    category_id=other_category.id
-                )
-                db.session.add(subcategory)
-                print(f"Added custom subcategory: {subcategory_key} -> {subcategory_name}")
+        
+        # Group custom subcategories by their parent category
+        custom_category_subcategories = {}
+        for subcategory_key in custom_subcategories:
+            # Extract the parent category ID from the subcategory key
+            # Format: custom-subcategory-{parent_category_id}-{subcategory_counter}
+            parts = subcategory_key.split('-')
+            if len(parts) >= 4:  # custom-subcategory-{parent}-{counter}
+                parent_category_id = f"{parts[1]}-{parts[2]}"  # Extract the parent category ID
+                if parent_category_id not in custom_category_subcategories:
+                    custom_category_subcategories[parent_category_id] = []
+                custom_category_subcategories[parent_category_id].append(subcategory_key)
+        
+        print(f"Custom category subcategories mapping: {custom_category_subcategories}")
         
         for category_key in selected_categories:
             print(f"Processing category: {category_key}")
@@ -2454,17 +2447,38 @@ def complete_onboarding():
             elif category_key.startswith('custom-category-'):
                 # Handle custom categories
                 print(f"Processing custom category: {category_key}")
-                # For now, create a basic custom category without subcategories
-                # The subcategories will be handled separately
+                
+                # Get the custom category name from the form data
+                custom_category_name = data.get('custom_category_names', {}).get(category_key, f'Custom Category {category_key.split("-")[-1]}')
+                print(f"Custom category name: {custom_category_name}")
+                
                 category = Category(
-                    name=f'Custom Category {category_key.split("-")[-1]}',
+                    name=custom_category_name,
                     user_id=user.id,
                     is_template=False
                 )
                 db.session.add(category)
                 db.session.flush()  # Get the category ID
                 print(f"Created custom category with ID: {category.id}")
-                print(f"Total subcategories added for custom category {category_key}: 0")
+                
+                # Add subcategories for this custom category
+                subcategories_added = 0
+                if category_key in custom_category_subcategories:
+                    for subcategory_key in custom_category_subcategories[category_key]:
+                        # Extract subcategory name from the key
+                        # Format: custom-subcategory-{parent_category_id}-{subcategory_counter}
+                        parts = subcategory_key.split('-')
+                        if len(parts) >= 4:
+                            subcategory_name = '-'.join(parts[3:]).replace('-', ' ').title()
+                            subcategory = Subcategory(
+                                name=subcategory_name,
+                                category_id=category.id
+                            )
+                            db.session.add(subcategory)
+                            subcategories_added += 1
+                            print(f"Added custom subcategory: {subcategory_key} -> {subcategory_name}")
+                
+                print(f"Total subcategories added for custom category {category_key}: {subcategories_added}")
             else:
                 print(f"Category {category_key} not found in mapping and not a custom category")
         
