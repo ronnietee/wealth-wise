@@ -105,6 +105,36 @@
                     <span id="balance" class="value">$0.00</span>
                 </div>
             </div>
+            
+            <div class="overview-card available-card compact">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Available to Allocate</h3>
+                        <p>Unallocated funds</p>
+                    </div>
+                </div>
+                <div class="card-value">
+                    <span id="availableToAllocate" class="value">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="overview-card days-card compact">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>Days Remaining</h3>
+                        <p>Budget period</p>
+                    </div>
+                </div>
+                <div class="card-value">
+                    <span id="daysRemaining" class="value">0</span>
+                </div>
+            </div>
         </div>
 
         <!-- Budget Progress Section -->
@@ -329,6 +359,7 @@ function loadDashboardData() {
             // Load other data now that we have a budget
             loadCategoriesOverview();
             loadBudgetChart();
+            calculateDaysRemaining(data);
             checkBudgetBalance();
             checkOverspending();
         })
@@ -374,6 +405,10 @@ function loadCategoriesOverview() {
         const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
         const balance = totalIncome - totalSpent;
         document.getElementById('balance').textContent = formatCurrency(balance, userCurrency);
+        
+        // Calculate available to allocate (Income - Allocated)
+        const availableToAllocate = totalIncome - totalAllocated;
+        document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
         
         // Update progress visualization
         updateProgressVisualization(totalAllocated, totalSpent);
@@ -694,6 +729,27 @@ function hideNoBudgetMessage() {
     if (noBudgetMessage) {
         noBudgetMessage.style.display = 'none';
     }
+}
+
+function calculateDaysRemaining(budgetData) {
+    if (!budgetData || !budgetData.end_date) {
+        document.getElementById('daysRemaining').textContent = '0';
+        return;
+    }
+    
+    const endDate = new Date(budgetData.end_date);
+    const today = new Date();
+    
+    // Set time to start of day for accurate day calculation
+    today.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+    
+    const timeDiff = endDate.getTime() - today.getTime();
+    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    // Ensure we don't show negative days
+    const displayDays = Math.max(0, daysRemaining);
+    document.getElementById('daysRemaining').textContent = displayDays.toString();
 }
 
 // Chart functionality

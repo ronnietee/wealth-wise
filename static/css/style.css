@@ -2808,7 +2808,7 @@ body.modal-open {
 /* Overview Cards */
 .overview-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 1rem;
 }
 
@@ -2864,6 +2864,14 @@ body.modal-open {
 
 .balance-card .card-icon {
     background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+}
+
+.available-card .card-icon {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.days-card .card-icon {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
 }
 
 .card-title h3 {
@@ -6929,6 +6937,40 @@ body.modal-open {
     font-size: 1.1rem;
     font-weight: 600;
     border-radius: 8px;
+}
+
+/* Mobile Responsive for Dashboard */
+@media (max-width: 768px) {
+    .overview-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .overview-card.compact {
+        padding: 0.75rem;
+    }
+    
+    .overview-card.compact .card-title h3 {
+        font-size: 0.9rem;
+    }
+    
+    .overview-card.compact .card-title p {
+        font-size: 0.7rem;
+    }
+    
+    .overview-card.compact .card-value .value {
+        font-size: 1.2rem;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .chart-section {
+        grid-column: 1;
+        grid-row: auto;
+    }
 }
 
 /* Mobile Responsive for Budget Breakdown */
