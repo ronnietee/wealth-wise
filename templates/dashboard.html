@@ -386,8 +386,10 @@ function updateProgressVisualization(allocated, spent) {
     document.getElementById('allocatedAmount').textContent = formatCurrency(allocated, userCurrency);
     document.getElementById('spentAmount').textContent = formatCurrency(spent, userCurrency);
     
-    // Calculate progress percentage
-    const percentage = allocated > 0 ? Math.min((spent / allocated) * 100, 100) : 0;
+    // Calculate progress percentage based on Total Income - Spent
+    const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
+    const remaining = totalIncome - spent;
+    const percentage = totalIncome > 0 ? Math.min((spent / totalIncome) * 100, 100) : 0;
     document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
     
     // Update progress bar
@@ -714,10 +716,10 @@ function prepareChartData(categories) {
     const data = [];
     const labels = [];
     const colors = [
-        '#8B4513', '#D2691E', '#CD853F', '#DEB887', '#F4A460',
-        '#DAA520', '#B8860B', '#BC8F8F', '#A0522D', '#8B7355',
-        '#A0522D', '#CD853F', '#DEB887', '#F5DEB3', '#FFE4B5',
-        '#FFEBCD', '#FFF8DC', '#F0E68C', '#BDB76B', '#9ACD32'
+        '#8B4513', '#DC3545', '#007bff', '#28a745', '#ffc107',
+        '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6c757d',
+        '#17a2b8', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4',
+        '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3'
     ];
     
     let totalAllocated = 0;
