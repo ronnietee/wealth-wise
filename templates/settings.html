@@ -63,6 +63,21 @@
                         <i class="fas fa-dollar-sign"></i> Change Currency
                     </button>
                 </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h3>Theme</h3>
+                        <p>Choose between light and dark mode for the application interface</p>
+                    </div>
+                    <div class="theme-selector">
+                        <button class="theme-btn" data-theme="light" onclick="setTheme('light')">
+                            <i class="fas fa-sun"></i> Light
+                        </button>
+                        <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">
+                            <i class="fas fa-moon"></i> Dark
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -931,5 +946,57 @@ window.onclick = function(event) {
         }
     });
 }
+
+// Theme Management
+function setTheme(theme) {
+    // Update the theme in localStorage
+    localStorage.setItem('theme', theme);
+    
+    // Apply the theme to the document
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Update theme button states
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-theme') === theme) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Save theme preference to server
+    saveThemePreference(theme);
+}
+
+function loadTheme() {
+    // Get theme from localStorage or default to 'dark'
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+}
+
+function saveThemePreference(theme) {
+    fetch('/api/user/theme', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ theme: theme })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Theme preference saved');
+        } else {
+            console.error('Failed to save theme preference');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving theme preference:', error);
+    });
+}
+
+// Load theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadTheme();
+});
 </script>
 {% endblock %}

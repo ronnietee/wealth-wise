@@ -1,3 +1,48 @@
+/* CSS Variables for Theme System */
+:root {
+    /* Light Theme (Default) */
+    --sidebar-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --sidebar-text: #1a1a1a;
+    --sidebar-text-muted: #495057;
+    --sidebar-border: rgba(0, 0, 0, 0.1);
+    --sidebar-hover: rgba(139, 69, 19, 0.1);
+    --sidebar-active: rgba(139, 69, 19, 0.2);
+    --sidebar-active-border: #8B4513;
+    
+    --top-banner-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --top-banner-text: #2c3e50;
+    --top-banner-border: rgba(0, 0, 0, 0.1);
+    
+    --main-bg: #e9ecef;
+    --card-bg: #ffffff;
+    --text-primary: #2c3e50;
+    --text-secondary: #495057;
+    --border-color: #adb5bd;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] {
+    /* Dark Theme */
+    --sidebar-bg: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --sidebar-text: #e0e0e0;
+    --sidebar-text-muted: #a0a0a0;
+    --sidebar-border: rgba(255, 255, 255, 0.08);
+    --sidebar-hover: rgba(255, 255, 255, 0.05);
+    --sidebar-active: rgba(139, 69, 19, 0.25);
+    --sidebar-active-border: #D2691E;
+    
+    --top-banner-bg: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --top-banner-text: #e0e0e0;
+    --top-banner-border: rgba(255, 255, 255, 0.08);
+    
+    --main-bg: #0f0f0f;
+    --card-bg: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --border-color: #333333;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -8,8 +53,8 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
-    color: #2c3e50;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: var(--text-primary);
+    background: var(--main-bg);
     min-height: 100vh;
     margin: 0;
     padding: 0;
@@ -74,13 +119,13 @@ body {
 
 .ribbon-btn:hover {
     background: white;
-    color: #8B4513;
+    color: var(--sidebar-text);
     transform: translateY(-2px);
 }
 
 .ribbon-signup {
     background: white;
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .ribbon-signup:hover {
@@ -146,15 +191,15 @@ body {
 }
 
 .feature-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 20px;
     padding: 2.5rem 2rem;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .feature-card::before {
@@ -229,17 +274,17 @@ body {
 .feature-card h3 {
     font-size: 1.4rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin: 0 0 1rem 0;
     transition: color 0.3s ease;
 }
 
 .feature-card:hover h3 {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .feature-card p {
-    color: #666;
+    color: var(--text-secondary);
     line-height: 1.6;
     margin: 0;
     font-size: 1rem;
@@ -597,7 +642,7 @@ body {
 /* Roadmap Modal Styles */
 .roadmap-modal {
     border-radius: 0 !important;
-    background: white !important;
+    background: var(--card-bg) !important;
     max-width: 800px;
     width: 90%;
     max-height: 90vh;
@@ -607,9 +652,9 @@ body {
 .roadmap-modal .modal-header {
     position: sticky;
     top: 0;
-    background: white;
+    background: var(--card-bg);
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -618,7 +663,7 @@ body {
 
 .roadmap-modal .modal-header h2 {
     margin: 0;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.5rem;
     font-weight: 600;
 }
@@ -627,7 +672,7 @@ body {
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.5rem;
     line-height: 1;
@@ -635,7 +680,7 @@ body {
 }
 
 .roadmap-modal .modal-header .close-btn:hover {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .roadmap-modal .modal-body {
@@ -800,7 +845,7 @@ body.modal-open {
 }
 
 .modal-content {
-    background: white;
+    background: var(--card-bg);
     margin: 0;
     padding: 0;
     border-radius: 15px;
@@ -911,11 +956,12 @@ body.modal-open {
 .form-group select {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: #fff;
+    background: var(--card-bg);
+    color: var(--text-primary);
     box-sizing: border-box;
 }
 
@@ -925,6 +971,8 @@ body.modal-open {
     border-color: #8B4513;
     box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
     transform: translateY(-1px);
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
 }
 
 .form-group input:hover,
@@ -966,13 +1014,13 @@ body.modal-open {
 }
 
 .tab-btn.active {
-    color: #8B4513;
+    color: var(--sidebar-text);
     background: white;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab-btn:hover:not(.active) {
-    color: #8B4513;
+    color: var(--sidebar-text);
     background: rgba(139, 69, 19, 0.05);
 }
 
@@ -1065,7 +1113,7 @@ body.modal-open {
 /* Enhanced Modal Body */
 .modal-body {
     padding: 2rem;
-    background: #fafbfc;
+    background: var(--card-bg);
     overflow-y: auto;
     flex: 1;
 }
@@ -1074,13 +1122,13 @@ body.modal-open {
 #loginModal .modal-content,
 #signupModal .modal-content {
     border-radius: 0;
-    background: white;
+    background: var(--card-bg);
 }
 
 #loginModal .modal-header,
 #signupModal .modal-header {
-    background: white;
-    color: #2c3e50;
+    background: var(--card-bg);
+    color: var(--text-primary);
     border-radius: 0;
     border-bottom: 1px solid #e9ecef;
     padding: 1.5rem 2rem;
@@ -1129,7 +1177,7 @@ body.modal-open {
 
 #loginModal .modal-body,
 #signupModal .modal-body {
-    background: white;
+    background: var(--card-bg);
     padding: 1.5rem;
 }
 
@@ -1217,7 +1265,7 @@ body.modal-open {
 }
 
 .forgot-password-link {
-    color: #8B4513;
+    color: var(--sidebar-text);
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.3s ease;
@@ -1344,7 +1392,7 @@ body.modal-open {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-weight: 700;
     font-size: 1.5rem;
 }
@@ -1353,7 +1401,7 @@ body.modal-open {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-weight: 700;
     font-size: 1.5rem;
 }
@@ -1396,13 +1444,13 @@ body.modal-open {
 
 .nav-link:hover {
     background: rgba(139, 69, 19, 0.1);
-    color: #8B4513;
+    color: var(--sidebar-text);
     transform: translateY(-1px);
 }
 
 .nav-link.active {
     background: rgba(139, 69, 19, 0.15);
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-weight: 600;
 }
 
@@ -1427,7 +1475,7 @@ body.modal-open {
     height: 40px;
     border: none;
     background: rgba(139, 69, 19, 0.1);
-    color: #8B4513;
+    color: var(--sidebar-text);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1480,7 +1528,7 @@ body.modal-open {
 
 .dropdown-item:hover {
     background: rgba(139, 69, 19, 0.1);
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .dropdown-item i {
@@ -1515,8 +1563,8 @@ body.modal-open {
     left: 0; /* Visible by default */
     width: 250px;
     height: 100vh;
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    color: white;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
     z-index: 1000;
     transition: all 0.3s ease;
     display: flex;
@@ -1546,7 +1594,7 @@ body.modal-open {
 
 .sidebar-header {
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--sidebar-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1563,7 +1611,7 @@ body.modal-open {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: white;
+    color: var(--sidebar-text);
     gap: 0.5rem;
 }
 
@@ -1576,7 +1624,7 @@ body.modal-open {
 .sidebar-logo-text {
     font-size: 0.75rem;
     font-weight: 700;
-    color: white;
+    color: var(--sidebar-text);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: opacity 0.3s ease;
@@ -1591,7 +1639,7 @@ body.modal-open {
 .sidebar-toggle {
     background: none;
     border: none;
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-size: 0.9rem;
     cursor: pointer;
     padding: 0.4rem;
@@ -1619,7 +1667,7 @@ body.modal-open {
     display: flex;
     align-items: center;
     padding: 0.6rem 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sidebar-text-muted);
     text-decoration: none;
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
@@ -1631,15 +1679,15 @@ body.modal-open {
 }
 
 .sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+    background: var(--sidebar-hover);
+    color: var(--sidebar-text);
     border-left-color: #8B4513;
 }
 
 .sidebar-link.active {
-    background: rgba(139, 69, 19, 0.2);
-    color: #D2691E;
-    border-left-color: #D2691E;
+    background: var(--sidebar-active);
+    color: var(--sidebar-active-border);
+    border-left-color: var(--sidebar-active-border);
 }
 
 .sidebar-link i {
@@ -1661,7 +1709,7 @@ body.modal-open {
 
 .sidebar-footer {
     padding: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--sidebar-border);
 }
 
 .sidebar-actions {
@@ -1676,7 +1724,7 @@ body.modal-open {
     padding: 0.6rem;
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sidebar-text-muted);
     text-decoration: none;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1691,8 +1739,8 @@ body.modal-open {
 }
 
 .sidebar-action-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+    background: var(--sidebar-hover);
+    color: var(--sidebar-text);
 }
 
 .sidebar-action-btn.logout-btn:hover {
@@ -1716,9 +1764,9 @@ body.modal-open {
 
 .sidebar-dropdown .dropdown-menu {
     position: fixed;
-    background: #2c3e50;
+    background: var(--card-bg);
     border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow);
     display: none;
     z-index: 1001;
     margin-bottom: 0.5rem;
@@ -1729,15 +1777,15 @@ body.modal-open {
     display: flex;
     align-items: center;
     padding: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-secondary);
     text-decoration: none;
     transition: all 0.3s ease;
     gap: 0.75rem;
 }
 
 .sidebar-dropdown .dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
+    background: var(--sidebar-hover);
+    color: var(--text-primary);
 }
 
 .sidebar-overlay {
@@ -1763,11 +1811,11 @@ body.modal-open {
     left: 0;
     right: 0;
     height: 60px;
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    color: white;
+    background: var(--top-banner-bg);
+    color: var(--top-banner-text);
     z-index: 999;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--top-banner-border);
 }
 
 .banner-content {
@@ -1794,7 +1842,7 @@ body.modal-open {
     padding: 0.25rem 0.5rem;
     background: none;
     border: none;
-    color: white;
+    color: var(--top-banner-text);
     font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
@@ -1804,13 +1852,94 @@ body.modal-open {
 }
 
 .banner-logout-btn:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--top-banner-text);
+    opacity: 0.8;
     background: rgba(255, 255, 255, 0.1);
     text-decoration: none;
 }
 
 .banner-logout-btn i {
     font-size: 0.9rem;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-toggle-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 40px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 9px;
+    padding: 1px;
+    transition: all 0.3s ease;
+}
+
+/* Better visibility in light mode */
+[data-theme="light"] .theme-toggle-switch {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.theme-icon-left,
+.theme-icon-right {
+    position: absolute;
+    font-size: 0.5rem;
+    color: var(--top-banner-text);
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+/* Better icon visibility in light mode */
+[data-theme="light"] .theme-icon-left,
+[data-theme="light"] .theme-icon-right {
+    color: #2c3e50;
+}
+
+.theme-icon-left {
+    left: 3px;
+}
+
+.theme-icon-right {
+    right: 3px;
+}
+
+.toggle-slider {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--top-banner-text);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: 3;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode - slider on the right */
+[data-theme="dark"] .toggle-slider {
+    transform: translateX(22px);
+}
+
+/* Light mode - slider on the left */
+[data-theme="light"] .toggle-slider {
+    transform: translateX(0);
 }
 
 /* Main content wrapper */
@@ -1820,6 +1949,7 @@ body.modal-open {
     position: relative;
     margin-left: 250px; /* Default margin for visible sidebar */
     margin-top: 60px; /* Space for top banner */
+    background: var(--main-bg);
 }
 
 /* Mobile menu button */
@@ -1872,7 +2002,7 @@ body.modal-open {
 }
 
 .breadcrumb-item:hover {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .breadcrumb-item i {
@@ -1882,23 +2012,30 @@ body.modal-open {
 /* Main Content */
 .main-content {
     min-height: calc(100vh - 70px);
-    background: #f8f9fa;
+    background: var(--main-bg);
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
+    background: var(--card-bg);
+    border-radius: 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
 }
 
 /* Dashboard Styles */
 .page-header {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1rem 1.5rem;
-    margin: 0.5rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    margin: 0.25rem 0 0.5rem 0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     position: relative;
     overflow: hidden;
 }
@@ -1924,7 +2061,7 @@ body.modal-open {
 }
 
 .page-header h1 {
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
@@ -1938,11 +2075,11 @@ body.modal-open {
 .page-header h1 i {
     font-size: 1.2rem;
     margin-right: 0.5rem;
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .page-subtitle {
-    color: #6c757d;
+    color: var(--text-secondary);
     font-size: 0.8rem;
     margin: 0.5rem 0 0 0;
     font-weight: 400;
@@ -2005,8 +2142,8 @@ body.modal-open {
     margin-bottom: 2rem;
     border: none;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    background: white;
+    box-shadow: var(--shadow);
+    background: var(--card-bg);
     overflow: hidden;
 }
 
@@ -2028,7 +2165,7 @@ body.modal-open {
 
 .create-budget-card .form-group label {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
 }
@@ -2036,18 +2173,20 @@ body.modal-open {
 .create-budget-card .form-group input,
 .create-budget-card .form-group select {
     padding: 0.75rem 1rem;
-    border: 2px solid #e1e8ed;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: #f8f9fa;
+    background: var(--card-bg);
+    color: var(--text-primary);
 }
 
 .create-budget-card .form-group input:focus,
 .create-budget-card .form-group select:focus {
     outline: none;
     border-color: #8B4513;
-    background: white;
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
     box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
 }
 
@@ -2063,10 +2202,10 @@ body.modal-open {
 .budgets-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .budgets-table thead {
@@ -2084,29 +2223,30 @@ body.modal-open {
 }
 
 .budgets-table tbody tr {
-    border-bottom: 1px solid #f1f3f4;
+    border-bottom: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
 .budgets-table tbody tr:hover {
-    background: #f8f9fa;
+    background: var(--main-bg);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .budgets-table tbody tr.active {
-    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+    background: var(--main-bg);
     border-left: 4px solid #4caf50;
 }
 
 .budgets-table td {
     padding: 1rem 1.5rem;
     vertical-align: middle;
+    color: var(--text-primary);
 }
 
 .period-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.1rem;
 }
 
@@ -2274,11 +2414,11 @@ body.modal-open {
     }
     
     .budgets-table tr {
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
         margin-bottom: 1rem;
         border-radius: 8px;
         padding: 1rem;
-        background: white;
+        background: var(--card-bg);
     }
     
     .budgets-table td {
@@ -2301,6 +2441,43 @@ body.modal-open {
 }
 
 /* Settings Page Styles */
+/* Theme Selector */
+.theme-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.theme-btn:hover {
+    border-color: #8B4513;
+    color: var(--text-primary);
+    background: rgba(139, 69, 19, 0.05);
+}
+
+.theme-btn.active {
+    border-color: #8B4513;
+    background: #8B4513;
+    color: white;
+}
+
+.theme-btn i {
+    font-size: 1rem;
+}
+
 .settings-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -2309,12 +2486,12 @@ body.modal-open {
 }
 
 .settings-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
     overflow: hidden;
     transition: all 0.3s ease;
-    border: 1px solid #f1f3f4;
+    border: 1px solid var(--border-color);
 }
 
 .settings-card:hover {
@@ -2366,7 +2543,7 @@ body.modal-open {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 0;
-    border-bottom: 1px solid #f1f3f4;
+    border-bottom: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
@@ -2421,7 +2598,7 @@ body.modal-open {
 .setting-item .btn-outline {
     background: transparent;
     border: 2px solid #8B4513;
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .setting-item .btn-outline:hover {
@@ -2457,7 +2634,7 @@ body.modal-open {
 
 .about-content .verse {
     font-style: italic;
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-size: 1rem;
     margin-top: 1.5rem;
     padding: 1rem;
@@ -2481,7 +2658,7 @@ body.modal-open {
 }
 
 .modal-content {
-    background: white;
+    background: var(--card-bg);
     margin: 0;
     padding: 0;
     border-radius: 16px;
@@ -2757,7 +2934,7 @@ body.modal-open {
 }
 
 .budget-manage-link:hover {
-    color: #8B4513;
+    color: var(--sidebar-text);
     transform: scale(1.05);
 }
 
@@ -2832,11 +3009,11 @@ body.modal-open {
 }
 
 .overview-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -2894,7 +3071,7 @@ body.modal-open {
 }
 
 .card-title h3 {
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
@@ -2902,7 +3079,7 @@ body.modal-open {
 }
 
 .card-title p {
-    color: #6c757d;
+    color: var(--text-secondary);
     font-size: 0.8rem;
     margin: 0.25rem 0 0 0;
     font-weight: 400;
@@ -2915,7 +3092,7 @@ body.modal-open {
 .value {
     font-size: 2rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--text-primary);
     line-height: 1;
     letter-spacing: -0.5px;
 }
@@ -2929,22 +3106,22 @@ body.modal-open {
 
 /* Progress Section */
 .progress-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     margin-bottom: 1rem;
     width: fit-content;
 }
 
 /* Chart Section */
 .chart-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     margin-bottom: 1rem;
 }
 
@@ -2958,14 +3135,14 @@ body.modal-open {
 }
 
 .chart-header h3 {
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0 0 0.5rem 0;
 }
 
 .chart-header p {
-    color: #6c757d;
+    color: var(--text-secondary);
     font-size: 0.85rem;
     margin: 0;
 }
@@ -2993,10 +3170,10 @@ body.modal-open {
     align-items: center;
     gap: 0.4rem;
     padding: 0.2rem 0.4rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
     border-radius: 4px;
     font-size: 0.75rem;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .legend-color {
@@ -3008,10 +3185,11 @@ body.modal-open {
 
 .legend-label {
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 .legend-value {
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 600;
 }
 
@@ -3021,7 +3199,7 @@ body.modal-open {
 }
 
 .progress-header h3 {
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0;
@@ -3040,7 +3218,7 @@ body.modal-open {
     display: inline-block;
     font-size: 2.5rem;
     font-weight: 800;
-    color: #8B4513;
+    color: var(--sidebar-text);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
     -webkit-background-clip: text;
@@ -3057,7 +3235,7 @@ body.modal-open {
 
 .score-label {
     font-size: 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -3066,7 +3244,7 @@ body.modal-open {
 .score-amount {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 /* Color coding for different spending levels */
@@ -3094,11 +3272,11 @@ body.modal-open {
 
 /* Actions Section */
 .actions-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 0.75rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     max-width: 280px;
 }
 
@@ -3131,18 +3309,18 @@ body.modal-open {
     gap: 0.5rem;
     padding: 0.5rem;
     text-decoration: none;
-    color: #2c3e50;
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     transition: all 0.3s ease;
-    background: #f8f9fa;
+    background: var(--main-bg);
 }
 
 .action-item:hover {
     background: rgba(139, 69, 19, 0.05);
     border-color: rgba(139, 69, 19, 0.3);
     transform: translateX(2px);
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .action-icon {
@@ -3168,17 +3346,18 @@ body.modal-open {
     font-size: 0.8rem;
     font-weight: 600;
     line-height: 1.2;
+    color: var(--text-primary);
 }
 
 .action-content p {
     margin: 0;
     font-size: 0.7rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     line-height: 1.2;
 }
 
 .action-arrow {
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-size: 0.8rem;
     transition: transform 0.3s ease;
     flex-shrink: 0;
@@ -3192,12 +3371,12 @@ body.modal-open {
 .no-budget-card,
 .budget-alert,
 .overspending-alert {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 2rem;
     margin: 2rem 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     text-align: center;
 }
 
@@ -3208,7 +3387,7 @@ body.modal-open {
 
 .no-budget-icon {
     font-size: 4rem;
-    color: #8B4513;
+    color: var(--sidebar-text);
     margin-bottom: 1rem;
 }
 
@@ -3330,6 +3509,12 @@ body.modal-open {
     .banner-logout-btn {
         padding: 0.25rem;
         min-width: 30px;
+        justify-content: center;
+    }
+    
+    .theme-toggle-btn {
+        padding: 0.25rem;
+        min-width: 40px;
         justify-content: center;
     }
     
@@ -3521,7 +3706,7 @@ body.modal-open {
 .btn-outline {
     background: transparent;
     border: 2px solid #8B4513;
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .btn-outline:hover:not(:disabled) {
@@ -3548,11 +3733,12 @@ body.modal-open {
 .form-group textarea {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: #fff;
+    background: var(--card-bg);
+    color: var(--text-primary);
     box-sizing: border-box;
 }
 
@@ -3563,6 +3749,8 @@ body.modal-open {
     border-color: #8B4513;
     box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
     transform: translateY(-1px);
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
 }
 
 .form-group input:hover,
@@ -3615,7 +3803,7 @@ body.modal-open {
 .input-prefix {
     position: absolute;
     left: 1rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 500;
     z-index: 1;
     pointer-events: none;
@@ -3680,7 +3868,7 @@ body.modal-open {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: #8B4513;
+    color: var(--sidebar-text);
     text-decoration: none;
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -3713,7 +3901,7 @@ body.modal-open {
 .footer-text {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .verse {
@@ -3814,23 +4002,23 @@ body.modal-open {
 
 /* Income Page Layout */
 .income-form-container {
-    margin: 1rem 0;
+    margin: 0.5rem 0;
 }
 
 .income-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
 }
 
 /* Income Sources Section */
 .income-sources-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .section-header {
@@ -3839,14 +4027,14 @@ body.modal-open {
     align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .section-header h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .section-header .btn {
@@ -3866,7 +4054,7 @@ body.modal-open {
 }
 
 .income-sources-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--main-bg);
     border-radius: 2px;
 }
 
@@ -3884,10 +4072,10 @@ body.modal-open {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem;
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 0.75rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -3904,10 +4092,10 @@ body.modal-open {
 }
 
 .income-source-item:hover {
-    background: rgba(139, 69, 19, 0.02);
-    border-color: rgba(139, 69, 19, 0.2);
+    background: var(--card-bg);
+    border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .source-info {
@@ -3919,7 +4107,7 @@ body.modal-open {
 
 .source-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
@@ -3963,11 +4151,11 @@ body.modal-open {
 
 /* Balance Form Section */
 .balance-form-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .balance-form {
@@ -4002,7 +4190,7 @@ body.modal-open {
 
 .balance-label {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -4016,7 +4204,7 @@ body.modal-open {
 
 .balance-subtitle {
     font-size: 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-top: 0.25rem;
 }
 
@@ -4029,12 +4217,12 @@ body.modal-open {
 }
 
 .summary-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1rem;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -4057,7 +4245,7 @@ body.modal-open {
 
 .summary-card h4 {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin: 0 0 0.5rem 0;
     font-weight: 500;
     text-transform: uppercase;
@@ -4067,7 +4255,7 @@ body.modal-open {
 .summary-card .amount {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--text-primary);
     line-height: 1;
 }
 
@@ -4080,7 +4268,7 @@ body.modal-open {
 }
 
 .summary-card.forward .amount {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 /* Mobile Responsive */
@@ -4139,11 +4327,11 @@ body.modal-open {
 }
 
 .summary-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.25rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -4189,7 +4377,7 @@ body.modal-open {
 }
 
 .summary-card.forward .amount {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 /* Compact Income Layout */
@@ -4202,11 +4390,11 @@ body.modal-open {
 
 .income-sources-section,
 .balance-form-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .section-header {
@@ -4215,14 +4403,14 @@ body.modal-open {
     align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .section-header h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .section-header .btn {
@@ -4242,7 +4430,7 @@ body.modal-open {
 }
 
 .income-sources-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--main-bg);
     border-radius: 2px;
 }
 
@@ -4260,10 +4448,10 @@ body.modal-open {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem;
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 0.75rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -4280,10 +4468,10 @@ body.modal-open {
 }
 
 .income-source-item:hover {
-    background: rgba(139, 69, 19, 0.02);
-    border-color: rgba(139, 69, 19, 0.2);
+    background: var(--card-bg);
+    border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .source-info {
@@ -4295,7 +4483,7 @@ body.modal-open {
 
 .source-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
@@ -4370,7 +4558,7 @@ body.modal-open {
 
 .balance-label {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -4384,7 +4572,7 @@ body.modal-open {
 
 .balance-subtitle {
     font-size: 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-top: 0.25rem;
 }
 
@@ -4446,11 +4634,11 @@ body.modal-open {
 
 .income-sources-section,
 .balance-form-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .section-header {
@@ -4459,14 +4647,14 @@ body.modal-open {
     align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .section-header h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .section-header .btn {
@@ -4486,7 +4674,7 @@ body.modal-open {
 }
 
 .income-sources-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--main-bg);
     border-radius: 2px;
 }
 
@@ -4504,10 +4692,10 @@ body.modal-open {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem;
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 0.75rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -4524,10 +4712,10 @@ body.modal-open {
 }
 
 .income-source-item:hover {
-    background: rgba(139, 69, 19, 0.02);
-    border-color: rgba(139, 69, 19, 0.2);
+    background: var(--card-bg);
+    border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .source-info {
@@ -4539,7 +4727,7 @@ body.modal-open {
 
 .source-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
@@ -4614,7 +4802,7 @@ body.modal-open {
 
 .balance-label {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -4628,7 +4816,7 @@ body.modal-open {
 
 .balance-subtitle {
     font-size: 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-top: 0.25rem;
 }
 
@@ -4666,11 +4854,11 @@ body.modal-open {
 
 .income-sources-section,
 .balance-form-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .section-header {
@@ -4679,14 +4867,14 @@ body.modal-open {
     align-items: center;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .section-header h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .section-header .btn {
@@ -4706,7 +4894,7 @@ body.modal-open {
 }
 
 .income-sources-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--main-bg);
     border-radius: 2px;
 }
 
@@ -4724,10 +4912,10 @@ body.modal-open {
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem;
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 0.75rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -4744,10 +4932,10 @@ body.modal-open {
 }
 
 .income-source-item:hover {
-    background: rgba(139, 69, 19, 0.02);
-    border-color: rgba(139, 69, 19, 0.2);
+    background: var(--card-bg);
+    border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .source-info {
@@ -4759,7 +4947,7 @@ body.modal-open {
 
 .source-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
 }
@@ -4834,7 +5022,7 @@ body.modal-open {
 
 .balance-label {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -4848,7 +5036,7 @@ body.modal-open {
 
 .balance-subtitle {
     font-size: 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-top: 0.25rem;
 }
 
@@ -4901,11 +5089,11 @@ body.modal-open {
 
 .income-sources-section,
 .balance-form-section {
-    background: white !important;
+    background: var(--card-bg) !important;
     border-radius: 8px !important;
     padding: 1.5rem !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
-    border: 1px solid rgba(139, 69, 19, 0.1) !important;
+    box-shadow: var(--shadow) !important;
+    border: 1px solid var(--border-color) !important;
     width: 100% !important;
     min-height: 300px !important;
 }
@@ -4928,10 +5116,10 @@ body.modal-open {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     margin-bottom: 1rem;
 }
 
@@ -4976,12 +5164,12 @@ body.modal-open {
 .search-container {
     display: flex;
     align-items: center;
-    background: white;
+    background: var(--main-bg);
     border-radius: 6px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-color);
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .search-container:focus-within {
@@ -4993,14 +5181,14 @@ body.modal-open {
     border: none;
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
-    background: transparent;
+    background: var(--main-bg);
     outline: none;
     min-width: 200px;
-    color: #374151;
+    color: var(--text-primary);
 }
 
 .search-input::placeholder {
-    color: #9ca3af;
+    color: var(--text-secondary);
 }
 
 .search-btn {
@@ -5025,22 +5213,22 @@ body.modal-open {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: white;
+    background: var(--main-bg);
     padding: 0.5rem;
     border-radius: 6px;
-    border: 1px solid #d1d5db;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
 }
 
 .filter-select,
 .filter-date {
     padding: 0.5rem 0.625rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 0.875rem;
-    background: white;
+    background: var(--card-bg);
     transition: all 0.3s ease;
-    color: #374151;
+    color: var(--text-primary);
     min-width: 120px;
 }
 
@@ -5078,17 +5266,17 @@ body.modal-open {
 
 /* Transactions Table Card */
 .transactions-container .card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     overflow: hidden;
 }
 
 .transactions-container .card-header {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: var(--main-bg);
     padding: 1.5rem;
-    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    border-bottom: 2px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -5098,7 +5286,7 @@ body.modal-open {
     margin: 0;
     font-size: 1.3rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 /* Table Container */
@@ -5130,12 +5318,12 @@ body.modal-open {
 }
 
 .transactions-table tbody tr {
-    border-bottom: 1px solid #f1f3f4;
+    border-bottom: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
 .transactions-table tbody tr:hover {
-    background: rgba(139, 69, 19, 0.02);
+    background: var(--main-bg);
 }
 
 .transactions-table tbody tr:last-child {
@@ -5145,7 +5333,7 @@ body.modal-open {
 .transactions-table td {
     padding: 0.75rem 0.5rem;
     vertical-align: middle;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .transactions-table .amount {
@@ -5191,7 +5379,7 @@ body.modal-open {
 .action-btn:hover {
     background: #f8f9fa;
     border-color: #8B4513;
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .action-btn.edit:hover {
@@ -5407,7 +5595,7 @@ body.modal-open {
 
 .modal-form .form-group label {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
 }
 
@@ -5415,11 +5603,12 @@ body.modal-open {
 .modal-form .form-group select,
 .modal-form .form-group textarea {
     padding: 0.75rem;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    background: white;
+    background: var(--card-bg);
+    color: var(--text-primary);
 }
 
 .modal-form .form-group input:focus,
@@ -5428,6 +5617,8 @@ body.modal-open {
     outline: none;
     border-color: #8B4513;
     box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
 }
 
 .modal-form .form-group textarea {
@@ -5442,7 +5633,7 @@ body.modal-open {
     justify-content: flex-end;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--border-color);
 }
 
 .modal-form .btn {
@@ -5480,9 +5671,9 @@ body.modal-open {
 .modal-form .input-group {
     display: flex;
     align-items: stretch;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
-    background: white;
+    background: var(--card-bg);
     overflow: hidden;
     transition: all 0.3s ease;
     height: 48px;
@@ -5494,11 +5685,11 @@ body.modal-open {
 }
 
 .modal-form .input-prefix {
-    background: #f8f9fa;
+    background: var(--main-bg);
     padding: 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 600;
-    border-right: 1px solid #e9ecef;
+    border-right: 1px solid var(--border-color);
     font-size: 0.9rem;
     display: flex;
     align-items: center;
@@ -5521,6 +5712,8 @@ body.modal-open {
 
 .modal-form .input-group input:focus {
     outline: none;
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
 }
 
 /* Accounts Modal Specific Styling */
@@ -5534,7 +5727,7 @@ body.modal-open {
 #addAccountModal .modal-form,
 #editAccountModal .modal-form {
     padding: 2rem;
-    background: #fafbfc;
+    background: var(--card-bg);
 }
 
 #addAccountModal .form-actions,
@@ -5613,11 +5806,11 @@ body.modal-open {
 
 #addAccountModal .currency-symbol,
 #editAccountModal .currency-symbol {
-    background: #f8f9fa;
+    background: var(--main-bg);
     padding: 0.75rem 1rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 600;
-    border-right: 1px solid #e9ecef;
+    border-right: 1px solid var(--border-color);
     font-size: 0.9rem;
     display: flex;
     align-items: center;
@@ -5645,9 +5838,9 @@ body.modal-open {
 
 /* Accounts Table Styling */
 .accounts-table-container {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
     overflow: hidden;
     margin-top: 1rem;
 }
@@ -5657,13 +5850,13 @@ body.modal-open {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 1px solid #dee2e6;
+    background: var(--main-bg);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .table-header h3 {
     margin: 0;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 1.1rem;
     font-weight: 600;
 }
@@ -5677,7 +5870,7 @@ body.modal-open {
 .accounts-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--card-bg);
 }
 
 .accounts-table thead {
@@ -5703,12 +5896,12 @@ body.modal-open {
 }
 
 .accounts-table tbody tr {
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--border-color);
     transition: all 0.2s ease;
 }
 
 .accounts-table tbody tr:hover {
-    background: #f8f9fa;
+    background: var(--main-bg);
 }
 
 .accounts-table tbody tr:last-child {
@@ -5718,8 +5911,9 @@ body.modal-open {
 .accounts-table td {
     padding: 0.5rem 0.75rem;
     vertical-align: middle;
-    border-right: 1px solid #f1f3f4;
+    border-right: 1px solid var(--border-color);
     font-size: 0.85rem;
+    color: var(--text-primary);
 }
 
 .accounts-table td:last-child {
@@ -5729,7 +5923,7 @@ body.modal-open {
 /* Account Name Column */
 .account-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     min-width: 100px;
     width: 100px;
 }
@@ -5750,12 +5944,12 @@ body.modal-open {
     letter-spacing: 0.5px;
 }
 
-.type-checking { background: #e3f2fd; color: #1976d2; }
-.type-savings { background: #e8f5e8; color: #388e3c; }
-.type-credit { background: #fff3e0; color: #f57c00; }
-.type-investment { background: #f3e5f5; color: #7b1fa2; }
-.type-cash { background: #e0f2f1; color: #00695c; }
-.type-other { background: #f5f5f5; color: #616161; }
+.type-checking { background: var(--main-bg); color: #1976d2; border: 1px solid #1976d2; }
+.type-savings { background: var(--main-bg); color: #388e3c; border: 1px solid #388e3c; }
+.type-credit { background: var(--main-bg); color: #f57c00; border: 1px solid #f57c00; }
+.type-investment { background: var(--main-bg); color: #7b1fa2; border: 1px solid #7b1fa2; }
+.type-cash { background: var(--main-bg); color: #00695c; border: 1px solid #00695c; }
+.type-other { background: var(--main-bg); color: var(--text-secondary); border: 1px solid var(--border-color); }
 
 /* Bank Name Column */
 .bank-name {
@@ -5786,12 +5980,12 @@ body.modal-open {
 
 .balance-display {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
     padding: 0.25rem 0.5rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
     border-radius: 4px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border-color);
     min-width: 80px;
     text-align: right;
 }
@@ -5804,6 +5998,8 @@ body.modal-open {
     font-size: 0.85rem;
     font-weight: 600;
     text-align: right;
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
 }
 
 .balance-input:focus {
@@ -5811,10 +6007,32 @@ body.modal-open {
     box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.1);
 }
 
+/* Balance Form Section Inputs */
+.balance-form-section input[type="number"],
+.balance-form-section input[type="text"] {
+    background: var(--card-bg) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+/* Balance Form Section Input Prefixes */
+.balance-form-section .input-prefix,
+.balance-form-section .currency-symbol {
+    background: var(--main-bg) !important;
+    color: var(--text-secondary) !important;
+    border-right: none !important;
+}
+
+/* Balance Form Section Input Groups */
+.balance-form-section .input-group {
+    background: var(--main-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
 .edit-balance-btn {
     background: none;
     border: none;
-    color: #8B4513;
+    color: var(--sidebar-text);
     cursor: pointer;
     padding: 0.2rem;
     border-radius: 3px;
@@ -6189,7 +6407,7 @@ body.modal-open {
 
 .contact-icon {
     font-size: 1.8rem;
-    color: #8B4513;
+    color: var(--sidebar-text);
     margin-bottom: 1rem;
 }
 
@@ -6207,7 +6425,7 @@ body.modal-open {
 }
 
 .contact-card a {
-    color: #8B4513;
+    color: var(--sidebar-text);
     text-decoration: none;
     font-weight: 600;
     font-size: 1rem;
@@ -6388,7 +6606,7 @@ body.modal-open {
 }
 
 .faq-item h4 {
-    color: #8B4513;
+    color: var(--sidebar-text);
     margin-bottom: 0.75rem;
     font-size: 1.1rem;
 }
@@ -6458,9 +6676,9 @@ body.modal-open {
 .input-group {
     display: flex;
     align-items: center;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
+    background: var(--card-bg);
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -6471,11 +6689,11 @@ body.modal-open {
 }
 
 .input-prefix {
-    background: #f8f9fa;
+    background: var(--main-bg);
     padding: 0.5rem 0.75rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 500;
-    border-right: 1px solid #e9ecef;
+    border-right: 1px solid var(--border-color);
     font-size: 0.9rem;
     display: flex;
     align-items: center;
@@ -6509,10 +6727,10 @@ body.modal-open {
 
 /* Budget Summary Card - specific to breakdown page */
 .breakdown-container .budget-summary {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -6612,7 +6830,7 @@ body.modal-open {
 
 .breakdown-container .budget-summary .card-body {
     padding: 2rem;
-    background: #f8f9fa;
+    background: var(--main-bg);
 }
 
 .breakdown-container .budget-stats {
@@ -6627,10 +6845,10 @@ body.modal-open {
     align-items: center;
     text-align: center;
     padding: 1.5rem;
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
@@ -6641,7 +6859,7 @@ body.modal-open {
 
 .breakdown-container .stat-label {
     font-size: 0.9rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
@@ -6649,7 +6867,7 @@ body.modal-open {
 .breakdown-container .stat-value {
     font-size: 1.8rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--text-primary);
 }
 
 .breakdown-container .stat-value.positive {
@@ -6669,12 +6887,15 @@ body.modal-open {
 
 /* Category Card - specific to breakdown page */
 .breakdown-container .category-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.1);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     overflow: hidden;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .breakdown-container .category-card:hover {
@@ -6683,9 +6904,9 @@ body.modal-open {
 }
 
 .breakdown-container .category-header {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: var(--main-bg);
     padding: 1rem;
-    border-bottom: 2px solid rgba(139, 69, 19, 0.1);
+    border-bottom: 2px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -6695,7 +6916,7 @@ body.modal-open {
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -6723,8 +6944,8 @@ body.modal-open {
 /* Category Totals - specific to breakdown page */
 .breakdown-container .category-totals {
     padding: 0.75rem 1rem;
-    background: #f8f9fa;
-    border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -6750,7 +6971,7 @@ body.modal-open {
 }
 
 .breakdown-container .total-label {
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 500;
     font-size: 0.8rem;
     margin-right: 0.5rem;
@@ -6780,7 +7001,8 @@ body.modal-open {
 /* Subcategories - specific to breakdown page */
 .breakdown-container .subcategories {
     padding: 1.25rem;
-    background: white;
+    background: var(--card-bg);
+    flex: 1;
 }
 
 .breakdown-container .subcategory-row {
@@ -6789,17 +7011,19 @@ body.modal-open {
     align-items: flex-start;
     padding: 1rem;
     margin-bottom: 0.75rem;
-    background: #f8f9fa;
+    background: var(--card-bg);
     border-radius: 8px;
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow);
     gap: 1rem;
 }
 
 .breakdown-container .subcategory-row:hover {
-    background: rgba(139, 69, 19, 0.02);
-    border-color: rgba(139, 69, 19, 0.2);
+    background: var(--main-bg);
+    border-color: var(--border-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .breakdown-container .subcategory-info {
@@ -6813,7 +7037,7 @@ body.modal-open {
 
 .breakdown-container .subcategory-name {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.85rem;
     width: 100%;
     word-wrap: break-word;
@@ -6856,7 +7080,7 @@ body.modal-open {
 
 .breakdown-container .amount-label {
     font-size: 0.7rem;
-    color: #6c757d;
+    color: var(--text-secondary);
     margin-bottom: 0.2rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -6869,9 +7093,9 @@ body.modal-open {
     height: 28px;
     display: flex;
     align-items: center;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: white;
+    background: var(--main-bg);
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -6887,12 +7111,12 @@ body.modal-open {
     font-size: 0.8rem;
     text-align: center;
     outline: none;
-    background: transparent;
+    background: var(--main-bg);
     width: 100%;
     height: 100%;
     font-family: 'Arial Narrow', Arial, sans-serif;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     letter-spacing: -0.5px;
 }
 
@@ -6930,7 +7154,7 @@ body.modal-open {
     font-size: 0.9rem;
     border: 2px dashed rgba(139, 69, 19, 0.3);
     background: transparent;
-    color: #8B4513;
+    color: var(--sidebar-text);
     transition: all 0.3s ease;
 }
 
@@ -7074,11 +7298,11 @@ body.modal-open {
 }
 
 .account-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -7117,7 +7341,7 @@ body.modal-open {
 .account-type {
     margin: 0 0 0.25rem 0;
     font-size: 0.85rem;
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-weight: 500;
 }
 
@@ -7145,7 +7369,7 @@ body.modal-open {
 
 .btn-icon:hover {
     background: rgba(139, 69, 19, 0.1);
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .btn-icon.delete:hover {
@@ -7175,11 +7399,11 @@ body.modal-open {
 
 /* Balance Summary Card */
 .balance-summary-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     margin-bottom: 1rem;
 }
 
@@ -7194,7 +7418,7 @@ body.modal-open {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .alignment-indicator {
@@ -7245,27 +7469,27 @@ body.modal-open {
 
 .balance-item .balance-label {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
 .balance-item .balance-value {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .balance-item.difference .balance-value {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 /* No Accounts Message */
 .no-accounts-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 3rem 2rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(139, 69, 19, 0.15);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
     text-align: center;
     margin-top: 2rem;
 }
@@ -7277,7 +7501,7 @@ body.modal-open {
 
 .no-accounts-icon {
     font-size: 3rem;
-    color: #8B4513;
+    color: var(--sidebar-text);
     margin-bottom: 1rem;
 }
 
@@ -7551,7 +7775,7 @@ body.modal-open {
 
 .form-group input::placeholder,
 .form-group select::placeholder {
-    color: #a0aec0;
+    color: var(--text-secondary);
     font-weight: 400;
 }
 
@@ -7807,7 +8031,7 @@ body.modal-open {
 }
 
 .category-option:hover i {
-    color: #8B4513;
+    color: var(--sidebar-text);
 }
 
 .category-option span {
@@ -7857,7 +8081,7 @@ body.modal-open {
 }
 
 .feature-item i {
-    color: #8B4513;
+    color: var(--sidebar-text);
     font-size: 1.2rem;
 }
 

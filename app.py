@@ -49,6 +49,7 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     display_name = db.Column(db.String(100), nullable=True)
     currency = db.Column(db.String(10), default='USD')
+    theme = db.Column(db.String(10), default='dark')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Onboarding fields (optional for existing users)
@@ -2631,6 +2632,26 @@ def resend_verification():
     except Exception as e:
         print(f"Error resending verification: {str(e)}")
         return jsonify({'success': False, 'message': 'An error occurred'}), 500
+
+@app.route('/api/user/theme', methods=['POST'])
+@token_required
+def update_user_theme(current_user):
+    """Update user theme preference"""
+    try:
+        data = request.get_json()
+        theme = data.get('theme', 'dark')
+        
+        if theme not in ['light', 'dark']:
+            return jsonify({'success': False, 'message': 'Invalid theme'}), 400
+        
+        # Update user theme in database
+        current_user.theme = theme
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Theme updated successfully'})
+            
+    except Exception as e:
+        print(f'Error updating theme: {e}')
+        return jsonify({'success': False, 'message': 'Failed to update theme'}), 500
 
 if __name__ == '__main__':
     with app.app_context():

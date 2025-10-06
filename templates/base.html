@@ -6,8 +6,15 @@
     <title>{% block title %}STEWARD - Christian Family Budgeting{% endblock %}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.5">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Load theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        });
+    </script>
 </head>
 <body>
     <!-- Skip to main content link for screen readers -->
@@ -72,22 +79,18 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     
 
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb-container" id="breadcrumb-container" style="display: none;">
-        <div class="container">
-            <nav class="breadcrumb" id="breadcrumb">
-                <a href="/dashboard" class="breadcrumb-item">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-            </nav>
-        </div>
-    </div>
 
     <!-- Top Banner -->
     <header class="top-banner">
         <div class="banner-content">
             <div class="banner-actions">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" id="themeToggleBtn">
+                    <div class="theme-toggle-switch">
+                        <i class="fas fa-sun theme-icon-left"></i>
+                        <div class="toggle-slider" id="toggleSlider"></div>
+                        <i class="fas fa-moon theme-icon-right"></i>
+                    </div>
+                </button>
                 <button class="banner-logout-btn" onclick="logout()" title="Logout">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
@@ -662,6 +665,29 @@
             }
         }
         
+        // Theme toggle functionality
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Update theme
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button icon and text
+            updateThemeButton(newTheme);
+        }
+        
+        function updateThemeButton(theme) {
+            // The toggle switch position is handled by CSS based on data-theme attribute
+            // No need to manually update icons as they're always visible
+        }
+        
+        // Initialize theme button on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            updateThemeButton(savedTheme);
+        });
         
         // Initialize sidebar when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
