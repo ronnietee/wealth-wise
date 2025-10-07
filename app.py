@@ -162,6 +162,31 @@ class Account(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
 
+class RecurringIncomeSource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='recurring_income_sources')
+
+class RecurringBudgetAllocation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    allocated_amount = db.Column(db.Float, default=0)
+    subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='recurring_allocations')
+    subcategory = db.relationship('Subcategory', backref='recurring_allocations')
+
 # Authentication decorator
 def token_required(f):
     @wraps(f)
@@ -848,6 +873,9 @@ def create_budget_period(current_user):
     db.session.add(budget)
     db.session.commit()
     
+    # Auto-populate from recurring sources
+    populate_budget_from_recurring(current_user, budget)
+    
     # Create default categories if this is the first budget
     if not Category.query.filter_by(user_id=current_user.id).first():
         create_default_categories(current_user.id)
@@ -880,6 +908,19 @@ def activate_budget_period(current_user, period_id):
     # Activate selected period
     period.is_active = True
     db.session.commit()
+    
+    # Check if budget exists for this period, create if not
+    budget = Budget.query.filter_by(period_id=period.id, user_id=current_user.id).first()
+    if not budget:
+        budget = Budget(
+            period_id=period.id,
+            user_id=current_user.id
+        )
+        db.session.add(budget)
+        db.session.commit()
+        
+        # Auto-populate from recurring sources
+        populate_budget_from_recurring(current_user, budget)
     
     return jsonify({'message': 'Budget period activated successfully'})
 
@@ -1048,6 +1089,9 @@ def create_income_source(current_user):
             )
             db.session.add(budget)
             db.session.commit()
+            
+            # Auto-populate from recurring sources
+            populate_budget_from_recurring(current_user, budget)
         
         income_source = IncomeSource(
             name=data['name'],
@@ -2652,6 +2696,389 @@ def update_user_theme(current_user):
     except Exception as e:
         print(f'Error updating theme: {e}')
         return jsonify({'success': False, 'message': 'Failed to update theme'}), 500
+
+# Helper function to populate budget from recurring sources
+def populate_budget_from_recurring(user, budget):
+    """Populate a new budget with recurring income sources and allocations"""
+    try:
+        # Check if budget already has data to avoid duplicates
+        existing_income_sources = IncomeSource.query.filter_by(budget_id=budget.id).count()
+        existing_allocations = BudgetAllocation.query.filter_by(budget_id=budget.id).count()
+        
+        if existing_income_sources > 0 or existing_allocations > 0:
+            print(f"Budget {budget.id} already has data, skipping auto-population to avoid duplicates")
+            return
+        
+        # Add recurring income sources
+        recurring_income_sources = RecurringIncomeSource.query.filter_by(
+            user_id=user.id, 
+            is_active=True
+        ).all()
+        
+        for recurring_source in recurring_income_sources:
+            income_source = IncomeSource(
+                name=recurring_source.name,
+                amount=recurring_source.amount,
+                budget_id=budget.id
+            )
+            db.session.add(income_source)
+        
+        # Add recurring budget allocations
+        recurring_allocations = RecurringBudgetAllocation.query.filter_by(
+            user_id=user.id, 
+            is_active=True
+        ).all()
+        
+        for recurring_allocation in recurring_allocations:
+            budget_allocation = BudgetAllocation(
+                allocated_amount=recurring_allocation.allocated_amount,
+                subcategory_id=recurring_allocation.subcategory_id,
+                budget_id=budget.id
+            )
+            db.session.add(budget_allocation)
+        
+        # Update total income
+        budget.total_income = sum(source.amount for source in budget.income_sources)
+        
+        db.session.commit()
+        
+    except Exception as e:
+        print(f"Error populating budget from recurring sources: {str(e)}")
+        db.session.rollback()
+
+# Recurring Income Sources API Endpoints
+@app.route('/api/recurring-income-sources', methods=['GET'])
+@token_required
+def get_recurring_income_sources(current_user):
+    """Get all recurring income sources for the user"""
+    try:
+        recurring_sources = RecurringIncomeSource.query.filter_by(
+            user_id=current_user.id, 
+            is_active=True
+        ).order_by(RecurringIncomeSource.name).all()
+        
+        return jsonify([{
+            'id': source.id,
+            'name': source.name,
+            'amount': source.amount,
+            'created_at': source.created_at.isoformat() if source.created_at else None
+        } for source in recurring_sources])
+    except Exception as e:
+        return jsonify({'error': f'Error loading recurring income sources: {str(e)}'}), 500
+
+@app.route('/api/recurring-income-sources', methods=['POST'])
+@token_required
+def create_recurring_income_source(current_user):
+    """Create a new recurring income source"""
+    try:
+        data = request.get_json()
+        
+        recurring_source = RecurringIncomeSource(
+            name=data['name'],
+            amount=float(data['amount']),
+            user_id=current_user.id
+        )
+        
+        db.session.add(recurring_source)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Recurring income source created successfully',
+            'id': recurring_source.id
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error creating recurring income source: {str(e)}'}), 500
+
+@app.route('/api/recurring-income-sources/<int:source_id>', methods=['PUT'])
+@token_required
+def update_recurring_income_source(current_user, source_id):
+    """Update a recurring income source"""
+    try:
+        data = request.get_json()
+        
+        recurring_source = RecurringIncomeSource.query.filter_by(
+            id=source_id, 
+            user_id=current_user.id
+        ).first()
+        
+        if not recurring_source:
+            return jsonify({'message': 'Recurring income source not found'}), 404
+        
+        recurring_source.name = data['name']
+        recurring_source.amount = float(data['amount'])
+        recurring_source.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Recurring income source updated successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error updating recurring income source: {str(e)}'}), 500
+
+@app.route('/api/recurring-income-sources/<int:source_id>', methods=['DELETE'])
+@token_required
+def delete_recurring_income_source(current_user, source_id):
+    """Delete a recurring income source"""
+    try:
+        recurring_source = RecurringIncomeSource.query.filter_by(
+            id=source_id, 
+            user_id=current_user.id
+        ).first()
+        
+        if not recurring_source:
+            return jsonify({'message': 'Recurring income source not found'}), 404
+        
+        recurring_source.is_active = False
+        recurring_source.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Recurring income source deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error deleting recurring income source: {str(e)}'}), 500
+
+# Recurring Budget Allocations API Endpoints
+@app.route('/api/recurring-allocations', methods=['GET'])
+@token_required
+def get_recurring_allocations(current_user):
+    """Get all recurring budget allocations for the user"""
+    try:
+        recurring_allocations = RecurringBudgetAllocation.query.filter_by(
+            user_id=current_user.id, 
+            is_active=True
+        ).join(Subcategory).join(Category).order_by(Category.name, Subcategory.name).all()
+        
+        return jsonify([{
+            'id': allocation.id,
+            'allocated_amount': allocation.allocated_amount,
+            'subcategory_id': allocation.subcategory_id,
+            'subcategory_name': allocation.subcategory.name,
+            'category_name': allocation.subcategory.category.name,
+            'created_at': allocation.created_at.isoformat() if allocation.created_at else None
+        } for allocation in recurring_allocations])
+    except Exception as e:
+        return jsonify({'error': f'Error loading recurring allocations: {str(e)}'}), 500
+
+@app.route('/api/recurring-allocations', methods=['POST'])
+@token_required
+def create_recurring_allocation(current_user):
+    """Create a new recurring budget allocation"""
+    try:
+        data = request.get_json()
+        
+        # Verify subcategory exists and belongs to user
+        subcategory = Subcategory.query.join(Category).filter(
+            Subcategory.id == data['subcategory_id'],
+            Category.user_id == current_user.id
+        ).first()
+        
+        if not subcategory:
+            return jsonify({'message': 'Subcategory not found'}), 404
+        
+        recurring_allocation = RecurringBudgetAllocation(
+            allocated_amount=float(data['allocated_amount']),
+            subcategory_id=data['subcategory_id'],
+            user_id=current_user.id
+        )
+        
+        db.session.add(recurring_allocation)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Recurring allocation created successfully',
+            'id': recurring_allocation.id
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error creating recurring allocation: {str(e)}'}), 500
+
+@app.route('/api/recurring-allocations/<int:allocation_id>', methods=['PUT'])
+@token_required
+def update_recurring_allocation(current_user, allocation_id):
+    """Update a recurring budget allocation"""
+    try:
+        data = request.get_json()
+        
+        recurring_allocation = RecurringBudgetAllocation.query.filter_by(
+            id=allocation_id, 
+            user_id=current_user.id
+        ).first()
+        
+        if not recurring_allocation:
+            return jsonify({'message': 'Recurring allocation not found'}), 404
+        
+        recurring_allocation.allocated_amount = float(data['allocated_amount'])
+        recurring_allocation.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Recurring allocation updated successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error updating recurring allocation: {str(e)}'}), 500
+
+@app.route('/api/recurring-allocations/<int:allocation_id>', methods=['DELETE'])
+@token_required
+def delete_recurring_allocation(current_user, allocation_id):
+    """Delete a recurring budget allocation"""
+    try:
+        recurring_allocation = RecurringBudgetAllocation.query.filter_by(
+            id=allocation_id, 
+            user_id=current_user.id
+        ).first()
+        
+        if not recurring_allocation:
+            return jsonify({'message': 'Recurring allocation not found'}), 404
+        
+        recurring_allocation.is_active = False
+        recurring_allocation.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Recurring allocation deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Error deleting recurring allocation: {str(e)}'}), 500
+
+# Manual trigger for auto-populating current budget from recurring sources
+@app.route('/api/budget/populate-recurring', methods=['POST'])
+@token_required
+def populate_current_budget_from_recurring(current_user):
+    """Manually populate the current active budget with recurring sources"""
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        if not active_period:
+            return jsonify({'message': 'No active budget period found'}), 404
+        
+        # Get budget for this period
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        if not budget:
+            return jsonify({'message': 'No budget found for active period'}), 404
+        
+        # Populate from recurring sources
+        populate_budget_from_recurring(current_user, budget)
+        
+        return jsonify({'message': 'Budget populated with recurring sources successfully'})
+        
+    except Exception as e:
+        return jsonify({'message': f'Error populating budget: {str(e)}'}), 500
+
+# Cleanup endpoint to remove duplicate allocations
+@app.route('/api/budget/cleanup-duplicates', methods=['POST'])
+@token_required
+def cleanup_duplicate_allocations(current_user):
+    """Remove duplicate allocations from the current budget"""
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        if not active_period:
+            return jsonify({'message': 'No active budget period found'}), 404
+        
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        if not budget:
+            return jsonify({'message': 'No budget found for active period'}), 404
+        
+        # Get all allocations for this budget
+        allocations = BudgetAllocation.query.filter_by(budget_id=budget.id).all()
+        
+        # Group by subcategory_id and keep only the first one
+        seen_subcategories = set()
+        duplicates_removed = 0
+        
+        for allocation in allocations:
+            if allocation.subcategory_id in seen_subcategories:
+                # This is a duplicate, remove it
+                db.session.delete(allocation)
+                duplicates_removed += 1
+            else:
+                seen_subcategories.add(allocation.subcategory_id)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Cleanup completed. Removed {duplicates_removed} duplicate allocations.',
+            'duplicates_removed': duplicates_removed
+        })
+        
+    except Exception as e:
+        return jsonify({'message': f'Error cleaning up duplicates: {str(e)}'}), 500
+
+# Debug endpoint to help diagnose budget calculation issues
+@app.route('/api/debug/budget-calculation', methods=['GET'])
+@token_required
+def debug_budget_calculation(current_user):
+    """Debug endpoint to help diagnose budget calculation issues"""
+    try:
+        # Get active budget period
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        if not active_period:
+            return jsonify({'error': 'No active budget period found'})
+        
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        if not budget:
+            return jsonify({'error': 'No budget found for active period'})
+        
+        # Get all budgets for this user (for comparison)
+        all_budgets = Budget.query.filter_by(user_id=current_user.id).all()
+        
+        # Get all allocations for this user (for comparison)
+        all_allocations = BudgetAllocation.query.join(Budget).filter(Budget.user_id == current_user.id).all()
+        
+        # Calculate totals for current budget
+        current_income = sum(source.amount for source in budget.income_sources)
+        current_balance_forward = budget.balance_brought_forward or 0
+        current_allocated = sum(allocation.allocated_amount for allocation in budget.allocations)
+        
+        # Calculate totals across all budgets
+        total_income_all_budgets = sum(
+            sum(source.amount for source in b.income_sources) + (b.balance_brought_forward or 0)
+            for b in all_budgets
+        )
+        total_allocated_all_budgets = sum(
+            sum(allocation.allocated_amount for allocation in b.allocations)
+            for b in all_budgets
+        )
+        
+        return jsonify({
+            'current_budget': {
+                'budget_id': budget.id,
+                'period_name': active_period.name,
+                'income_sources_count': len(budget.income_sources),
+                'allocations_count': len(budget.allocations),
+                'total_income': current_income,
+                'balance_forward': current_balance_forward,
+                'total_available': current_income + current_balance_forward,
+                'total_allocated': current_allocated,
+                'balance': (current_income + current_balance_forward) - current_allocated
+            },
+            'all_budgets_summary': {
+                'total_budgets': len(all_budgets),
+                'total_income_all': total_income_all_budgets,
+                'total_allocated_all': total_allocated_all_budgets,
+                'balance_all': total_income_all_budgets - total_allocated_all_budgets
+            },
+            'allocations_detail': [
+                {
+                    'budget_id': allocation.budget_id,
+                    'subcategory_id': allocation.subcategory_id,
+                    'amount': allocation.allocated_amount,
+                    'period_name': allocation.budget.period.name if allocation.budget.period else 'Unknown'
+                }
+                for allocation in all_allocations
+            ]
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Debug error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     with app.app_context():

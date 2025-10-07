@@ -719,24 +719,38 @@ function hideNoBudgetMessage() {
 }
 
 function calculateDaysRemaining(budgetData) {
-    if (!budgetData || !budgetData.end_date) {
+    if (!budgetData || !budgetData.end_date || !budgetData.start_date) {
         document.getElementById('daysRemaining').textContent = '0';
         return;
     }
     
+    const startDate = new Date(budgetData.start_date);
     const endDate = new Date(budgetData.end_date);
     const today = new Date();
     
     // Set time to start of day for accurate day calculation
     today.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
     endDate.setHours(0, 0, 0, 0);
     
-    const timeDiff = endDate.getTime() - today.getTime();
-    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    // If we're before the budget period starts, show the full period duration
+    if (today < startDate) {
+        const fullPeriodDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
+        document.getElementById('daysRemaining').textContent = fullPeriodDays.toString();
+        return;
+    }
     
-    // Ensure we don't show negative days
-    const displayDays = Math.max(0, daysRemaining);
-    document.getElementById('daysRemaining').textContent = displayDays.toString();
+    // If we're within the budget period, show days remaining
+    if (today >= startDate && today <= endDate) {
+        const timeDiff = endDate.getTime() - today.getTime();
+        const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const displayDays = Math.max(0, daysRemaining);
+        document.getElementById('daysRemaining').textContent = displayDays.toString();
+        return;
+    }
+    
+    // If we're after the budget period, show 0
+    document.getElementById('daysRemaining').textContent = '0';
 }
 
 // Chart functionality

@@ -15,10 +15,16 @@
             <div class="income-sources-section">
                 <div class="section-header">
                     <h3>Income Sources</h3>
-                    <button class="btn btn-primary" onclick="showAddIncomeSourceModal()">
-                        <i class="fas fa-plus"></i>
-                        Add Source
-                    </button>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="showRecurringIncomeModal()">
+                            <i class="fas fa-repeat"></i>
+                            Manage Recurring
+                        </button>
+                        <button class="btn btn-primary" onclick="showAddIncomeSourceModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Source
+                        </button>
+                    </div>
                 </div>
                 <div id="incomeSourcesList" class="income-sources-list">
                     <!-- Income sources will be loaded here -->
@@ -109,6 +115,89 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('editIncomeSourceModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Recurring Income Sources Modal -->
+<div class="modal" id="recurringIncomeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Manage Recurring Income Sources</h2>
+            <button class="close-btn" onclick="closeModal('recurringIncomeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="recurring-section">
+                <div class="section-header">
+                    <h3>Recurring Income Sources</h3>
+                    <button class="btn btn-primary" onclick="showAddRecurringIncomeModal()">
+                        <i class="fas fa-plus"></i>
+                        Add Recurring Source
+                    </button>
+                </div>
+                <div id="recurringIncomeList" class="recurring-list">
+                    <!-- Recurring income sources will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Recurring Income Source Modal -->
+<div class="modal" id="addRecurringIncomeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add Recurring Income Source</h2>
+            <button class="close-btn" onclick="closeModal('addRecurringIncomeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addRecurringIncomeForm">
+                <div class="form-group">
+                    <label for="recurringIncomeName">Source Name</label>
+                    <input type="text" id="recurringIncomeName" name="name" required placeholder="e.g., Salary, Freelance, Investment">
+                </div>
+                <div class="form-group">
+                    <label for="recurringIncomeAmount">Amount</label>
+                    <div class="input-group">
+                        <span class="input-prefix" data-currency-symbol>$</span>
+                        <input type="number" id="recurringIncomeAmount" name="amount" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Recurring Source</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addRecurringIncomeModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Recurring Income Source Modal -->
+<div class="modal" id="editRecurringIncomeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Recurring Income Source</h2>
+            <button class="close-btn" onclick="closeModal('editRecurringIncomeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editRecurringIncomeForm">
+                <div class="form-group">
+                    <label for="editRecurringIncomeName">Source Name</label>
+                    <input type="text" id="editRecurringIncomeName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="editRecurringIncomeAmount">Amount</label>
+                    <div class="input-group">
+                        <span class="input-prefix" data-currency-symbol>$</span>
+                        <input type="number" id="editRecurringIncomeAmount" name="amount" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <input type="hidden" id="editRecurringIncomeId" name="source_id">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editRecurringIncomeModal')">Cancel</button>
                 </div>
             </form>
         </div>
@@ -224,6 +313,8 @@ function setupFormListeners() {
     document.getElementById('balanceForm').addEventListener('submit', handleBalanceSubmit);
     document.getElementById('addIncomeSourceForm').addEventListener('submit', handleAddIncomeSource);
     document.getElementById('editIncomeSourceForm').addEventListener('submit', handleEditIncomeSource);
+    document.getElementById('addRecurringIncomeForm').addEventListener('submit', handleAddRecurringIncome);
+    document.getElementById('editRecurringIncomeForm').addEventListener('submit', handleEditRecurringIncome);
 }
 
 function updateAvailableBalance() {
@@ -410,5 +501,149 @@ function formatCurrency(amount, currency = userCurrency || 'USD') {
     });
     return symbol + formatter.format(amount || 0);
 }
+
+// Recurring Income Management Functions
+function showRecurringIncomeModal() {
+    document.getElementById('recurringIncomeModal').style.display = 'block';
+    loadRecurringIncomeSources();
+}
+
+function showAddRecurringIncomeModal() {
+    document.getElementById('addRecurringIncomeModal').style.display = 'block';
+}
+
+function showEditRecurringIncomeModal(sourceId, sourceName, sourceAmount) {
+    document.getElementById('editRecurringIncomeId').value = sourceId;
+    document.getElementById('editRecurringIncomeName').value = sourceName;
+    document.getElementById('editRecurringIncomeAmount').value = sourceAmount;
+    document.getElementById('editRecurringIncomeModal').style.display = 'block';
+}
+
+function loadRecurringIncomeSources() {
+    fetch('/api/recurring-income-sources', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        renderRecurringIncomeSources(data);
+    })
+    .catch(error => console.error('Error loading recurring income sources:', error));
+}
+
+function renderRecurringIncomeSources(sources) {
+    const container = document.getElementById('recurringIncomeList');
+    
+    if (sources.length === 0) {
+        container.innerHTML = `
+            <div class="no-recurring-sources">
+                <i class="fas fa-repeat"></i>
+                <p>No recurring income sources set up</p>
+                <p>Click "Add Recurring Source" to get started</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = sources.map(source => `
+        <div class="recurring-source-item">
+            <div class="source-info">
+                <div class="source-name">${source.name}</div>
+                <div class="source-amount">${formatCurrency(source.amount, userCurrency)}</div>
+            </div>
+            <div class="source-actions">
+                <button class="btn btn-secondary" onclick="showEditRecurringIncomeModal(${source.id}, '${source.name}', ${source.amount})" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger" onclick="deleteRecurringIncomeSource(${source.id})" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function handleAddRecurringIncome(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        name: formData.get('name'),
+        amount: parseFloat(formData.get('amount'))
+    };
+    
+    fetch('/api/recurring-income-sources', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Recurring income source added successfully!', 'success');
+        closeModal('addRecurringIncomeModal');
+        e.target.reset();
+        loadRecurringIncomeSources();
+    })
+    .catch(error => {
+        console.error('Error adding recurring income source:', error);
+        showNotification('Error adding recurring income source. Please try again.', 'error');
+    });
+}
+
+function handleEditRecurringIncome(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const sourceId = formData.get('source_id');
+    const data = {
+        name: formData.get('name'),
+        amount: parseFloat(formData.get('amount'))
+    };
+    
+    fetch(`/api/recurring-income-sources/${sourceId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification('Recurring income source updated successfully!', 'success');
+        closeModal('editRecurringIncomeModal');
+        loadRecurringIncomeSources();
+    })
+    .catch(error => {
+        console.error('Error updating recurring income source:', error);
+        showNotification('Error updating recurring income source. Please try again.', 'error');
+    });
+}
+
+function deleteRecurringIncomeSource(sourceId) {
+    if (confirm('Are you sure you want to delete this recurring income source?')) {
+        fetch(`/api/recurring-income-sources/${sourceId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Recurring income source deleted successfully!', 'success');
+            loadRecurringIncomeSources();
+        })
+        .catch(error => {
+            console.error('Error deleting recurring income source:', error);
+            showNotification('Error deleting recurring income source. Please try again.', 'error');
+        });
+    }
+}
+
+// Manual populate function removed - auto-population happens automatically when creating new budgets
 </script>
 {% endblock %}
