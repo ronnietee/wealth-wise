@@ -6,8 +6,241 @@
     <title>{% block title %}STEWARD - Christian Family Budgeting{% endblock %}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=5.6">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Global Loading Spinner Styles -->
+    <style>
+    /* Loading Spinner Styles */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-spinner.large {
+        width: 30px;
+        height: 30px;
+        border-width: 3px;
+    }
+
+    .loading-spinner.small {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Skeleton loading styles */
+    .skeleton-loading {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+        color: transparent;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Loading state for cards */
+    .card-loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .card-loading .card-value {
+        position: relative;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card-loading .card-value .value {
+        opacity: 0;
+    }
+
+    .card-loading .card-value::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Chart loading state */
+    .chart-loading {
+        position: relative;
+        opacity: 0.7;
+    }
+
+    .chart-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 10;
+    }
+
+    /* Progress section loading */
+    .progress-loading .score-percentage,
+    .progress-loading .score-amount {
+        opacity: 0;
+    }
+
+    .progress-loading .score-percentage::after {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+    }
+
+    /* Budget period loading */
+    .budget-period-loading {
+        opacity: 0.7;
+    }
+
+    .budget-period-loading::after {
+        content: '';
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
+    }
+
+    /* Table loading state */
+    .table-loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .table-loading tbody tr {
+        opacity: 0.5;
+    }
+
+    .table-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 10;
+    }
+
+    /* Form loading state */
+    .form-loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .form-loading .form-control {
+        opacity: 0.5;
+    }
+
+    /* Budget stat loading state */
+    .budget-stat-loading {
+        opacity: 0.7;
+        pointer-events: none;
+        position: relative !important;
+    }
+
+    .budget-stat-loading .stat-value {
+        position: relative !important;
+        min-height: 30px !important;
+        min-width: 60px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 0 !important;
+        overflow: visible !important;
+    }
+
+    .budget-stat-spinner {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 24px !important;
+        height: 24px !important;
+        border: 3px solid #f3f3f3 !important;
+        border-top: 3px solid #007bff !important;
+        border-radius: 50% !important;
+        animation: spin 1s linear infinite !important;
+        z-index: 999 !important;
+        background: rgba(255, 0, 0, 0.1) !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        box-shadow: 0 0 0 1px red !important;
+    }
+
+    /* Button loading state */
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+    }
+
+    .btn-loading .btn-text {
+        opacity: 0;
+    }
+
+    .btn-loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    </style>
     <script>
         // Load theme on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -693,6 +926,214 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeSidebar();
         });
+
+        // Global Loading State Management Functions
+        // 
+        // USAGE EXAMPLES:
+        // 
+        // 1. Show loading for a single component:
+        //    LoadingManager.show('my-card');
+        //    LoadingManager.hide('my-card');
+        // 
+        // 2. Show loading for multiple components:
+        //    LoadingManager.showMultiple(['card1', 'card2', 'table1']);
+        //    LoadingManager.hideMultiple(['card1', 'card2', 'table1']);
+        // 
+        // 3. Button loading states:
+        //    LoadingManager.showButton('submit-btn', 'Submit');
+        //    LoadingManager.hideButton('submit-btn');
+        // 
+        // 4. Table loading states:
+        //    LoadingManager.showTable('transactions-table');
+        //    LoadingManager.hideTable('transactions-table');
+        // 
+        // 5. Form loading states:
+        //    LoadingManager.showForm('expense-form');
+        //    LoadingManager.hideForm('expense-form');
+        // 
+        // 6. Create custom spinner:
+        //    const spinner = LoadingManager.createSpinner('large');
+        //    element.appendChild(spinner);
+        // 
+        window.LoadingManager = {
+            // Show loading state for a specific component
+            show: function(componentId) {
+                const element = document.getElementById(componentId);
+                if (element) {
+                    // Add only the appropriate loading class based on component type
+                    if (componentId.includes('card')) {
+                        element.classList.add('card-loading');
+                    } else if (componentId.includes('progress')) {
+                        element.classList.add('progress-loading');
+                    } else if (componentId.includes('chart')) {
+                        element.classList.add('chart-loading');
+                    } else if (componentId.includes('budget-name')) {
+                        element.classList.add('budget-period-loading');
+                    } else if (componentId.includes('table')) {
+                        element.classList.add('table-loading');
+                    } else if (componentId.includes('form')) {
+                        element.classList.add('form-loading');
+                    } else if (componentId.includes('btn')) {
+                        element.classList.add('btn-loading');
+                    } else if (componentId.includes('stat')) {
+                        element.classList.add('budget-stat-loading');
+                        // Add spinner element for budget stats - create as sibling to stat-value
+                        const statValue = element.querySelector('.stat-value');
+                        if (statValue && !element.querySelector('.budget-stat-spinner')) {
+                            // Create circular border spinner like dashboard
+                            const spinner = document.createElement('div');
+                            spinner.style.position = 'absolute';
+                            spinner.style.top = '50%';
+                            spinner.style.left = '50%';
+                            spinner.style.transform = 'translate(-50%, -50%)';
+                            spinner.style.width = '20px';
+                            spinner.style.height = '20px';
+                            spinner.style.border = '2px solid #f3f3f3';
+                            spinner.style.borderTop = '2px solid #007bff';
+                            spinner.style.borderRadius = '50%';
+                            spinner.style.zIndex = '999';
+                            spinner.style.backgroundColor = 'transparent';
+                            
+                            // Smooth rotation animation
+                            let rotation = 0;
+                            const rotate = () => {
+                                rotation += 3; // Slower rotation for smoother effect
+                                spinner.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                                requestAnimationFrame(rotate);
+                            };
+                            rotate();
+                            
+                            element.appendChild(spinner);
+                        }
+                    }
+                }
+            },
+
+            // Hide loading state for a specific component
+            hide: function(componentId) {
+                const element = document.getElementById(componentId);
+                if (element) {
+                    // Remove all possible loading classes
+                    element.classList.remove('card-loading', 'progress-loading', 'chart-loading', 'budget-period-loading', 'table-loading', 'form-loading', 'btn-loading', 'budget-stat-loading');
+                    
+                    // Remove spinner elements for budget stats
+                    if (componentId.includes('stat')) {
+                        const spinner = element.querySelector('.budget-stat-spinner');
+                        if (spinner) {
+                            spinner.remove();
+                        }
+                    }
+                }
+            },
+
+            // Show loading state for multiple components
+            showMultiple: function(componentIds) {
+                componentIds.forEach(id => this.show(id));
+            },
+
+            // Hide loading state for multiple components
+            hideMultiple: function(componentIds) {
+                componentIds.forEach(id => this.hide(id));
+            },
+
+            // Show button loading state
+            showButton: function(buttonId, originalText = null) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    if (originalText) {
+                        button.dataset.originalText = originalText;
+                    }
+                    button.classList.add('btn-loading');
+                    button.disabled = true;
+                }
+            },
+
+            // Hide button loading state
+            hideButton: function(buttonId) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.classList.remove('btn-loading');
+                    button.disabled = false;
+                    if (button.dataset.originalText) {
+                        button.innerHTML = button.dataset.originalText;
+                    }
+                }
+            },
+
+            // Show loading state for a table
+            showTable: function(tableId) {
+                const table = document.getElementById(tableId);
+                if (table) {
+                    table.style.position = 'relative';
+                    table.classList.add('table-loading');
+                }
+            },
+
+            // Hide loading state for a table
+            hideTable: function(tableId) {
+                const table = document.getElementById(tableId);
+                if (table) {
+                    table.classList.remove('table-loading');
+                }
+            },
+
+            // Show loading state for a form
+            showForm: function(formId) {
+                const form = document.getElementById(formId);
+                if (form) {
+                    form.classList.add('form-loading');
+                }
+            },
+
+            // Hide loading state for a form
+            hideForm: function(formId) {
+                const form = document.getElementById(formId);
+                if (form) {
+                    form.classList.remove('form-loading');
+                }
+            },
+
+            // Create a loading spinner element
+            createSpinner: function(size = 'normal') {
+                const spinner = document.createElement('div');
+                spinner.className = `loading-spinner ${size}`;
+                return spinner;
+            },
+
+            // Replace content with spinner
+            replaceWithSpinner: function(elementId, size = 'normal') {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.innerHTML = '';
+                    element.appendChild(this.createSpinner(size));
+                }
+            },
+
+            // Restore original content after spinner
+            restoreContent: function(elementId, originalContent) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.innerHTML = originalContent;
+                }
+            }
+        };
+
+        // Convenience functions for backward compatibility
+        function showLoadingState(componentId) {
+            LoadingManager.show(componentId);
+        }
+
+        function hideLoadingState(componentId) {
+            LoadingManager.hide(componentId);
+        }
+
+        function showButtonLoading(buttonId, originalText = null) {
+            LoadingManager.showButton(buttonId, originalText);
+        }
+
+        function hideButtonLoading(buttonId) {
+            LoadingManager.hideButton(buttonId);
+        }
     </script>
     {% block scripts %}{% endblock %}
 </body>

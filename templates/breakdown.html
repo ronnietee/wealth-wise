@@ -24,15 +24,15 @@
             </div>
             <div class="card-body">
                 <div class="budget-stats">
-                    <div class="budget-stat">
+                    <div class="budget-stat" id="available-stat">
                         <span class="stat-label">Available to Allocate:</span>
                         <span class="stat-value" id="availableToAllocate">$0.00</span>
                     </div>
-                    <div class="budget-stat">
+                    <div class="budget-stat" id="allocated-stat">
                         <span class="stat-label">Total Allocated:</span>
                         <span class="stat-value" id="totalAllocated">$0.00</span>
                     </div>
-                    <div class="budget-stat">
+                    <div class="budget-stat" id="spent-stat">
                         <span class="stat-label">Total Spent:</span>
                         <span class="stat-value" id="totalSpent">$0.00</span>
                     </div>
@@ -240,6 +240,9 @@ let currentBudget = null;
 let overAllocationTimeout = null;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize loading states
+    LoadingManager.showMultiple(['budgetSummary', 'categoriesGrid', 'available-stat', 'allocated-stat', 'spent-stat']);
+    
     // Load data immediately, currency will be loaded globally
     loadBudgetData();
     loadCategories();
@@ -283,8 +286,15 @@ function loadBudgetData() {
     .then(data => {
         currentBudget = data;
         updateBudgetSummary();
+        
+        // Hide budget summary loading state
+        LoadingManager.hide('budgetSummary');
     })
-    .catch(error => console.error('Error loading budget:', error));
+    .catch(error => {
+        console.error('Error loading budget:', error);
+        // Hide loading state even on error
+        LoadingManager.hide('budgetSummary');
+    });
 }
 
 function updateBudgetSummary() {
@@ -306,6 +316,11 @@ function updateBudgetSummary() {
     document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
     document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
     document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+    
+    // Only hide loading states for individual stats if we have both budget and categories data
+    if (currentBudget && categories.length > 0) {
+        LoadingManager.hideMultiple(['available-stat', 'allocated-stat', 'spent-stat']);
+    }
 }
 
 function toggleBudgetSummary() {
@@ -409,8 +424,15 @@ function loadCategories() {
         categories = data;
         renderCategories();
         updateBudgetSummary(); // Update summary after loading categories
+        
+        // Hide categories grid loading state
+        LoadingManager.hide('categoriesGrid');
     })
-    .catch(error => console.error('Error loading categories:', error));
+    .catch(error => {
+        console.error('Error loading categories:', error);
+        // Hide loading state even on error
+        LoadingManager.hide('categoriesGrid');
+    });
 }
 
 function renderCategories() {

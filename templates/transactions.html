@@ -53,7 +53,7 @@
             </div>
             <div class="card-body">
                 <div class="table-container">
-                    <table class="transactions-table">
+                    <table class="transactions-table" id="transactionsTable">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -141,6 +141,9 @@ let categories = [];
 let filteredTransactions = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize loading states
+    LoadingManager.showTable('transactionsTable');
+    
     // Load data immediately, currency will be loaded globally
     loadActiveBudgetPeriod();
     loadCategories();
@@ -268,6 +271,9 @@ function loadTransactions() {
         transactions = data;
         filteredTransactions = [...transactions];
         renderTransactions();
+        
+        // Hide loading state
+        LoadingManager.hideTable('transactionsTable');
     })
     .catch(error => {
         console.error('Error loading transactions:', error);
@@ -275,6 +281,9 @@ function loadTransactions() {
         transactions = [];
         filteredTransactions = [];
         renderTransactions();
+        
+        // Hide loading state even on error
+        LoadingManager.hideTable('transactionsTable');
     });
 }
 

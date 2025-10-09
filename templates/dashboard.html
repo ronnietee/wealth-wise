@@ -12,7 +12,7 @@
             </div>
             <div class="budget-period-indicator">
                 <div class="current-budget">
-                    <span id="current-budget-name" class="budget-name">Loading...</span>
+                    <span id="current-budget-name" class="budget-name budget-period-loading">Loading...</span>
                     <a href="/budgets" class="budget-manage-link">
                         <i class="fas fa-edit"></i>
                     </a>
@@ -76,7 +76,7 @@
         <div class="dashboard-grid">
         <!-- Financial Overview Cards -->
         <div class="overview-cards">
-            <div class="overview-card income-card compact">
+            <div class="overview-card income-card compact card-loading" id="income-card">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-arrow-up"></i>
@@ -91,7 +91,7 @@
                 </div>
             </div>
             
-            <div class="overview-card balance-card compact">
+            <div class="overview-card balance-card compact card-loading" id="balance-card">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-wallet"></i>
@@ -106,7 +106,7 @@
                 </div>
             </div>
             
-            <div class="overview-card available-card compact">
+            <div class="overview-card available-card compact card-loading" id="available-card">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-plus-circle"></i>
@@ -121,7 +121,7 @@
                 </div>
             </div>
             
-            <div class="overview-card days-card compact">
+            <div class="overview-card days-card compact card-loading" id="days-card">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-calendar-alt"></i>
@@ -143,7 +143,7 @@
                 <div class="progress-header">
                     <h3>Budget Progress</h3>
                 </div>
-                <div class="score-card">
+                <div class="score-card progress-loading" id="progress-card">
                     <div class="score-percentage">
                         <span id="progressPercentage">0%</span>
                     </div>
@@ -162,7 +162,7 @@
                     <h3>Budget Allocation</h3>
                     <p>Distribution of your budget across categories</p>
                 </div>
-                <div class="chart-container">
+                <div class="chart-container chart-loading" id="chart-container">
                     <canvas id="budgetChart" width="400" height="400"></canvas>
                 </div>
                 <div class="chart-legend" id="chartLegend">
@@ -245,6 +245,9 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize loading states
+    initializeLoadingStates();
+    
     // Load user information from JWT token
     loadUserInfo();
     
@@ -262,6 +265,37 @@ document.addEventListener('DOMContentLoaded', function() {
         loadDashboardData();
     });
 });
+
+// Dashboard-specific loading state management
+function initializeLoadingStates() {
+    // Show loading states for all dashboard components
+    LoadingManager.showMultiple([
+        'current-budget-name',
+        'income-card',
+        'balance-card',
+        'available-card',
+        'days-card',
+        'progress-card',
+        'chart-container'
+    ]);
+    
+    // Set a timeout to hide all loading states after 10 seconds as a fallback
+    setTimeout(() => {
+        hideAllLoadingStates();
+    }, 10000);
+}
+
+function hideAllLoadingStates() {
+    LoadingManager.hideMultiple([
+        'current-budget-name',
+        'income-card',
+        'balance-card',
+        'available-card',
+        'days-card',
+        'progress-card',
+        'chart-container'
+    ]);
+}
 
 function loadUserInfo() {
     const token = localStorage.getItem('token');
@@ -325,6 +359,7 @@ function loadDashboardData() {
             if (response.status === 404) {
                 // No budget found, show no budget message
                 showNoBudgetMessage();
+                LoadingManager.hideMultiple(['current-budget-name', 'income-card', 'days-card']);
                 return;
             }
             if (!response.ok) {
@@ -341,8 +376,9 @@ function loadDashboardData() {
             const totalIncome = data.total_income + (data.balance_brought_forward || 0);
             document.getElementById('totalIncome').textContent = formatCurrency(totalIncome, userCurrency);
             
-            // Update budget period indicator
+            // Update budget period indicator and hide loading
             document.getElementById('current-budget-name').textContent = data.period_name || 'Unknown';
+            LoadingManager.hideMultiple(['current-budget-name', 'income-card']);
             
             // Hide no budget message if it was showing
             hideNoBudgetMessage();
@@ -357,6 +393,7 @@ function loadDashboardData() {
         .catch(error => {
             console.error('Error loading budget:', error);
             document.getElementById('current-budget-name').textContent = 'Error loading budget';
+            LoadingManager.hideMultiple(['current-budget-name', 'income-card']);
             showNotification('Error loading budget: ' + error.message, 'error');
         });
 
@@ -401,10 +438,17 @@ function loadCategoriesOverview() {
         const availableToAllocate = totalIncome - totalAllocated;
         document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
         
+        // Hide loading states for balance and available cards
+        LoadingManager.hideMultiple(['balance-card', 'available-card']);
+        
         // Update progress visualization
         updateProgressVisualization(totalAllocated, totalSpent);
     })
-    .catch(error => console.error('Error loading categories:', error));
+    .catch(error => {
+        console.error('Error loading categories:', error);
+        // Hide loading states even on error
+        LoadingManager.hideMultiple(['balance-card', 'available-card']);
+    });
 }
 
 function updateProgressVisualization(allocated, spent) {
@@ -415,6 +459,9 @@ function updateProgressVisualization(allocated, spent) {
     
     // Update total spent amount
     document.getElementById('totalSpent').textContent = formatCurrency(spent, userCurrency);
+    
+    // Hide progress loading state
+    LoadingManager.hide('progress-card');
     
     // Add color coding based on spending level
     const scorePercentage = document.getElementById('progressPercentage').parentElement;
@@ -721,6 +768,7 @@ function hideNoBudgetMessage() {
 function calculateDaysRemaining(budgetData) {
     if (!budgetData || !budgetData.end_date || !budgetData.start_date) {
         document.getElementById('daysRemaining').textContent = '0';
+        LoadingManager.hide('days-card');
         return;
     }
     
@@ -737,6 +785,7 @@ function calculateDaysRemaining(budgetData) {
     if (today < startDate) {
         const fullPeriodDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
         document.getElementById('daysRemaining').textContent = fullPeriodDays.toString();
+        LoadingManager.hide('days-card');
         return;
     }
     
@@ -746,11 +795,13 @@ function calculateDaysRemaining(budgetData) {
         const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
         const displayDays = Math.max(0, daysRemaining);
         document.getElementById('daysRemaining').textContent = displayDays.toString();
+        LoadingManager.hide('days-card');
         return;
     }
     
     // If we're after the budget period, show 0
     document.getElementById('daysRemaining').textContent = '0';
+    LoadingManager.hide('days-card');
 }
 
 // Chart functionality
@@ -763,9 +814,14 @@ function loadBudgetChart() {
         // Prepare data for the chart
         const chartData = prepareChartData(categories);
         createBudgetChart(chartData);
+        
+        // Hide chart loading state
+        LoadingManager.hide('chart-container');
     })
     .catch(error => {
         console.error('Error loading chart data:', error);
+        // Hide loading state even on error
+        LoadingManager.hide('chart-container');
     });
 }
 

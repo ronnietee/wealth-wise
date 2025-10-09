@@ -211,6 +211,9 @@ let incomeSources = [];
 let currentBudget = null;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize loading states
+    LoadingManager.showMultiple(['incomeSourcesList', 'balanceForm']);
+    
     // Load user settings first to get currency
     loadUserSettings().then(() => {
         loadCurrentBudget();
@@ -269,8 +272,15 @@ function loadCurrentBudget() {
         incomeSources = data.income_sources || [];
         document.getElementById('balanceBroughtForward').value = data.balance_brought_forward || '';
         updateCurrencyDisplay();
+        
+        // Hide loading states
+        LoadingManager.hideMultiple(['incomeSourcesList', 'balanceForm']);
     })
-    .catch(error => console.error('Error loading budget:', error));
+    .catch(error => {
+        console.error('Error loading budget:', error);
+        // Hide loading states even on error
+        LoadingManager.hideMultiple(['incomeSourcesList', 'balanceForm']);
+    });
 }
 
 function renderIncomeSources() {
