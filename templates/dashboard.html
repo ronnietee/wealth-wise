@@ -220,13 +220,13 @@
                             </div>
                         </a>
                         
-                        <a href="/transactions" class="action-item">
+                        <a href="#" class="action-item" onclick="exportData(); return false;">
                             <div class="action-icon">
-                                <i class="fas fa-list-alt"></i>
+                                <i class="fas fa-download"></i>
                             </div>
                             <div class="action-content">
-                                <h4>View Transactions</h4>
-                                <p>Review spending history</p>
+                                <h4>Export Data</h4>
+                                <p>Download your financial data</p>
                             </div>
                             <div class="action-arrow">
                                 <i class="fas fa-chevron-right"></i>
@@ -917,6 +917,40 @@ function createCustomLegend(chartData) {
         `;
         
         legendContainer.appendChild(legendItem);
+    });
+}
+
+// Export data functionality
+function exportData() {
+    showNotification('Preparing Excel export...', 'info');
+    
+    fetch('/api/user/export-data', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Export failed');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        // Create and download Excel file
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `steward-export-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showNotification('Excel file exported successfully!', 'success');
+    })
+    .catch(error => {
+        console.error('Error exporting data:', error);
+        showNotification('Error exporting data. Please try again.', 'error');
     });
 }
 </script>

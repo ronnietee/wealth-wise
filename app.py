@@ -1695,26 +1695,94 @@ def export_user_data(current_user):
         if active_period:
             budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
             if budget:
-                total_income = sum(source.amount for source in budget.income_sources)
+                # Calculate total income matching dashboard calculation (income sources + balance brought forward)
+                total_income_from_sources = sum(source.amount for source in budget.income_sources)
+                balance_brought_forward = budget.balance_brought_forward or 0
+                total_income = total_income_from_sources + balance_brought_forward
+                
+                # Calculate total allocated and spent amounts
                 total_allocated = sum(allocation.allocated_amount for allocation in budget.allocations)
                 
-                summary_ws.append(["Current Budget Period Summary"])
+                # Calculate total spent from transactions within the active period
+                user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
+                total_spent = db.session.query(db.func.sum(Transaction.amount)).filter(
+                    Transaction.subcategory_id.in_(user_subcategory_ids),
+                    Transaction.transaction_date >= active_period.start_date,
+                    Transaction.transaction_date <= active_period.end_date
+                ).scalar() or 0
+                
+                # Calculate remaining amounts
+                remaining_to_allocate = total_income - total_allocated
+                current_balance = total_income - total_spent
+                
+                # Calculate days remaining
+                today = datetime.now().date()
+                start_date = active_period.start_date
+                end_date = active_period.end_date
+                
+                if today >= start_date and today <= end_date:
+                    days_remaining = (end_date - today).days
+                elif today < start_date:
+                    days_remaining = (end_date - start_date).days + 1
+                else:
+                    days_remaining = 0
+                
+                # Add comprehensive dashboard-style summary
+                summary_ws.append(["DASHBOARD SUMMARY"])
                 summary_ws.append([f"Period: {active_period.name}"])
-                summary_ws.append([f"Start Date: {active_period.start_date}"])
-                summary_ws.append([f"End Date: {active_period.end_date}"])
-                summary_ws.append([f"Total Income: {getCurrencySymbol(current_user.currency)}{total_income:,.2f}"])
+                summary_ws.append([f"Start Date: {active_period.start_date.strftime('%Y-%m-%d')}"])
+                summary_ws.append([f"End Date: {active_period.end_date.strftime('%Y-%m-%d')}"])
+                summary_ws.append([f"Days Remaining: {days_remaining}"])
+                summary_ws.append([])
+                
+                summary_ws.append(["FINANCIAL OVERVIEW"])
+                summary_ws.append([f"Total Income (Sources): {getCurrencySymbol(current_user.currency)}{total_income_from_sources:,.2f}"])
+                summary_ws.append([f"Balance Brought Forward: {getCurrencySymbol(current_user.currency)}{balance_brought_forward:,.2f}"])
+                summary_ws.append([f"TOTAL INCOME: {getCurrencySymbol(current_user.currency)}{total_income:,.2f}"])
                 summary_ws.append([f"Total Allocated: {getCurrencySymbol(current_user.currency)}{total_allocated:,.2f}"])
-                summary_ws.append([f"Remaining: {getCurrencySymbol(current_user.currency)}{total_income - total_allocated:,.2f}"])
+                summary_ws.append([f"Total Spent: {getCurrencySymbol(current_user.currency)}{total_spent:,.2f}"])
+                summary_ws.append([f"Available to Allocate: {getCurrencySymbol(current_user.currency)}{remaining_to_allocate:,.2f}"])
+                summary_ws.append([f"Current Balance: {getCurrencySymbol(current_user.currency)}{current_balance:,.2f}"])
+                summary_ws.append([])
+                
+                # Add spending progress
+                spending_percentage = (total_spent / total_income * 100) if total_income > 0 else 0
+                summary_ws.append(["SPENDING PROGRESS"])
+                summary_ws.append([f"Spending Percentage: {spending_percentage:.1f}%"])
+                summary_ws.append([f"Budget Health: {'Good' if spending_percentage < 75 else 'Moderate' if spending_percentage < 90 else 'High Spending'}"])
                 summary_ws.append([])
         
-        # Get transaction summary
-        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-        total_transactions = len(transactions)
-        total_spent = sum(t.amount for t in transactions)
+        # Get comprehensive transaction summary
+        all_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        total_all_transactions = len(all_transactions)
+        total_all_spent = sum(t.amount for t in all_transactions)
         
-        summary_ws.append(["Transaction Summary"])
-        summary_ws.append([f"Total Transactions: {total_transactions}"])
-        summary_ws.append([f"Total Spent: {getCurrencySymbol(current_user.currency)}{total_spent:,.2f}"])
+        # Get transactions for current period only
+        current_period_transactions = []
+        if active_period:
+            current_period_transactions = Transaction.query.filter_by(user_id=current_user.id).filter(
+                Transaction.transaction_date >= active_period.start_date,
+                Transaction.transaction_date <= active_period.end_date
+            ).all()
+        
+        summary_ws.append(["TRANSACTION SUMMARY"])
+        summary_ws.append([f"Total Transactions (All Time): {total_all_transactions}"])
+        summary_ws.append([f"Total Spent (All Time): {getCurrencySymbol(current_user.currency)}{total_all_spent:,.2f}"])
+        if active_period:
+            summary_ws.append([f"Transactions This Period: {len(current_period_transactions)}"])
+            summary_ws.append([f"Spent This Period: {getCurrencySymbol(current_user.currency)}{sum(t.amount for t in current_period_transactions):,.2f}"])
+        else:
+            summary_ws.append(["No Active Budget Period"])
+            summary_ws.append(["Please create a budget period to track spending"])
+        summary_ws.append([])
+        
+        # Add note if no active budget period
+        if not active_period:
+            summary_ws.append(["NOTE"])
+            summary_ws.append(["No active budget period found for this user."])
+            summary_ws.append(["Dashboard calculations require an active budget period."])
+            summary_ws.append(["Please create a budget period to see complete financial overview."])
+            summary_ws.append([])
         
         # Create Allocations Sheet
         allocations_ws = wb.create_sheet("Allocations")
@@ -1799,7 +1867,7 @@ def export_user_data(current_user):
             cell.border = border
         
         # Add transaction data
-        for transaction in transactions:
+        for transaction in all_transactions:
             subcategory = Subcategory.query.get(transaction.subcategory_id)
             category = Category.query.get(subcategory.category_id) if subcategory else None
             
@@ -2360,7 +2428,7 @@ def complete_onboarding():
         # Create categories and subcategories based on user selection
         category_mapping = {
             'faithful-stewardship': {
-                'name': 'Faithful Stewardship',
+                'name': 'Giving',
                 'subcategories': {
                     'tithe': 'Tithe',
                     'offering': 'Offering',
