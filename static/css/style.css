@@ -19,6 +19,15 @@
     --text-secondary: #495057;
     --border-color: #adb5bd;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    
+    /* Footer Theme Variables */
+    --footer-bg: #f8f9fa;
+    --footer-text: #2c3e50;
+    --footer-text-muted: #6c757d;
+    --footer-link-bg: transparent;
+    --footer-link-border: #8B4513;
+    --footer-link-hover-bg: #8B4513;
+    --footer-link-hover-text: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -41,6 +50,15 @@
     --text-secondary: #b0b0b0;
     --border-color: #333333;
     --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    
+    /* Footer Theme Variables - Dark */
+    --footer-bg: #1a1a1a;
+    --footer-text: #e0e0e0;
+    --footer-text-muted: #a0a0a0;
+    --footer-link-bg: transparent;
+    --footer-link-border: #D2691E;
+    --footer-link-hover-bg: #D2691E;
+    --footer-link-hover-text: #ffffff;
 }
 
 /* Reset and Base Styles */
@@ -851,7 +869,7 @@ body.modal-open {
     border-radius: 15px;
     width: 90%;
     max-width: 500px;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     animation: modalSlideIn 0.3s ease;
@@ -2667,12 +2685,14 @@ body.modal-open {
     width: 90%;
     animation: slideIn 0.3s ease;
     overflow-y: auto;
-    max-height: 80vh;
+    max-height: 90vh;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 2002;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
@@ -3848,15 +3868,18 @@ body.modal-open {
 
 /* Footer */
 .footer {
-    background: #2c3e50;
-    color: white;
+    background: var(--footer-bg);
+    color: var(--footer-text);
     text-align: center;
     padding: 2rem 1rem;
     margin-top: 4rem;
+    transition: background-color 0.3s ease, color 0.3s ease, margin-left 0.3s ease;
+    margin-left: 250px; /* Default margin for visible sidebar */
 }
 
 .footer-content p {
     margin: 0.5rem 0;
+    color: var(--footer-text);
 }
 
 .footer-links {
@@ -3868,18 +3891,20 @@ body.modal-open {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--sidebar-text);
+    color: var(--footer-text);
     text-decoration: none;
     font-weight: 500;
     padding: 0.5rem 1rem;
-    border: 1px solid #8B4513;
+    border: 1px solid var(--footer-link-border);
     border-radius: 6px;
+    background: var(--footer-link-bg);
     transition: all 0.3s ease;
+    margin: 0 0.5rem;
 }
 
 .footer-link:hover {
-    background: #8B4513;
-    color: white;
+    background: var(--footer-link-hover-bg);
+    color: var(--footer-link-hover-text);
     text-decoration: none;
 }
 
@@ -3901,14 +3926,25 @@ body.modal-open {
 .footer-text {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--sidebar-text);
+    color: var(--footer-text);
 }
 
 .verse {
     font-style: italic;
-    color: #bdc3c7;
+    color: var(--footer-text-muted);
     font-size: 0.9rem;
 }
+
+.footer-info {
+    margin-top: 1rem;
+}
+
+.footer-info p {
+    color: var(--footer-text);
+    margin: 0.25rem 0;
+}
+
+/* Footer responsive to sidebar state - handled by JavaScript */
 
 /* Notifications */
 .notification {
@@ -5721,13 +5757,18 @@ body.modal-open {
 #editAccountModal .modal-content {
     padding: 0;
     border-radius: 16px;
-    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 #addAccountModal .modal-form,
 #editAccountModal .modal-form {
     padding: 2rem;
     background: var(--card-bg);
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0; /* Allows flex item to shrink below content size */
 }
 
 #addAccountModal .form-actions,
@@ -6256,11 +6297,17 @@ body.modal-open {
         left: 50%;
         transform: translate(-50%, -50%);
         max-height: 90vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
     
     #addAccountModal .modal-form,
     #editAccountModal .modal-form {
         padding: 1.5rem;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0; /* Allows flex item to shrink below content size */
     }
     
     #addAccountModal .modal-header,

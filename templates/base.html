@@ -856,14 +856,22 @@
             
             if (isMobile) {
                 mainWrapper.style.marginLeft = '0';
+                const footer = document.querySelector('.footer');
+                if (footer) footer.style.marginLeft = '0';
             } else if (isPinned) {
                 if (isCollapsed) {
                     mainWrapper.style.marginLeft = '60px';
+                    const footer = document.querySelector('.footer');
+                    if (footer) footer.style.marginLeft = '60px';
                 } else {
                     mainWrapper.style.marginLeft = '250px';
+                    const footer = document.querySelector('.footer');
+                    if (footer) footer.style.marginLeft = '250px';
                 }
             } else {
                 mainWrapper.style.marginLeft = '0';
+                const footer = document.querySelector('.footer');
+                if (footer) footer.style.marginLeft = '0';
             }
             
             // Ensure banner is always visible
