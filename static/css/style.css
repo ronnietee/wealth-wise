@@ -44,12 +44,12 @@
     --top-banner-text: #e0e0e0;
     --top-banner-border: rgba(255, 255, 255, 0.08);
     
-    --main-bg: #0f0f0f;
-    --card-bg: #1a1a1a;
+    --main-bg: #0a0a0a;
+    --card-bg: #1e1e1e;
     --text-primary: #ffffff;
     --text-secondary: #b0b0b0;
     --border-color: #333333;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
     
     /* Footer Theme Variables - Dark */
     --footer-bg: #1a1a1a;
@@ -2052,8 +2052,7 @@ body.modal-open {
     border-radius: 8px;
     padding: 1rem 1.5rem;
     margin: 0.25rem 0 0.5rem 0;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     position: relative;
     overflow: hidden;
 }
@@ -2160,7 +2159,7 @@ body.modal-open {
     margin-bottom: 2rem;
     border: none;
     border-radius: 12px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     background: var(--card-bg);
     overflow: hidden;
 }
@@ -2223,7 +2222,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .budgets-table thead {
@@ -3032,8 +3031,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -3051,8 +3049,7 @@ body.modal-open {
 
 .overview-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-    border-color: rgba(139, 69, 19, 0.25);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
 }
 
 .card-header {
@@ -3129,8 +3126,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 1rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     margin-bottom: 1rem;
     width: fit-content;
 }
@@ -3140,8 +3136,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 1rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     margin-bottom: 1rem;
 }
 
@@ -3295,8 +3290,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 0.75rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     max-width: 280px;
 }
 
@@ -3394,9 +3388,8 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     margin: 2rem 0;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
     text-align: center;
 }
 
@@ -3946,6 +3939,89 @@ body.modal-open {
 
 /* Footer responsive to sidebar state - handled by JavaScript */
 
+/* Dark Mode Card Enhancements */
+[data-theme="dark"] .overview-card {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .page-header {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .actions-section {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .transactions-container .card {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .create-budget-card {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .no-budget-card,
+[data-theme="dark"] .budget-alert,
+[data-theme="dark"] .overspending-alert {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .budgets-table {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .accounts-table-container {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .no-accounts-card {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .breakdown-container .budget-summary {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .breakdown-container .category-card {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .income-sources-section,
+[data-theme="dark"] .balance-form-section {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .progress-section {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .chart-section {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Dark Mode Quick Actions Title */
+[data-theme="dark"] .actions-header h3 {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .actions-header p {
+    color: #b0b0b0;
+}
+
 /* Notifications */
 .notification {
     position: fixed;
@@ -4053,8 +4129,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .section-header {
@@ -4131,7 +4206,7 @@ body.modal-open {
     background: var(--card-bg);
     border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .source-info {
@@ -4190,8 +4265,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .balance-form {
@@ -4429,8 +4503,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .section-header {
@@ -4507,7 +4580,7 @@ body.modal-open {
     background: var(--card-bg);
     border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .source-info {
@@ -4673,8 +4746,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .section-header {
@@ -4751,7 +4823,7 @@ body.modal-open {
     background: var(--card-bg);
     border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .source-info {
@@ -4893,8 +4965,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .section-header {
@@ -4971,7 +5042,7 @@ body.modal-open {
     background: var(--card-bg);
     border-color: var(--border-color);
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .source-info {
@@ -5128,8 +5199,7 @@ body.modal-open {
     background: var(--card-bg) !important;
     border-radius: 8px !important;
     padding: 1.5rem !important;
-    box-shadow: var(--shadow) !important;
-    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
     width: 100% !important;
     min-height: 300px !important;
 }
@@ -5304,15 +5374,14 @@ body.modal-open {
 .transactions-container .card {
     background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     overflow: hidden;
 }
 
 .transactions-container .card-header {
     background: var(--main-bg);
     padding: 1.5rem;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -5881,7 +5950,7 @@ body.modal-open {
 .accounts-table-container {
     background: var(--card-bg);
     border-radius: 8px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     overflow: hidden;
     margin-top: 1rem;
 }
@@ -6776,8 +6845,7 @@ body.modal-open {
 .breakdown-container .budget-summary {
     background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -6936,8 +7004,7 @@ body.modal-open {
 .breakdown-container .category-card {
     background: var(--card-bg);
     border-radius: 12px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     overflow: hidden;
     transition: all 0.3s ease;
     display: flex;
@@ -7449,8 +7516,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     margin-bottom: 1rem;
 }
 
@@ -7535,8 +7601,7 @@ body.modal-open {
     background: var(--card-bg);
     border-radius: 12px;
     padding: 3rem 2rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     text-align: center;
     margin-top: 2rem;
 }
@@ -8455,7 +8520,7 @@ body.modal-open {
 
 .recurring-source-item:hover,
 .recurring-allocation-item:hover {
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     transform: translateY(-1px);
 }
 
