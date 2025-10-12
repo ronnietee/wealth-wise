@@ -1505,6 +1505,10 @@ def favicon():
 def contact():
     return render_template('contact.html')
 
+@app.route('/help')
+def help():
+    return render_template('help.html')
+
 
 @app.route('/api/contact', methods=['POST'])
 def submit_contact():

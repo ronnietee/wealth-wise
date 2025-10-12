@@ -1,0 +1,538 @@
+{% extends "base.html" %}
+
+{% block title %}User Guide - STEWARD{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-question-circle"></i> User Guide</h1>
+        <p class="page-subtitle">Complete guide to using STEWARD for personal finance management</p>
+    </div>
+
+    <div class="help-container">
+        <!-- Table of Contents -->
+        <div class="help-toc">
+            <h2>Table of Contents</h2>
+            <ul class="toc-list">
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#dashboard">Dashboard Overview</a></li>
+                <li><a href="#income-management">Income Management</a></li>
+                <li><a href="#budget-management">Budget Management</a></li>
+                <li><a href="#budget-breakdown">Budget Breakdown</a></li>
+                <li><a href="#transactions">Transaction Management</a></li>
+                <li><a href="#accounts">Account Management</a></li>
+                <li><a href="#settings">Settings & Preferences</a></li>
+                <li><a href="#tips-tricks">Tips & Best Practices</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </div>
+
+        <!-- Getting Started Section -->
+        <section id="getting-started" class="help-section">
+            <h2><i class="fas fa-play-circle"></i> Getting Started</h2>
+            
+            <div class="help-subsection">
+                <h3>First Time Setup</h3>
+                <p>When you first create an account, STEWARD will guide you through an onboarding process:</p>
+                <ol>
+                    <li><strong>Personal Information:</strong> Enter your name and basic details</li>
+                    <li><strong>Income Sources:</strong> Add your primary income sources</li>
+                    <li><strong>Expense Categories:</strong> Set up your spending categories</li>
+                    <li><strong>Budget Period:</strong> Choose your budgeting timeframe (monthly, quarterly, yearly)</li>
+                    <li><strong>Account Setup:</strong> Add your financial accounts</li>
+                </ol>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Navigation</h3>
+                <p>STEWARD uses a sidebar navigation system with the following main sections:</p>
+                <ul>
+                    <li><strong>Dashboard:</strong> Your financial overview and quick actions</li>
+                    <li><strong>Income:</strong> Manage income sources and balance</li>
+                    <li><strong>Breakdown:</strong> Allocate budget across categories</li>
+                    <li><strong>Transactions:</strong> View and manage all transactions</li>
+                    <li><strong>Accounts:</strong> Manage your financial accounts</li>
+                    <li><strong>Budgets:</strong> Create and manage budget periods</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="help-section">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
+            
+            <div class="help-subsection">
+                <h3>Financial Overview Cards</h3>
+                <p>The dashboard displays key financial metrics in overview cards:</p>
+                <ul>
+                    <li><strong>Total Income:</strong> Sum of all income sources for the current period</li>
+                    <li><strong>Total Expenses:</strong> Sum of all transactions for the current period</li>
+                    <li><strong>Available Balance:</strong> Remaining money after expenses</li>
+                    <li><strong>Budget Progress:</strong> Visual progress bar showing budget allocation</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Quick Actions</h3>
+                <p>The Quick Actions section provides shortcuts to common tasks:</p>
+                <ul>
+                    <li><strong>Add Transaction:</strong> Quickly record a new expense or income</li>
+                    <li><strong>View Breakdown:</strong> Go directly to budget allocation</li>
+                    <li><strong>Manage Budgets:</strong> Access budget management tools</li>
+                    <li><strong>View Transactions:</strong> See your transaction history</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Budget Period Indicator</h3>
+                <p>The top-right corner shows your current budget period. Click the edit icon to manage budget periods or switch between different timeframes.</p>
+            </div>
+        </section>
+
+        <!-- Income Management Section -->
+        <section id="income-management" class="help-section">
+            <h2><i class="fas fa-coins"></i> Income Management</h2>
+            
+            <div class="help-subsection">
+                <h3>Adding Income Sources</h3>
+                <p>To add a new income source:</p>
+                <ol>
+                    <li>Go to the Income page</li>
+                    <li>Click "Add Source" button</li>
+                    <li>Enter source details (name, amount, frequency)</li>
+                    <li>Choose if it's recurring or one-time</li>
+                    <li>Save the income source</li>
+                </ol>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Recurring Income</h3>
+                <p>For regular income like salary or freelance work:</p>
+                <ul>
+                    <li>Set up as "Recurring" income source</li>
+                    <li>Choose frequency (weekly, bi-weekly, monthly, etc.)</li>
+                    <li>STEWARD will automatically include it in budget calculations</li>
+                    <li>Use "Manage Recurring" to edit or remove recurring sources</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Balance Management</h3>
+                <p>The balance section shows:</p>
+                <ul>
+                    <li><strong>Total Income:</strong> Sum of all income sources</li>
+                    <li><strong>Total Allocated:</strong> Amount already allocated to budget categories</li>
+                    <li><strong>Available to Allocate:</strong> Remaining income for new allocations</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Budget Management Section -->
+        <section id="budget-management" class="help-section">
+            <h2><i class="fas fa-calendar-check"></i> Budget Management</h2>
+            
+            <div class="help-subsection">
+                <h3>Creating Budget Periods</h3>
+                <p>To create a new budget period:</p>
+                <ol>
+                    <li>Go to the Budgets page</li>
+                    <li>Click "Create Budget" button</li>
+                    <li>Choose period type (Monthly, Quarterly, Yearly, or Custom)</li>
+                    <li>Set start and end dates</li>
+                    <li>Name your budget period</li>
+                    <li>Save and activate the budget</li>
+                </ol>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Budget Types</h3>
+                <ul>
+                    <li><strong>Monthly:</strong> 1-month budget periods</li>
+                    <li><strong>Quarterly:</strong> 3-month budget periods</li>
+                    <li><strong>Yearly:</strong> 12-month budget periods</li>
+                    <li><strong>Custom:</strong> Set your own start and end dates</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Managing Budgets</h3>
+                <p>You can:</p>
+                <ul>
+                    <li>Activate different budget periods</li>
+                    <li>Edit budget details</li>
+                    <li>Delete unused budget periods</li>
+                    <li>View budget history and performance</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Budget Breakdown Section -->
+        <section id="budget-breakdown" class="help-section">
+            <h2><i class="fas fa-chart-pie"></i> Budget Breakdown</h2>
+            
+            <div class="help-subsection">
+                <h3>Category Allocation</h3>
+                <p>The breakdown page allows you to allocate your income across different expense categories:</p>
+                <ol>
+                    <li>View available income to allocate</li>
+                    <li>Set amounts for each category</li>
+                    <li>Use the allocation bar to distribute funds</li>
+                    <li>Save your allocations</li>
+                </ol>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Category Management</h3>
+                <p>You can create and manage expense categories:</p>
+                <ul>
+                    <li>Add new categories and subcategories</li>
+                    <li>Edit existing categories</li>
+                    <li>Delete unused categories</li>
+                    <li>Set category colors for visual organization</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Allocation Tips</h3>
+                <ul>
+                    <li>Start with essential categories (housing, food, transportation)</li>
+                    <li>Leave some buffer for unexpected expenses</li>
+                    <li>Consider savings as a category</li>
+                    <li>Review and adjust allocations regularly</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Transactions Section -->
+        <section id="transactions" class="help-section">
+            <h2><i class="fas fa-receipt"></i> Transaction Management</h2>
+            
+            <div class="help-subsection">
+                <h3>Adding Transactions</h3>
+                <p>To record a new transaction:</p>
+                <ol>
+                    <li>Go to the Transactions page</li>
+                    <li>Click "Add Transaction" button</li>
+                    <li>Fill in transaction details:
+                        <ul>
+                            <li>Description</li>
+                            <li>Amount (positive for income, negative for expenses)</li>
+                            <li>Category</li>
+                            <li>Date</li>
+                            <li>Account (if applicable)</li>
+                        </ul>
+                    </li>
+                    <li>Save the transaction</li>
+                </ol>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Transaction Features</h3>
+                <ul>
+                    <li><strong>Search:</strong> Find transactions by description or amount</li>
+                    <li><strong>Filter:</strong> Filter by category, date range, or amount</li>
+                    <li><strong>Edit:</strong> Modify existing transactions</li>
+                    <li><strong>Delete:</strong> Remove transactions</li>
+                    <li><strong>Export:</strong> Download transaction data</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Transaction Types</h3>
+                <ul>
+                    <li><strong>Income:</strong> Money coming in (salary, freelance, gifts)</li>
+                    <li><strong>Expenses:</strong> Money going out (bills, groceries, entertainment)</li>
+                    <li><strong>Transfers:</strong> Money moved between accounts</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Accounts Section -->
+        <section id="accounts" class="help-section">
+            <h2><i class="fas fa-university"></i> Account Management</h2>
+            
+            <div class="help-subsection">
+                <h3>Adding Accounts</h3>
+                <p>To add a financial account:</p>
+                <ol>
+                    <li>Go to the Accounts page</li>
+                    <li>Click "Add Account" button</li>
+                    <li>Enter account details:
+                        <ul>
+                            <li>Account name</li>
+                            <li>Account type (checking, savings, credit card, etc.)</li>
+                            <li>Bank/institution name</li>
+                            <li>Account number (last 4 digits)</li>
+                            <li>Current balance</li>
+                        </ul>
+                    </li>
+                    <li>Save the account</li>
+                </ol>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Account Types</h3>
+                <ul>
+                    <li><strong>Checking:</strong> Primary spending account</li>
+                    <li><strong>Savings:</strong> Money set aside for future use</li>
+                    <li><strong>Credit Card:</strong> Credit accounts (balances shown as negative)</li>
+                    <li><strong>Investment:</strong> Investment accounts</li>
+                    <li><strong>Cash:</strong> Physical cash on hand</li>
+                    <li><strong>Other:</strong> Any other type of account</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Balance Tracking</h3>
+                <p>The accounts page shows:</p>
+                <ul>
+                    <li><strong>Total Accounts Balance:</strong> Sum of all account balances</li>
+                    <li><strong>Application Balance:</strong> Calculated balance from transactions</li>
+                    <li><strong>Misalignment:</strong> Difference between actual and calculated balances</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="help-section">
+            <h2><i class="fas fa-cog"></i> Settings & Preferences</h2>
+            
+            <div class="help-subsection">
+                <h3>Account Settings</h3>
+                <ul>
+                    <li><strong>Display Name:</strong> Change how your name appears</li>
+                    <li><strong>Email:</strong> Update your email address</li>
+                    <li><strong>Password:</strong> Change your account password</li>
+                    <li><strong>Theme:</strong> Switch between light and dark modes</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Data Management</h3>
+                <ul>
+                    <li><strong>Export Data:</strong> Download your financial data</li>
+                    <li><strong>Reset Data:</strong> Clear all data and start fresh</li>
+                    <li><strong>Delete Account:</strong> Permanently delete your account</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Privacy & Security</h3>
+                <ul>
+                    <li>All data is stored securely</li>
+                    <li>Passwords are encrypted</li>
+                    <li>No financial data is shared with third parties</li>
+                    <li>You can export and delete your data at any time</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tips & Best Practices Section -->
+        <section id="tips-tricks" class="help-section">
+            <h2><i class="fas fa-lightbulb"></i> Tips & Best Practices</h2>
+            
+            <div class="help-subsection">
+                <h3>Getting Started Tips</h3>
+                <ul>
+                    <li>Start with a simple monthly budget</li>
+                    <li>Add transactions regularly for accurate tracking</li>
+                    <li>Review your budget weekly or monthly</li>
+                    <li>Use categories that match your spending patterns</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Budgeting Best Practices</h3>
+                <ul>
+                    <li>Follow the 50/30/20 rule: 50% needs, 30% wants, 20% savings</li>
+                    <li>Always budget for savings first</li>
+                    <li>Leave some buffer for unexpected expenses</li>
+                    <li>Review and adjust your budget regularly</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Transaction Management</h3>
+                <ul>
+                    <li>Record transactions as soon as possible</li>
+                    <li>Use descriptive transaction names</li>
+                    <li>Regularly reconcile with bank statements</li>
+                    <li>Use the search and filter features to find specific transactions</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Troubleshooting Section -->
+        <section id="troubleshooting" class="help-section">
+            <h2><i class="fas fa-tools"></i> Troubleshooting</h2>
+            
+            <div class="help-subsection">
+                <h3>Common Issues</h3>
+                <ul>
+                    <li><strong>Budget not balanced:</strong> Check that your total allocations don't exceed your income</li>
+                    <li><strong>Missing transactions:</strong> Ensure you're in the correct budget period</li>
+                    <li><strong>Account misalignment:</strong> Verify account balances match your records</li>
+                    <li><strong>Categories not showing:</strong> Make sure categories are properly created</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Getting Help</h3>
+                <ul>
+                    <li>Check this user guide for detailed instructions</li>
+                    <li>Use the Contact page to reach support</li>
+                    <li>Check your internet connection if features aren't loading</li>
+                    <li>Try refreshing the page if you encounter errors</li>
+                </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Data Recovery</h3>
+                <ul>
+                    <li>Your data is automatically saved</li>
+                    <li>Use the export feature to backup your data</li>
+                    <li>Contact support if you need help recovering data</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Contact Information -->
+        <div class="help-contact">
+            <h2><i class="fas fa-envelope"></i> Need More Help?</h2>
+            <p>If you can't find what you're looking for in this guide, feel free to contact us:</p>
+            <a href="/contact" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i>
+                Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.help-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.help-toc {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.help-toc h2 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+}
+
+.toc-list li {
+    margin-bottom: 0.5rem;
+}
+
+.toc-list a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.toc-list a:hover {
+    color: var(--primary-color);
+}
+
+.help-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.help-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.help-subsection {
+    margin-bottom: 2rem;
+}
+
+.help-subsection h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.help-subsection p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.help-subsection ul,
+.help-subsection ol {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.help-subsection li {
+    margin-bottom: 0.5rem;
+}
+
+.help-subsection strong {
+    color: var(--text-primary);
+}
+
+.help-contact {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.help-contact h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.help-contact p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Dark mode enhancements */
+[data-theme="dark"] .help-toc,
+[data-theme="dark"] .help-section,
+[data-theme="dark"] .help-contact {
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .help-container {
+        padding: 1rem 0;
+    }
+    
+    .help-toc,
+    .help-section,
+    .help-contact {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
