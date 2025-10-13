@@ -320,6 +320,10 @@
     <!-- Top Banner -->
     <header class="top-banner">
         <div class="banner-content">
+            <!-- Mobile menu button -->
+            <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="banner-actions">
                 <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" id="themeToggleBtn">
                     <div class="theme-toggle-switch">
@@ -338,11 +342,6 @@
 
     <!-- Main Content Area -->
     <div class="main-wrapper">
-        <!-- Mobile menu button -->
-        <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar menu">
-            <i class="fas fa-bars"></i>
-        </button>
-        
         <main class="main-content" id="main-content" role="main">
             {% block content %}{% endblock %}
         </main>
