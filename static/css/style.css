@@ -372,6 +372,7 @@ body {
         padding: 0 0.75rem;
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: visible;
     }
     
     /* Extra constraints for very small screens */
@@ -3198,6 +3199,7 @@ body.modal-open {
 /* Dashboard Content */
 .dashboard-content {
     margin: 1rem 0;
+    overflow: visible;
 }
 
 .dashboard-grid {
@@ -3766,22 +3768,26 @@ body.modal-open {
     /* Prevent horizontal overflow */
     body {
         overflow-x: hidden;
+        overflow-y: visible;
     }
     
     .main-wrapper {
         max-width: 100vw;
         overflow-x: hidden;
+        overflow-y: visible;
     }
     
     .main-content {
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: visible;
     }
     
     /* Shrink dashboard cards to fit */
     .overview-cards {
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: visible;
     }
     
     .overview-card.compact {
@@ -7601,22 +7607,43 @@ button,
     .overview-cards {
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
+        overflow: visible;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     .overview-card.compact {
         padding: 0.5rem;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     .overview-card.compact .card-title h3 {
         font-size: 0.8rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
     
     .overview-card.compact .card-title p {
         font-size: 0.65rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
     
     .overview-card.compact .card-value .value {
         font-size: 1.1rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* Force card width constraints on mobile */
+    .overview-card {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .dashboard-grid {
@@ -7624,6 +7651,15 @@ button,
         gap: 1rem;
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: visible;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Ensure container doesn't allow horizontal overflow */
+    .container {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
     }
     
     /* Ensure all dashboard sections fit */
@@ -7632,6 +7668,7 @@ button,
     .right-content {
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: visible;
     }
     
     /* Shrink chart container */
@@ -7779,11 +7816,13 @@ button,
         grid-row: 2;
         max-width: none;
         width: 100%;
+        margin-top: 1rem;
     }
     
     .chart-section {
         grid-column: 1;
         grid-row: 3;
+        margin-top: 1rem;
     }
     
     .right-content {
