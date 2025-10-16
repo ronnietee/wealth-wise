@@ -673,6 +673,19 @@ body {
         padding: 0.5rem 1rem;
         font-size: 0.75rem;
     }
+    
+    /* Prevent mobile zoom on all input fields */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
 }
 
 .hero-title {
@@ -7722,6 +7735,7 @@ button,
     .balance-form input[type="number"] {
         max-width: 100%;
         min-width: 0;
+        font-size: 16px; /* Prevent mobile zoom */
     }
     
     .balance-display {
@@ -7880,6 +7894,23 @@ button,
     .breakdown-container .input-group {
         width: 100%;
         max-width: 90px;
+    }
+    
+    .breakdown-container .input-group input {
+        font-size: 16px !important; /* Prevent mobile zoom */
+    }
+    
+    /* Prevent mobile zoom on all input fields */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    textarea,
+    select {
+        font-size: 16px !important;
     }
     
     .breakdown-container .allocation-amount {
