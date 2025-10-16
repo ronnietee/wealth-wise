@@ -135,6 +135,7 @@ body {
     font-size: 0.9rem;
     transition: all 0.3s ease;
     text-decoration: none;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .ribbon-btn:hover {
@@ -620,7 +621,7 @@ body {
         padding: 0.6rem 1.2rem;
         border-radius: 6px;
         font-size: 0.8rem;
-        font-weight: 600;
+        font-weight: 400;
         text-transform: capitalize;
         box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
@@ -694,7 +695,7 @@ body {
     color: rgb(3, 53, 25) !important;
     letter-spacing: 20px;
     white-space: nowrap;
-    font-family: 'Copperplate Gothic';
+    font-family: 'Copperplate Gothic', 'Times New Roman', serif;
     text-shadow: 
         4px 4px 6px rgba(0, 0, 0, 0.8),
         0 0 20px rgba(255, 255, 255, 0.5);
@@ -710,7 +711,7 @@ body {
         font-weight: 500 !important;
         text-align: center;
         color: #161212 !important;
-        font-family: 'Century Gothic', Arial !important;
+        font-family: 'Century Gothic', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         font-display: swap;
         letter-spacing: 0.3px;
         line-height: 1.4;
@@ -2112,11 +2113,11 @@ body.modal-open {
     border: none;
     color: var(--top-banner-text);
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
-    text-transform: capitalize;
+    text-transform: uppercase !important;
 }
 
 .banner-logout-btn:hover {
@@ -3982,6 +3983,13 @@ button,
 .btn-modern,
 .btn-full {
     text-transform: capitalize !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-weight: 400 !important;
+}
+
+/* Override for logout button to be uppercase */
+.banner-logout-btn {
+    text-transform: uppercase !important;
 }
 
 .btn:disabled {
@@ -7413,6 +7421,7 @@ button,
 .breakdown-container .total-value {
     font-weight: 700;
     font-size: 0.9rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .breakdown-container .total-value.allocated {
@@ -7522,7 +7531,7 @@ button,
 
 /* Breakdown specific input overrides - simplified without currency prefix */
 .breakdown-container .input-group {
-    width: 75px;
+    width: 100px;
     height: 28px;
     display: flex;
     align-items: center;
@@ -7547,7 +7556,7 @@ button,
     background: var(--main-bg);
     width: 100%;
     height: 100%;
-    font-family: 'Arial Narrow', Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.5px;
@@ -7560,6 +7569,7 @@ button,
 .breakdown-container .amount-value {
     font-weight: 700;
     font-size: 0.8rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .breakdown-container .amount-value.spent {
@@ -8778,7 +8788,7 @@ button,
     border: none;
     border-radius: 10px;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 400;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     min-width: 120px;
