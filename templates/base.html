@@ -936,7 +936,69 @@
         // Initialize sidebar when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             initializeSidebar();
+            checkBudgetAndDisableLinks();
         });
+
+        // Listen for budget period changes to automatically refresh navigation
+        document.addEventListener('budgetPeriodChanged', function() {
+            console.log('Budget period changed, refreshing navigation status...');
+            // Add a small delay to ensure the API has processed the budget creation
+            setTimeout(() => {
+                checkBudgetAndDisableLinks();
+            }, 500);
+        });
+
+        // Check if budget exists and disable appropriate links
+        function checkBudgetAndDisableLinks() {
+            const linksToDisable = ['/income', '/breakdown', '/transactions', '/accounts'];
+            
+            // Check if budget exists
+            authenticatedFetch('/api/budget')
+                .then(response => {
+                    if (response.status === 404) {
+                        // No budget found, disable the links
+                        disableBudgetDependentLinks(linksToDisable);
+                    } else if (response.ok) {
+                        // Budget exists, enable the links
+                        enableBudgetDependentLinks(linksToDisable);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking budget:', error);
+                    // On error, disable the links to be safe
+                    disableBudgetDependentLinks(linksToDisable);
+                });
+        }
+
+        function disableBudgetDependentLinks(links) {
+            links.forEach(linkPath => {
+                const link = document.querySelector(`a[href="${linkPath}"]`);
+                if (link) {
+                    link.classList.add('disabled');
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showNotification('Active budget required. Please create a budget first.', 'warning');
+                    });
+                }
+            });
+        }
+
+        function enableBudgetDependentLinks(links) {
+            links.forEach(linkPath => {
+                const link = document.querySelector(`a[href="${linkPath}"]`);
+                if (link) {
+                    link.classList.remove('disabled');
+                    // Remove the click event listener by cloning the node
+                    const newLink = link.cloneNode(true);
+                    link.parentNode.replaceChild(newLink, link);
+                }
+            });
+        }
+
+        // Global function to refresh budget status (can be called from other pages)
+        window.refreshBudgetStatus = function() {
+            checkBudgetAndDisableLinks();
+        };
 
         // Global Loading State Management Functions
         // 

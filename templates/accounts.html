@@ -118,7 +118,7 @@
                 <label for="currentBalance">Current Balance</label>
                 <div class="currency-input">
                     <span class="currency-symbol" data-currency-symbol="$">$</span>
-                    <input type="number" id="currentBalance" name="current_balance" step="0.01" placeholder="0.00">
+                    <input type="text" id="currentBalance" name="current_balance" inputmode="text" pattern="-?[0-9]*\.?[0-9]*" placeholder="0.00">
                 </div>
             </div>
             <div class="form-actions">
@@ -169,7 +169,7 @@
                 <label for="editCurrentBalance">Current Balance</label>
                 <div class="currency-input">
                     <span class="currency-symbol" data-currency-symbol="$">$</span>
-                    <input type="number" id="editCurrentBalance" name="current_balance" step="0.01">
+                    <input type="text" id="editCurrentBalance" name="current_balance" inputmode="text" pattern="-?[0-9]*\.?[0-9]*">
                 </div>
             </div>
             <div class="form-actions">
@@ -537,7 +537,7 @@ function renderAccounts() {
             <td class="balance-cell">
                 <div class="balance-editable" data-account-id="${account.id}">
                     <span class="balance-display">${formatCurrency(account.current_balance, userCurrency)}</span>
-                    <input type="number" class="balance-input" value="${account.current_balance}" step="0.01" style="display: none;">
+                    <input type="text" class="balance-input" value="${account.current_balance}" inputmode="text" pattern="-?[0-9]*\.?[0-9]*" style="display: none;">
                     <button class="edit-balance-btn" onclick="toggleBalanceEdit(${account.id})" title="Edit Balance">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -626,6 +626,13 @@ function handleAddAccount(e) {
         current_balance: parseFloat(formData.get('current_balance')) || 0
     };
     
+    // Validate balance input
+    const balanceInput = formData.get('current_balance');
+    if (balanceInput && isNaN(parseFloat(balanceInput))) {
+        showNotification('Please enter a valid balance amount', 'error');
+        return;
+    }
+    
     // Validation
     if (!data.name || !data.account_type) {
         showNotification('Please fill in all required fields', 'error');
@@ -676,6 +683,13 @@ function handleEditAccount(e) {
         account_number: formData.get('account_number'),
         current_balance: parseFloat(formData.get('current_balance')) || 0
     };
+    
+    // Validate balance input
+    const balanceInput = formData.get('current_balance');
+    if (balanceInput && isNaN(parseFloat(balanceInput))) {
+        showNotification('Please enter a valid balance amount', 'error');
+        return;
+    }
     
     // Validation
     if (!data.name || !data.account_type) {

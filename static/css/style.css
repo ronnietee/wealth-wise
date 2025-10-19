@@ -1990,6 +1990,19 @@ body.modal-open {
     border-left-color: var(--sidebar-active-border);
 }
 
+.sidebar-link.disabled {
+    opacity: 0.5;
+    color: #6c757d;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sidebar-link.disabled:hover {
+    background: transparent;
+    color: #6c757d;
+    border-left-color: transparent;
+}
+
 .sidebar-link i {
     width: 16px;
     text-align: center;
