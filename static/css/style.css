@@ -1990,19 +1990,6 @@ body.modal-open {
     border-left-color: var(--sidebar-active-border);
 }
 
-.sidebar-link.disabled {
-    opacity: 0.5;
-    color: #6c757d;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.sidebar-link.disabled:hover {
-    background: transparent;
-    color: #6c757d;
-    border-left-color: transparent;
-}
-
 .sidebar-link i {
     width: 16px;
     text-align: center;
@@ -4272,6 +4259,13 @@ button,
     background: var(--footer-link-hover-bg);
     color: var(--footer-link-hover-text);
     text-decoration: none;
+}
+
+.footer-subtitle {
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
 }
 
 .footer-brand {
@@ -9232,6 +9226,339 @@ button,
     .allocation-actions {
         width: 100%;
         justify-content: flex-end;
+    }
+}
+
+/* Information Card Styles - Enhanced "How Budget Periods Work" Section */
+.info-card {
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--light-color) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8B4513, #D2691E, #CD853F);
+}
+
+.info-card .card-header {
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--light-color) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+    position: relative;
+}
+
+.info-card .card-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.info-card .card-header h3 i {
+    color: #8B4513;
+    font-size: 1.2rem;
+}
+
+.info-card .card-body {
+    padding: 1.5rem;
+}
+
+.info-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.info-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8B4513, #D2691E);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.info-section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: #8B4513;
+}
+
+.info-section:hover::before {
+    transform: scaleX(1);
+}
+
+.info-section h4 {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-section h4 i {
+    color: #8B4513;
+    font-size: 0.9rem;
+    width: 18px;
+    text-align: center;
+}
+
+.info-section p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-size: 0.85rem;
+}
+
+/* Enhanced visual hierarchy with different colors for each section */
+.info-section:nth-child(1) h4 i { color: #28a745; }
+.info-section:nth-child(2) h4 i { color: #007bff; }
+.info-section:nth-child(3) h4 i { color: #17a2b8; }
+.info-section:nth-child(4) h4 i { color: #ffc107; }
+
+/* Responsive design for info sections */
+@media (max-width: 1200px) {
+    .info-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .info-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .info-card .card-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .info-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .info-section {
+        padding: 1rem;
+    }
+    
+    .info-card .card-header h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Mobile Expandable Budget Periods */
+.mobile-toggle-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mobile-toggle-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.mobile-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+.mobile-periods-container {
+    display: none; /* Hidden by default on mobile */
+}
+
+.mobile-periods-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.mobile-period-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.mobile-period-item.active {
+    border-left: 4px solid #4caf50;
+    background: var(--main-bg);
+}
+
+.mobile-period-header {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+    min-height: 60px;
+}
+
+.mobile-period-header:hover {
+    background: var(--light-color);
+}
+
+.mobile-period-title h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.mobile-period-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.mobile-period-title .type-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+}
+
+.mobile-period-title .active-indicator {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+}
+
+.mobile-period-toggle {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+.mobile-period-content {
+    display: none;
+    padding: 0 1rem 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.mobile-period-details {
+    margin-bottom: 0.75rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row .label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.detail-row .value {
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    text-align: right;
+}
+
+.mobile-period-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+}
+
+.mobile-period-actions .btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    min-width: auto;
+}
+
+/* Responsive visibility */
+@media (min-width: 769px) {
+    .mobile-view {
+        display: none !important;
+    }
+    
+    .desktop-view {
+        display: block;
+    }
+    
+    .mobile-toggle-btn {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .desktop-view {
+        display: none !important;
+    }
+    
+    .mobile-view {
+        display: block;
+    }
+    
+    .mobile-toggle-btn {
+        display: flex;
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .card-header h3 {
+        margin: 0;
     }
 }
 

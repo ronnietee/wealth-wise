@@ -132,6 +132,31 @@
             <h2><i class="fas fa-calendar-check"></i> Budget Management</h2>
             
             <div class="help-subsection">
+                <h3>Hierarchical Budget Periods</h3>
+                <p>STEWARD uses a hierarchical budget period system that allows you to manage different timeframes while maintaining clear separation between periods:</p>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-calendar-alt"></i> Single Active Period</h4>
+                    <p>Only one budget period can be active at a time. When you activate a period, all others become inactive. This ensures clear focus on your current budgeting timeframe.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-layer-group"></i> Independent Allocations</h4>
+                    <p>Each period has its own budget allocations. You can allocate $1000 to groceries monthly and $5000 quarterly - these are completely separate budgets that don't interfere with each other.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-receipt"></i> Smart Transaction Attribution</h4>
+                    <p>Transactions appear in any period they fall within based on their date. A March transaction will show in both the March monthly budget and the Q1 quarterly budget if both periods exist.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Period-Specific Overspending Detection</h4>
+                    <p>Overspending is checked against the active period's allocations. You might be overspent in your monthly budget but perfectly fine in your quarterly budget.</p>
+                </div>
+            </div>
+
+            <div class="help-subsection">
                 <h3>Creating Budget Periods</h3>
                 <p>To create a new budget period:</p>
                 <ol>
@@ -142,26 +167,46 @@
                     <li>Name your budget period</li>
                     <li>Save and activate the budget</li>
                 </ol>
+                
+                <p>STEWARD supports multiple budget period types:</p>
+                <ul>
+                    <li><strong>Monthly:</strong> 1-month budget periods (e.g., January 2024, February 2024)</li>
+                    <li><strong>Quarterly:</strong> 3-month budget periods (e.g., Q1 2024, Q2 2024)</li>
+                    <li><strong>Yearly:</strong> 12-month budget periods (e.g., 2024, 2025)</li>
+                    <li><strong>Custom:</strong> Set your own start and end dates for specific needs</li>
+                </ul>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Important Notes</h4>
+                    <ul>
+                        <li>You cannot create overlapping periods of the same type (e.g., two monthly periods for January 2024)</li>
+                        <li>Different period types can overlap (e.g., January 2024 monthly and Q1 2024 quarterly)</li>
+                        <li>When you activate a period, all other periods become inactive</li>
+                        <li>Allocations are specific to each period and don't carry over</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="help-subsection">
-                <h3>Budget Types</h3>
+                <h3>Managing Budget Periods</h3>
+                <p>From the Budgets page, you can:</p>
                 <ul>
-                    <li><strong>Monthly:</strong> 1-month budget periods</li>
-                    <li><strong>Quarterly:</strong> 3-month budget periods</li>
-                    <li><strong>Yearly:</strong> 12-month budget periods</li>
-                    <li><strong>Custom:</strong> Set your own start and end dates</li>
+                    <li><strong>View All Periods:</strong> See all your budget periods with their status and summary</li>
+                    <li><strong>Activate Periods:</strong> Switch between different budget periods</li>
+                    <li><strong>Create New Periods:</strong> Add new budget periods for different timeframes</li>
+                    <li><strong>Delete Periods:</strong> Remove unused budget periods (this also deletes all associated data)</li>
+                    <li><strong>View Period Summary:</strong> See income, spending, and balance for each period</li>
                 </ul>
             </div>
 
             <div class="help-subsection">
-                <h3>Managing Budgets</h3>
-                <p>You can:</p>
+                <h3>Best Practices</h3>
                 <ul>
-                    <li>Activate different budget periods</li>
-                    <li>Edit budget details</li>
-                    <li>Delete unused budget periods</li>
-                    <li>View budget history and performance</li>
+                    <li><strong>Start with Monthly:</strong> Begin with monthly budgets for detailed tracking</li>
+                    <li><strong>Add Quarterly Views:</strong> Create quarterly periods for broader planning</li>
+                    <li><strong>Use Yearly for Goals:</strong> Set up yearly budgets for long-term financial goals</li>
+                    <li><strong>Custom for Special Events:</strong> Create custom periods for vacations, holidays, or special projects</li>
+                    <li><strong>Regular Review:</strong> Switch between periods regularly to get different perspectives on your finances</li>
                 </ul>
             </div>
         </section>

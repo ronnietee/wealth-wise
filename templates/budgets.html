@@ -70,20 +70,53 @@
         </div>
     </div>
 
+    <!-- Information Section -->
+    <div class="card info-card">
+        <div class="card-header">
+            <h3><i class="fas fa-info-circle"></i> How Budget Periods Work</h3>
+        </div>
+        <div class="card-body">
+            <div class="info-content">
+                <div class="info-section">
+                    <h4><i class="fas fa-calendar-alt"></i> Single Active Period</h4>
+                    <p>Only one budget period can be active at a time. When you activate a period, all others become inactive.</p>
+                </div>
+                <div class="info-section">
+                    <h4><i class="fas fa-layer-group"></i> Independent Allocations</h4>
+                    <p>Each period has its own budget allocations. You can allocate $1000 to groceries monthly and $5000 quarterly - these are separate budgets.</p>
+                </div>
+                <div class="info-section">
+                    <h4><i class="fas fa-receipt"></i> Transaction Attribution</h4>
+                    <p>Transactions appear in any period they fall within based on their date. A March transaction shows in both March and Q1 periods.</p>
+                </div>
+                <div class="info-section">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Overspending Detection</h4>
+                    <p>Overspending is checked against the active period's allocations. You might be overspent monthly but fine quarterly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Budget Periods List -->
     <div class="card">
         <div class="card-header">
             <h3>Budget Periods</h3>
+            <!-- Mobile expand/collapse button -->
+            <button class="mobile-toggle-btn" id="mobile-periods-toggle" onclick="toggleMobilePeriods()">
+                <i class="fas fa-chevron-down"></i>
+                <span class="toggle-text">Show All</span>
+            </button>
         </div>
         <div class="card-body">
-            <div class="table-container">
+            <!-- Desktop Table View -->
+            <div class="table-container desktop-view">
                 <table class="budgets-table">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
                             <th>Period</th>
-                            <th>Created</th>
+                            <th>Summary</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -94,6 +127,13 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Mobile List View -->
+            <div class="mobile-periods-container mobile-view" id="mobile-periods-container">
+                <div class="mobile-periods-list" id="mobile-periods-list">
+                    <div class="loading">Loading budget periods...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -272,23 +312,44 @@ function filterPeriodsByType(periodType) {
 // Render periods (extracted from loadBudgetPeriods)
 function renderBudgetPeriods(periods) {
     const periodsList = document.getElementById('budget-periods-list');
+    const mobilePeriodsList = document.getElementById('mobile-periods-list');
     
     if (periods.length === 0) {
         periodsList.innerHTML = '<tr><td colspan="6" class="no-data">No budget periods found. Create your first budget period above.</td></tr>';
+        mobilePeriodsList.innerHTML = '<div class="no-data">No budget periods found. Create your first budget period above.</div>';
         return;
     }
     
+    // Desktop table view
     periodsList.innerHTML = periods.map(period => `
         <tr class="budget-period-row ${period.is_active ? 'active' : ''}">
-            <td class="period-name" data-label="Name">${period.name}</td>
+            <td class="period-name" data-label="Name">
+                <div class="period-name-content">
+                    <strong>${period.name}</strong>
+                    ${period.is_active ? '<span class="active-indicator">CURRENT</span>' : ''}
+                </div>
+            </td>
             <td class="period-type" data-label="Type">
                 <span class="type-badge ${period.period_type}">${period.period_type}</span>
             </td>
             <td class="period-dates" data-label="Period">
                 ${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}
             </td>
-            <td class="period-created" data-label="Created">
-                ${period.created_at ? new Date(period.created_at).toLocaleDateString() : 'N/A'}
+            <td class="period-summary" data-label="Summary">
+                <div class="budget-summary-mini">
+                    <div class="summary-item">
+                        <span class="label">Income:</span>
+                        <span class="amount">${formatCurrency(period.total_income, userCurrency)}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Spent:</span>
+                        <span class="amount">${formatCurrency(period.total_spent, userCurrency)}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Balance:</span>
+                        <span class="amount ${period.balance >= 0 ? 'positive' : 'negative'}">${formatCurrency(period.balance, userCurrency)}</span>
+                    </div>
+                </div>
             </td>
             <td class="period-status" data-label="Status">
                 ${period.is_active ? 
@@ -310,6 +371,62 @@ function renderBudgetPeriods(periods) {
                 </div>
             </td>
         </tr>
+    `).join('');
+    
+    // Mobile list view
+    mobilePeriodsList.innerHTML = periods.map(period => `
+        <div class="mobile-period-item ${period.is_active ? 'active' : ''}">
+            <div class="mobile-period-header" onclick="toggleMobilePeriodItem(${period.id})">
+                <div class="mobile-period-title">
+                    <h4>${period.name}</h4>
+                    <span class="type-badge ${period.period_type}">${period.period_type}</span>
+                    ${period.is_active ? '<span class="active-indicator">CURRENT</span>' : ''}
+                </div>
+                <div class="mobile-period-toggle">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            <div class="mobile-period-content" id="mobile-period-${period.id}">
+                <div class="mobile-period-details">
+                    <div class="detail-row">
+                        <span class="label">Period:</span>
+                        <span class="value">${period.start_date || 'N/A'} to ${period.end_date || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Status:</span>
+                        <span class="value">
+                            ${period.is_active ? 
+                                '<span class="badge badge-success">Active</span>' : 
+                                '<span class="badge badge-secondary">Inactive</span>'
+                            }
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Income:</span>
+                        <span class="value">${formatCurrency(period.total_income, userCurrency)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Spent:</span>
+                        <span class="value">${formatCurrency(period.total_spent, userCurrency)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Balance:</span>
+                        <span class="value ${period.balance >= 0 ? 'positive' : 'negative'}">${formatCurrency(period.balance, userCurrency)}</span>
+                    </div>
+                </div>
+                <div class="mobile-period-actions">
+                    ${period.is_active ? 
+                        '' : 
+                        `<button class="btn btn-sm btn-primary" onclick="activateBudgetPeriod(${period.id})" title="Activate">
+                            <i class="fas fa-play"></i> Activate
+                        </button>`
+                    }
+                    <button class="btn btn-sm btn-danger" onclick="deleteBudgetPeriod(${period.id})" title="Delete">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
     `).join('');
 }
 
@@ -351,7 +468,7 @@ async function deleteBudgetPeriod(periodId) {
     }
     
     // Confirm deletion
-    const confirmed = confirm(`Are you sure you want to delete "${period.name}"?\n\nThis will permanently delete:\n- The budget period\n- All budget allocations\n- All transactions\n- All income sources\n- All other related data\n\nThis action cannot be undone.`);
+    const confirmed = confirm(`Are you sure you want to delete "${period.name}"?\n\nThis will permanently delete:\n- The budget period\n- All budget allocations\n- All income sources\n- All other related data\n\nNote: Transactions will only be deleted if they don't belong to more specific budget periods (e.g., monthly transactions won't be deleted when deleting a quarterly period).\n\nThis action cannot be undone.`);
     
     if (!confirmed) {
         return;
@@ -378,6 +495,38 @@ async function deleteBudgetPeriod(periodId) {
     } catch (error) {
         console.error('Error deleting budget period:', error);
         showNotification('Error deleting budget period', 'error');
+    }
+}
+
+// Mobile toggle functions
+function toggleMobilePeriods() {
+    const container = document.getElementById('mobile-periods-container');
+    const toggle = document.getElementById('mobile-periods-toggle');
+    const icon = toggle.querySelector('i');
+    const text = toggle.querySelector('.toggle-text');
+    
+    if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        text.textContent = 'Hide All';
+    } else {
+        container.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+        text.textContent = 'Show All';
+    }
+}
+
+function toggleMobilePeriodItem(periodId) {
+    const content = document.getElementById(`mobile-period-${periodId}`);
+    const header = content.previousElementSibling;
+    const icon = header.querySelector('.mobile-period-toggle i');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+    } else {
+        content.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
     }
 }
 
