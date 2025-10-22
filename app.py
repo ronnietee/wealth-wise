@@ -104,7 +104,7 @@ class BudgetPeriod(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    is_active = db.Column(db.Boolean, default=False)  # Only one active budget per user
+    is_active = db.Column(db.Boolean, default=False)  # Only one active budget period per user
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -772,19 +772,11 @@ def create_transaction(current_user):
     else:
         transaction_date = datetime.utcnow()
     
-    # Get active budget period to validate date range
+    # Get active budget period for reference (but don't restrict transaction dates)
     active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
     
-    if active_period:
-        # Convert period dates to datetime for comparison
-        period_start = datetime.combine(active_period.start_date, datetime.min.time())
-        period_end = datetime.combine(active_period.end_date, datetime.max.time())
-        
-        # Validate transaction date is within active period
-        if transaction_date.date() < active_period.start_date or transaction_date.date() > active_period.end_date:
-            return jsonify({
-                'error': f'Transaction date must be within the active budget period ({active_period.start_date} to {active_period.end_date})'
-            }), 400
+    # Note: Transactions are not restricted to active period dates
+    # They will show up in any period they fall within based on their actual date
     
     transaction = Transaction(
         amount=data['amount'],
@@ -806,15 +798,43 @@ def create_transaction(current_user):
 def get_budget_periods(current_user):
     try:
         periods = BudgetPeriod.query.filter_by(user_id=current_user.id).order_by(BudgetPeriod.created_at.desc()).all()
-        return jsonify([{
-            'id': period.id,
-            'name': period.name,
-            'period_type': period.period_type,
-            'start_date': period.start_date.isoformat() if period.start_date else None,
-            'end_date': period.end_date.isoformat() if period.end_date else None,
-            'is_active': period.is_active,
-            'created_at': period.created_at.isoformat() if period.created_at else None
-        } for period in periods])
+        
+        result = []
+        for period in periods:
+            # Get budget info for this period
+            budget = Budget.query.filter_by(period_id=period.id, user_id=current_user.id).first()
+            total_income = 0
+            total_allocated = 0
+            total_spent = 0
+            
+            if budget:
+                total_income = sum(source.amount for source in budget.income_sources) + (budget.balance_brought_forward or 0)
+                total_allocated = sum(allocation.allocated_amount for allocation in budget.allocations)
+                
+                # Calculate spending for this period
+                user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
+                total_spent = db.session.query(db.func.sum(Transaction.amount)).filter(
+                    Transaction.subcategory_id.in_(user_subcategory_ids),
+                    Transaction.transaction_date >= period.start_date,
+                    Transaction.transaction_date <= period.end_date
+                ).scalar() or 0
+            
+            result.append({
+                'id': period.id,
+                'name': period.name,
+                'period_type': period.period_type,
+                'start_date': period.start_date.isoformat() if period.start_date else None,
+                'end_date': period.end_date.isoformat() if period.end_date else None,
+                'is_active': period.is_active,
+                'created_at': period.created_at.isoformat() if period.created_at else None,
+                'total_income': total_income,
+                'total_allocated': total_allocated,
+                'total_spent': total_spent,
+                'balance': total_income - total_spent,
+                'remaining_to_allocate': total_income - total_allocated
+            })
+        
+        return jsonify(result)
     except Exception as e:
         print(f"Error in get_budget_periods: {str(e)}")
         return jsonify({'error': f'Error loading budget periods: {str(e)}'}), 500
@@ -846,11 +866,10 @@ def create_budget_period(current_user):
             'error': f'This {data["period_type"]} period overlaps with existing {data["period_type"]} periods: {", ".join(period_names)}'
         }), 400
     
-    # Deactivate current active period of the same type
+    # Deactivate ALL currently active periods (only one can be active at a time)
     BudgetPeriod.query.filter_by(
         user_id=current_user.id, 
-        is_active=True,
-        period_type=data['period_type']
+        is_active=True
     ).update({'is_active': False})
     
     # Create new period
@@ -898,11 +917,10 @@ def activate_budget_period(current_user, period_id):
     if not period:
         return jsonify({'message': 'Budget period not found'}), 404
     
-    # Deactivate other active periods of the same type
+    # Deactivate ALL currently active periods (only one can be active at a time)
     BudgetPeriod.query.filter_by(
         user_id=current_user.id, 
-        is_active=True,
-        period_type=period.period_type
+        is_active=True
     ).update({'is_active': False})
     
     # Activate selected period
@@ -932,26 +950,63 @@ def delete_budget_period(current_user, period_id):
     if not period:
         return jsonify({'message': 'Budget period not found'}), 404
     
-    # Delete all transactions that were created during this budget period
-    # Transactions are linked to subcategories, so we need to find all transactions
-    # that were created between the period's start and end dates
-    transactions_to_delete = Transaction.query.filter(
-        Transaction.user_id == current_user.id,
-        Transaction.transaction_date >= period.start_date,
-        Transaction.transaction_date <= period.end_date
+    # Define period type hierarchy (more specific = lower number)
+    period_hierarchy = {
+        'monthly': 1,    # Most specific
+        'quarterly': 2,
+        'yearly': 3,
+        'custom': 4      # Least specific
+    }
+    
+    current_period_level = period_hierarchy.get(period.period_type, 4)
+    
+    # Find all overlapping periods of more specific types
+    overlapping_periods = BudgetPeriod.query.filter(
+        BudgetPeriod.user_id == current_user.id,
+        BudgetPeriod.id != period_id,  # Exclude the period being deleted
+        BudgetPeriod.start_date <= period.end_date,
+        BudgetPeriod.end_date >= period.start_date
     ).all()
     
-    print(f"DEBUG: Deleting {len(transactions_to_delete)} transactions for period {period.name}")
+    # Filter to only more specific periods
+    more_specific_periods = [
+        p for p in overlapping_periods 
+        if period_hierarchy.get(p.period_type, 4) < current_period_level
+    ]
     
-    # Delete the transactions
-    for transaction in transactions_to_delete:
-        db.session.delete(transaction)
+    print(f"DEBUG: Deleting period {period.name} ({period.period_type})")
+    print(f"DEBUG: Found {len(more_specific_periods)} more specific overlapping periods")
+    
+    # Only delete transactions if there are no more specific overlapping periods
+    if not more_specific_periods:
+        # Delete all transactions that were created during this budget period
+        transactions_to_delete = Transaction.query.filter(
+            Transaction.user_id == current_user.id,
+            Transaction.transaction_date >= period.start_date,
+            Transaction.transaction_date <= period.end_date
+        ).all()
+        
+        print(f"DEBUG: Deleting {len(transactions_to_delete)} transactions for period {period.name}")
+        
+        # Delete the transactions
+        for transaction in transactions_to_delete:
+            db.session.delete(transaction)
+    else:
+        # Don't delete transactions - they belong to more specific periods
+        more_specific_names = [p.name for p in more_specific_periods]
+        print(f"DEBUG: Preserving transactions - they belong to more specific periods: {more_specific_names}")
     
     # Delete the period (cascade will handle related budgets, allocations, income sources, etc.)
     db.session.delete(period)
     db.session.commit()
     
-    return jsonify({'message': 'Budget period and all related data deleted successfully'})
+    if more_specific_periods:
+        more_specific_names = [p.name for p in more_specific_periods]
+        return jsonify({
+            'message': f'Budget period deleted successfully. Transactions preserved as they belong to more specific periods: {", ".join(more_specific_names)}'
+        })
+    else:
+        return jsonify({'message': 'Budget period and all related data deleted successfully'})
 
 @app.route('/api/budget', methods=['GET'])
 @token_required
@@ -1935,20 +1990,17 @@ def getCurrencySymbol(currency):
 @token_required
 def get_transactions(current_user):
     try:
-        # Get period type from query parameter (default to 'monthly')
-        period_type = request.args.get('period_type', 'monthly')
-        
-        # Get active budget period of the specified type
+        # Get active budget period (only one can be active at a time)
         active_period = BudgetPeriod.query.filter_by(
             user_id=current_user.id, 
-            is_active=True,
-            period_type=period_type
+            is_active=True
         ).first()
         
         if not active_period:
             return jsonify([])
         
         # Filter transactions by active budget period date range
+        # Transactions show in any period they fall within based on their date
         transactions = Transaction.query.filter_by(user_id=current_user.id).filter(
             Transaction.transaction_date >= active_period.start_date,
             Transaction.transaction_date <= active_period.end_date
