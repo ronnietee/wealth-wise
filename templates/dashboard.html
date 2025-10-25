@@ -476,20 +476,31 @@ function loadCategoriesOverview() {
             totalSpent += categorySpent;
         });
 
-        // Calculate balance (Income - Spent)
-        const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
-        const balance = totalIncome - totalSpent;
-        document.getElementById('balance').textContent = formatCurrency(balance, userCurrency);
-        
-        // Calculate available to allocate (Income - Allocated)
-        const availableToAllocate = totalIncome - totalAllocated;
-        document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
-        
-        // Hide loading states for balance and available cards
-        LoadingManager.hideMultiple(['balance-card', 'available-card']);
-        
-        // Update progress visualization
-        updateProgressVisualization(totalAllocated, totalSpent);
+        // Get total income from the budget data that was already loaded
+        // We need to fetch the budget data again to get the current total income
+        authenticatedFetch('/api/budget/budget')
+        .then(response => response.json())
+        .then(budgetData => {
+            const totalIncome = (budgetData.total_income || 0) + (budgetData.balance_brought_forward || 0);
+            
+            // Calculate balance (Income - Spent)
+            const balance = totalIncome - totalSpent;
+            document.getElementById('balance').textContent = formatCurrency(balance, userCurrency);
+            
+            // Calculate available to allocate (Income - Allocated)
+            const availableToAllocate = totalIncome - totalAllocated;
+            document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
+            
+            // Hide loading states for balance and available cards
+            LoadingManager.hideMultiple(['balance-card', 'available-card']);
+            
+            // Update progress visualization
+            updateProgressVisualization(totalAllocated, totalSpent);
+        })
+        .catch(error => {
+            console.error('Error loading budget data for categories overview:', error);
+            LoadingManager.hideMultiple(['balance-card', 'available-card']);
+        });
     })
     .catch(error => {
         console.error('Error loading categories:', error);
@@ -499,28 +510,48 @@ function loadCategoriesOverview() {
 }
 
 function updateProgressVisualization(allocated, spent) {
-    // Calculate progress percentage based on Total Income - Spent
-    const totalIncome = parseFloat(document.getElementById('totalIncome').textContent.replace(/[^0-9.-]/g, '')) || 0;
-    const percentage = totalIncome > 0 ? Math.min((spent / totalIncome) * 100, 100) : 0;
-    document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
-    
-    // Update total spent amount
-    document.getElementById('totalSpent').textContent = formatCurrency(spent, userCurrency);
-    
-    // Hide progress loading state
-    LoadingManager.hide('progress-card');
-    
-    // Add color coding based on spending level
-    const scorePercentage = document.getElementById('progressPercentage').parentElement;
-    scorePercentage.className = 'score-percentage';
-    
-    if (percentage > 90) {
-        scorePercentage.classList.add('high-spending');
-    } else if (percentage > 75) {
-        scorePercentage.classList.add('moderate-spending');
-    } else {
+    // Get total income from budget data
+    authenticatedFetch('/api/budget/budget')
+    .then(response => response.json())
+    .then(budgetData => {
+        const totalIncome = (budgetData.total_income || 0) + (budgetData.balance_brought_forward || 0);
+        
+        // Calculate progress percentage based on Total Income - Spent
+        const percentage = totalIncome > 0 ? Math.min((spent / totalIncome) * 100, 100) : 0;
+        document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
+        
+        // Update total spent amount
+        document.getElementById('totalSpent').textContent = formatCurrency(spent, userCurrency);
+        
+        // Hide progress loading state
+        LoadingManager.hide('progress-card');
+        
+        // Add color coding based on spending level
+        const scorePercentage = document.getElementById('progressPercentage').parentElement;
+        scorePercentage.className = 'score-percentage';
+        
+        if (percentage > 90) {
+            scorePercentage.classList.add('high-spending');
+        } else if (percentage > 75) {
+            scorePercentage.classList.add('moderate-spending');
+        } else {
+            scorePercentage.classList.add('low-spending');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading budget data for progress visualization:', error);
+        // Fallback to 0 if we can't get budget data
+        document.getElementById('progressPercentage').textContent = '0%';
+        document.getElementById('totalSpent').textContent = formatCurrency(spent, userCurrency);
+        
+        // Hide progress loading state
+        LoadingManager.hide('progress-card');
+        
+        // Add default color coding
+        const scorePercentage = document.getElementById('progressPercentage').parentElement;
+        scorePercentage.className = 'score-percentage';
         scorePercentage.classList.add('low-spending');
-    }
+    });
 }
 
 function formatCurrency(amount, currency = userCurrency || 'USD') {

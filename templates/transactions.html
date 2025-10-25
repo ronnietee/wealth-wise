@@ -305,7 +305,7 @@ function renderTransactions() {
                 <td>${transaction.description || '-'}</td>
                 <td>${transaction.subcategory?.category?.name || '-'}</td>
                 <td>${transaction.subcategory?.name || '-'}</td>
-                <td class="amount">${formatCurrency(transaction.amount, userCurrency)}</td>
+                <td class="amount">${formatCurrency(Math.abs(transaction.amount), userCurrency)}</td>
                 <td class="comment-cell" ${comment ? `onmouseover="showTooltip(event, '${comment.replace(/'/g, "\\'")}')" onmouseout="hideTooltip()"` : ''}>
                     ${commentDisplay || '-'}
                 </td>
@@ -460,7 +460,7 @@ function editTransaction(transactionId) {
         const subcategory = transaction.subcategory;
         
         document.getElementById('editTransactionId').value = transactionId;
-        document.getElementById('editAmount').value = transaction.amount;
+        document.getElementById('editAmount').value = Math.abs(transaction.amount);
         document.getElementById('editTransactionDate').value = transaction.transaction_date.split('T')[0];
         document.getElementById('editDescription').value = transaction.description || '';
         document.getElementById('editComment').value = transaction.comment || '';

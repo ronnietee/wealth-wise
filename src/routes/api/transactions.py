@@ -33,6 +33,9 @@ def create_transaction(current_user):
     
     try:
         amount = float(amount)
+        # Make expenses negative (expenses should be negative values)
+        if amount > 0:
+            amount = -amount
     except (ValueError, TypeError):
         return jsonify({'message': 'Invalid amount'}), 400
     
@@ -63,7 +66,11 @@ def update_transaction(current_user, transaction_id):
     update_data = {}
     if 'amount' in data:
         try:
-            update_data['amount'] = float(data['amount'])
+            amount = float(data['amount'])
+            # Make expenses negative (expenses should be negative values)
+            if amount > 0:
+                amount = -amount
+            update_data['amount'] = amount
         except (ValueError, TypeError):
             return jsonify({'message': 'Invalid amount'}), 400
     
