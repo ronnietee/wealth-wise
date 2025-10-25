@@ -523,6 +523,9 @@
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
+        // Global variables
+        let userCurrency = 'USD';
+        
         // Get authentication token from localStorage
         function getToken() {
             const token = localStorage.getItem('token');

@@ -140,7 +140,7 @@
 </div>
 
 <script>
-let userCurrency = 'USD';
+// Global variables
 let allPeriods = []; // Store all periods for filtering
 
 // Show notification function
@@ -245,7 +245,7 @@ async function loadUserSettings() {
 // Load current active budget
 async function loadCurrentBudget() {
     try {
-        const response = await authenticatedFetch('/api/budget');
+        const response = await authenticatedFetch('/api/budget/budget');
         
         if (response.ok) {
             const budget = await response.json();
