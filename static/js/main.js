@@ -1,7 +1,7 @@
 // Main JavaScript functionality for STEWARD
 
-// Global currency variable
-let userCurrency = 'USD';
+// Global currency variable - declared in base.html
+// let userCurrency = 'USD'; // Moved to base.html to avoid conflicts
 
 // Navigation enhancement
 document.addEventListener('DOMContentLoaded', function() {
@@ -661,6 +661,36 @@ function hideLoading(element, originalText) {
         element.innerHTML = originalText;
     }
 }
+
+// LoadingManager for compatibility with budgets.html
+window.LoadingManager = {
+    show: function(componentId) {
+        const element = document.getElementById(componentId);
+        if (element) {
+            element.style.opacity = '0.6';
+            element.style.pointerEvents = 'none';
+            // Add loading spinner if not already present
+            if (!element.querySelector('.loading-spinner')) {
+                const spinner = document.createElement('div');
+                spinner.className = 'loading-spinner';
+                spinner.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                element.appendChild(spinner);
+            }
+        }
+    },
+    hide: function(componentId) {
+        const element = document.getElementById(componentId);
+        if (element) {
+            element.style.opacity = '1';
+            element.style.pointerEvents = 'auto';
+            // Remove loading spinner
+            const spinner = element.querySelector('.loading-spinner');
+            if (spinner) {
+                spinner.remove();
+            }
+        }
+    }
+};
 
 // Animation helpers
 function fadeIn(element, duration = 300) {
