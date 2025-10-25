@@ -244,6 +244,44 @@
 
 {% block scripts %}
 <script>
+// Set up event listeners immediately (not waiting for DOMContentLoaded)
+window.addEventListener('currencyLoaded', function(event) {
+    console.log('Currency loaded event received:', event.detail.currency);
+    userCurrency = event.detail.currency;
+    // Reload all dashboard data when currency changes
+    loadDashboardData();
+});
+
+// Listen for budget period changes
+window.addEventListener('budgetPeriodChanged', function(event) {
+    console.log('Budget period changed event received');
+    loadDashboardData();
+});
+
+// Listen for budget data changes (income, balance, etc.)
+window.addEventListener('budgetDataChanged', function(event) {
+    console.log('Budget data changed event received:', event.detail.type);
+    console.log('Reloading dashboard data...');
+    loadDashboardData();
+});
+
+// Test event listener setup
+console.log('Dashboard event listeners set up');
+
+// Test function to manually trigger dashboard refresh
+window.testDashboardRefresh = function() {
+    console.log('Manually triggering dashboard refresh...');
+    loadDashboardData();
+};
+
+// Test function to manually dispatch budget data changed event
+window.testBudgetDataChanged = function() {
+    console.log('Manually dispatching budgetDataChanged event...');
+    window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+        detail: { type: 'test_event' }
+    }));
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize loading states
     initializeLoadingStates();
@@ -253,17 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load dashboard data immediately, currency will be loaded globally
     loadDashboardData();
-    
-    // Also listen for currency loaded event
-    window.addEventListener('currencyLoaded', function(event) {
-        userCurrency = event.detail.currency;
-        loadDashboardData();
-    });
-    
-    // Listen for budget period changes
-    window.addEventListener('budgetPeriodChanged', function(event) {
-        loadDashboardData();
-    });
 });
 
 // Dashboard-specific loading state management
@@ -351,11 +378,19 @@ function loadUserInfo() {
 }
 
 function loadDashboardData() {
+    console.log('loadDashboardData called');
     // First load user settings to get currency, then load other data
     loadUserSettings().then(() => {
+        // Ensure userCurrency is set before proceeding
+        if (!userCurrency) {
+            userCurrency = 'USD';
+        }
+        console.log('Loading budget data with currency:', userCurrency);
+        
         // Load budget summary
-        authenticatedFetch('/api/budget')
+        authenticatedFetch('/api/budget/budget')
         .then(response => {
+            console.log('Budget API response status:', response.status);
             if (response.status === 404) {
                 // No budget found, show no budget message
                 showNoBudgetMessage();
@@ -373,8 +408,18 @@ function loadDashboardData() {
             if (data.error) {
                 throw new Error(data.error);
             }
+            console.log('Budget data received:', data);
             const totalIncome = data.total_income + (data.balance_brought_forward || 0);
-            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome, userCurrency);
+            console.log('Total income calculated:', totalIncome);
+            console.log('Updating totalIncome element with:', formatCurrency(totalIncome, userCurrency));
+            
+            const totalIncomeElement = document.getElementById('totalIncome');
+            if (totalIncomeElement) {
+                totalIncomeElement.textContent = formatCurrency(totalIncome, userCurrency);
+                console.log('totalIncome element updated');
+            } else {
+                console.error('totalIncome element not found');
+            }
             
             // Update budget period indicator and hide loading
             document.getElementById('current-budget-name').textContent = data.period_name || 'Unknown';
@@ -383,10 +428,10 @@ function loadDashboardData() {
             // Hide no budget message if it was showing
             hideNoBudgetMessage();
             
-            // Load other data now that we have a budget
+            // Load other data now that we have a budget and currency
             loadCategoriesOverview();
             loadBudgetChart();
-            calculateDaysRemaining(data);
+            calculateDaysRemaining(data.period);
             checkBudgetBalance();
             checkOverspending();
         })
@@ -404,7 +449,9 @@ function loadUserSettings() {
     return authenticatedFetch('/api/user/settings')
     .then(response => response.json())
     .then(data => {
+        console.log('User settings loaded:', data);
         userCurrency = data.currency || 'USD';
+        console.log('userCurrency set to:', userCurrency);
         return data;
     })
     .catch(error => {
@@ -415,7 +462,7 @@ function loadUserSettings() {
 }
 
 function loadCategoriesOverview() {
-    authenticatedFetch('/api/categories')
+    authenticatedFetch('/api/categories/categories')
     .then(response => response.json())
     .then(categories => {
         let totalAllocated = 0;
@@ -477,6 +524,7 @@ function updateProgressVisualization(allocated, spent) {
 }
 
 function formatCurrency(amount, currency = userCurrency || 'USD') {
+    console.log('formatCurrency called with:', { amount, currency, userCurrency });
     const symbol = getCurrencySymbol(currency);
     const formatter = new Intl.NumberFormat('en-US', {
         style: 'decimal',
@@ -498,7 +546,7 @@ function closeModal(modalId) {
 }
 
 function loadModalCategories() {
-    authenticatedFetch('/api/categories')
+    authenticatedFetch('/api/categories/categories')
     .then(response => response.json())
     .then(categories => {
         const categorySelect = document.getElementById('modalCategory');
@@ -576,7 +624,7 @@ function handleModalExpenseSubmit(e) {
     submitBtn.disabled = true;
     
     // Make API call
-    authenticatedFetch('/api/transactions', {
+    authenticatedFetch('/api/transactions/transactions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -808,7 +856,7 @@ function calculateDaysRemaining(budgetData) {
 let budgetChart = null;
 
 function loadBudgetChart() {
-    authenticatedFetch('/api/categories')
+    authenticatedFetch('/api/categories/categories')
     .then(response => response.json())
     .then(categories => {
         // Prepare data for the chart

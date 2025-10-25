@@ -10,6 +10,24 @@
     </div>
 
     <div class="help-container">
+        <!-- Search Box -->
+        <div class="help-search">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="helpSearch" placeholder="Search help topics..." class="search-input">
+                <button id="clearSearch" class="clear-search-btn" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="searchResults" class="search-results" style="display: none;">
+                <div class="search-results-header">
+                    <span id="searchResultsCount">0 results found</span>
+                    <button id="clearSearchResults" class="clear-results-btn">Clear</button>
+                </div>
+                <div id="searchResultsList" class="search-results-list"></div>
+            </div>
+        </div>
+
         <!-- Table of Contents -->
         <div class="help-toc">
             <h2>Table of Contents</h2>
@@ -124,6 +142,44 @@
                     <li><strong>Total Allocated:</strong> Amount already allocated to budget categories</li>
                     <li><strong>Available to Allocate:</strong> Remaining income for new allocations</li>
                 </ul>
+            </div>
+
+            <div class="help-subsection">
+                <h3>Recalculate Total Income</h3>
+                <p>If you notice discrepancies in your total income calculation, you can use the "Recalculate Total" feature:</p>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-calculator"></i> When to Use Recalculate</h4>
+                    <p>Use this feature when:</p>
+                    <ul>
+                        <li>Your dashboard shows incorrect total income</li>
+                        <li>You've made multiple changes to income sources</li>
+                        <li>You notice data inconsistencies after editing/deleting sources</li>
+                        <li>The total doesn't match the sum of your income sources</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-tools"></i> How to Recalculate</h4>
+                    <ol>
+                        <li>Go to the Income page</li>
+                        <li>Click the "Recalculate Total" button (next to Save Balance)</li>
+                        <li>Confirm the action in the popup dialog</li>
+                        <li>STEWARD will recalculate the total from all income sources</li>
+                        <li>Check your dashboard - the total should now be accurate</li>
+                    </ol>
+                </div>
+
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> What It Does</h4>
+                    <p>The recalculate function:</p>
+                    <ul>
+                        <li>Adds up all your current income sources</li>
+                        <li>Updates the budget's total income field</li>
+                        <li>Refreshes the dashboard automatically</li>
+                        <li>Ensures data consistency across the application</li>
+                    </ul>
+                </div>
             </div>
         </section>
 
@@ -422,6 +478,46 @@
             </div>
 
             <div class="help-subsection">
+                <h3>Income Calculation Issues</h3>
+                <p>If you're experiencing problems with income calculations:</p>
+                
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Dashboard Shows Wrong Total Income</h4>
+                    <p><strong>Symptoms:</strong> Dashboard shows incorrect total income that doesn't match your income sources</p>
+                    <p><strong>Solution:</strong></p>
+                    <ol>
+                        <li>Go to the Income page</li>
+                        <li>Click "Recalculate Total" button</li>
+                        <li>Confirm the action</li>
+                        <li>Check your dashboard - the total should now be correct</li>
+                    </ol>
+                </div>
+
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Income Total Doesn't Update After Changes</h4>
+                    <p><strong>Symptoms:</strong> After adding, editing, or deleting income sources, the total doesn't change</p>
+                    <p><strong>Solution:</strong></p>
+                    <ol>
+                        <li>Refresh the page and try again</li>
+                        <li>If the issue persists, use "Recalculate Total"</li>
+                        <li>Check that your changes were saved successfully</li>
+                    </ol>
+                </div>
+
+                <div class="warning-box">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Negative or Zero Total Income</h4>
+                    <p><strong>Symptoms:</strong> Dashboard shows €0.00 or negative income when you have income sources</p>
+                    <p><strong>Solution:</strong></p>
+                    <ol>
+                        <li>Verify you have active income sources on the Income page</li>
+                        <li>Check that income amounts are positive numbers</li>
+                        <li>Use "Recalculate Total" to fix any data inconsistencies</li>
+                        <li>Ensure you're viewing the correct budget period</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="help-subsection">
                 <h3>Getting Help</h3>
                 <ul>
                     <li>Check this user guide for detailed instructions</li>
@@ -453,11 +549,378 @@
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('helpSearch');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const searchResults = document.getElementById('searchResults');
+    const searchResultsCount = document.getElementById('searchResultsCount');
+    const searchResultsList = document.getElementById('searchResultsList');
+    const clearResultsBtn = document.getElementById('clearSearchResults');
+
+    // Search data - extracted from help content
+    const searchData = [
+        {
+            id: 'getting-started',
+            title: 'Getting Started',
+            section: 'Getting Started',
+            content: 'When you first create an account, STEWARD will guide you through an onboarding process: Personal Information, Income Sources, Expense Categories, Budget Period, Account Setup. STEWARD uses a sidebar navigation system with Dashboard, Income, Budget, Transactions, Accounts, Settings, and Help sections.'
+        },
+        {
+            id: 'dashboard',
+            title: 'Dashboard Overview',
+            section: 'Dashboard',
+            content: 'The dashboard provides a comprehensive overview of your financial situation. Key components include Budget Overview showing total income, allocated amounts, and remaining balance. Income Sources displays all your income streams with amounts. Balance Summary shows your current financial position. Alerts and Notifications for overspending, budget warnings, and important updates. Quick Actions for adding income, expenses, and managing accounts.'
+        },
+        {
+            id: 'income-management',
+            title: 'Income Management',
+            section: 'Income Management',
+            content: 'Add multiple income sources including salary, freelance work, investments, and other earnings. Set up recurring income for automatic tracking. Track one-time income sources. View total income calculations. Edit and delete income sources. Balance brought forward from previous periods.'
+        },
+        {
+            id: 'recalculate-income',
+            title: 'Recalculate Total Income',
+            section: 'Income Management',
+            content: 'The recalculate function ensures your total income is accurate by summing all active income sources. Use this when income amounts seem incorrect or after making changes. Click the "Recalculate Total" button on the Income page. This will update your dashboard totals immediately.'
+        },
+        {
+            id: 'budget-management',
+            title: 'Budget Management',
+            section: 'Budget Management',
+            content: 'Create budget periods with start and end dates. Set monthly, quarterly, or yearly budgets. Activate and deactivate budget periods. View budget history. Track budget performance over time. Manage budget period details and settings.'
+        },
+        {
+            id: 'budget-breakdown',
+            title: 'Budget Breakdown',
+            section: 'Budget Breakdown',
+            content: 'Allocate your budget across different categories and subcategories. Set spending limits for each category. Track allocated vs spent amounts. View remaining budget for each category. Adjust allocations as needed. Monitor budget performance and make adjustments.'
+        },
+        {
+            id: 'transactions',
+            title: 'Transaction Management',
+            section: 'Transactions',
+            content: 'Add income and expense transactions. Categorize transactions by category and subcategory. Add descriptions and comments to transactions. Edit and delete transactions. Filter transactions by date, category, and amount. Export transaction data. View transaction history and trends.'
+        },
+        {
+            id: 'accounts',
+            title: 'Account Management',
+            section: 'Account Management',
+            content: 'Add and manage your financial accounts including checking, savings, credit cards, and investment accounts. Track account balances. Compare real-world account balances with budget balances. Monitor account alignment. Update account information and balances.'
+        },
+        {
+            id: 'settings',
+            title: 'Settings & Preferences',
+            section: 'Settings',
+            content: 'Change your currency preference. Update personal information. Modify password and security settings. Adjust notification preferences. Change theme and display options. Manage account settings and preferences.'
+        },
+        {
+            id: 'tips-tricks',
+            title: 'Tips & Best Practices',
+            section: 'Tips & Best Practices',
+            content: 'Regularly review and update your budget. Set realistic spending limits. Track all transactions promptly. Use categories that match your spending patterns. Review budget performance monthly. Adjust allocations based on actual spending. Keep account balances updated.'
+        },
+        {
+            id: 'troubleshooting',
+            title: 'Troubleshooting',
+            section: 'Troubleshooting',
+            content: 'Common issues include incorrect income calculations, missing budget data, currency not updating, cards not refreshing, allocation errors, and data export problems. Use the recalculate function for income issues. Refresh the page for display problems. Check API endpoints for connection issues.'
+        },
+        {
+            id: 'income-calculation-issues',
+            title: 'Income Calculation Issues',
+            section: 'Troubleshooting',
+            content: 'If income totals seem incorrect, try the recalculate function. Check that all income sources are properly saved. Verify amounts are entered correctly. Use the "Recalculate Total" button on the Income page. Contact support if issues persist.'
+        }
+    ];
+
+    // Search function
+    function performSearch(query) {
+        if (!query.trim()) {
+            hideSearchResults();
+            return;
+        }
+
+        const results = searchData.filter(item => {
+            const searchText = (item.title + ' ' + item.content + ' ' + item.section).toLowerCase();
+            return searchText.includes(query.toLowerCase());
+        });
+
+        displaySearchResults(results, query);
+    }
+
+    // Display search results
+    function displaySearchResults(results, query) {
+        if (results.length === 0) {
+            searchResultsList.innerHTML = `
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <p>No results found for "${query}"</p>
+                    <p>Try different keywords or check the table of contents</p>
+                </div>
+            `;
+        } else {
+            searchResultsList.innerHTML = results.map(result => {
+                const highlightedTitle = highlightText(result.title, query);
+                const highlightedSnippet = highlightText(getSnippet(result.content, query), query);
+                
+                return `
+                    <div class="search-result-item" onclick="scrollToSection('${result.id}')">
+                        <div class="search-result-title">${highlightedTitle}</div>
+                        <div class="search-result-snippet">${highlightedSnippet}</div>
+                        <div class="search-result-section">${result.section}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        searchResultsCount.textContent = `${results.length} result${results.length !== 1 ? 's' : ''} found`;
+        searchResults.style.display = 'block';
+    }
+
+    // Hide search results
+    function hideSearchResults() {
+        searchResults.style.display = 'none';
+    }
+
+    // Highlight search terms in text
+    function highlightText(text, query) {
+        if (!query.trim()) return text;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    // Get snippet of content around search term
+    function getSnippet(content, query) {
+        const index = content.toLowerCase().indexOf(query.toLowerCase());
+        if (index === -1) return content.substring(0, 150) + '...';
+        
+        const start = Math.max(0, index - 50);
+        const end = Math.min(content.length, index + query.length + 100);
+        let snippet = content.substring(start, end);
+        
+        if (start > 0) snippet = '...' + snippet;
+        if (end < content.length) snippet = snippet + '...';
+        
+        return snippet;
+    }
+
+    // Scroll to section
+    function scrollToSection(sectionId) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            hideSearchResults();
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+        }
+    }
+
+    // Make scrollToSection globally available
+    window.scrollToSection = scrollToSection;
+
+    // Event listeners
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        if (query) {
+            clearSearchBtn.style.display = 'block';
+            performSearch(query);
+        } else {
+            clearSearchBtn.style.display = 'none';
+            hideSearchResults();
+        }
+    });
+
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        this.style.display = 'none';
+        hideSearchResults();
+        searchInput.focus();
+    });
+
+    clearResultsBtn.addEventListener('click', function() {
+        hideSearchResults();
+        searchInput.value = '';
+        clearSearchBtn.style.display = 'none';
+        searchInput.focus();
+    });
+
+    // Keyboard shortcuts
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideSearchResults();
+            this.blur();
+        }
+    });
+
+    // Focus search on Ctrl+K
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+});
+</script>
+
 <style>
 .help-container {
     max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 0;
+}
+
+/* Search Styles */
+.help-search {
+    margin-bottom: 2rem;
+}
+
+.search-container {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 3rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    color: var(--text-primary);
+    background: var(--hover-bg);
+}
+
+.search-results {
+    margin-top: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.search-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-results-header span {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.clear-results-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.clear-results-btn:hover {
+    background: var(--hover-bg);
+}
+
+.search-results-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: var(--hover-bg);
+}
+
+.search-result-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.search-result-snippet {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.search-result-section {
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.highlight {
+    background: rgba(139, 69, 19, 0.2);
+    padding: 0.1rem 0.2rem;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+.no-results {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.no-results i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--text-tertiary);
 }
 
 .help-toc {

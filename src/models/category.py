@@ -34,5 +34,7 @@ class Subcategory(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Relationships are defined in Category model
+    
     def __repr__(self):
         return f'<Subcategory {self.name}>'

@@ -82,11 +82,15 @@ def delete_budget_period(current_user, period_id):
 @token_required
 def get_budget(current_user):
     """Get the active budget for the current user."""
-    budget = BudgetService.get_budget(current_user.id)
-    if not budget:
-        return jsonify({'message': 'No active budget found'}), 404
-    
-    return jsonify(budget), 200
+    try:
+        budget = BudgetService.get_budget(current_user.id)
+        if not budget:
+            return jsonify({'message': 'No active budget found'}), 404
+        
+        return jsonify(budget), 200
+    except Exception as e:
+        print(f"Error in get_budget API: {str(e)}")
+        return jsonify({'message': f'Error loading budget: {str(e)}'}), 500
 
 
 @budget_bp.route('/budget', methods=['PUT'])
@@ -186,7 +190,7 @@ def update_income_source(current_user, source_id):
             return jsonify({'message': 'Invalid amount'}), 400
     
     # Get the income source
-    from ..models import IncomeSource, Budget, BudgetPeriod
+    from ...models import IncomeSource, Budget, BudgetPeriod
     active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
     if not active_period:
         return jsonify({'message': 'No active budget period found'}), 404
@@ -199,13 +203,18 @@ def update_income_source(current_user, source_id):
     if not income_source:
         return jsonify({'message': 'Income source not found'}), 404
     
+    old_amount = income_source.amount
+    
     if name:
         income_source.name = name
     if amount is not None:
         income_source.amount = amount
     
-    from ..extensions import db
+    from ...extensions import db
     db.session.commit()
+    
+    # Recalculate total income from all sources
+    BudgetService.recalculate_total_income(current_user.id)
     
     return jsonify({'message': 'Income source updated successfully'}), 200
 
@@ -214,22 +223,47 @@ def update_income_source(current_user, source_id):
 @token_required
 def delete_income_source(current_user, source_id):
     """Delete an income source."""
-    from ..models import IncomeSource, Budget, BudgetPeriod
-    from ..extensions import db
-    
-    active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
-    if not active_period:
-        return jsonify({'message': 'No active budget period found'}), 404
-    
-    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
-    if not budget:
-        return jsonify({'message': 'No budget found'}), 404
-    
-    income_source = IncomeSource.query.filter_by(id=source_id, budget_id=budget.id).first()
-    if not income_source:
-        return jsonify({'message': 'Income source not found'}), 404
-    
-    db.session.delete(income_source)
-    db.session.commit()
-    
-    return jsonify({'message': 'Income source deleted successfully'}), 200
+    try:
+        from ...models import IncomeSource, Budget, BudgetPeriod
+        from ...extensions import db
+        
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        if not active_period:
+            return jsonify({'message': 'No active budget period found'}), 404
+        
+        budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+        if not budget:
+            return jsonify({'message': 'No budget found'}), 404
+        
+        income_source = IncomeSource.query.filter_by(id=source_id, budget_id=budget.id).first()
+        if not income_source:
+            return jsonify({'message': 'Income source not found'}), 404
+        
+        # Delete the income source
+        db.session.delete(income_source)
+        db.session.commit()
+        
+        # Recalculate total income from remaining sources
+        BudgetService.recalculate_total_income(current_user.id)
+        
+        return jsonify({'message': 'Income source deleted successfully'}), 200
+        
+    except Exception as e:
+        from ...extensions import db
+        db.session.rollback()
+        return jsonify({'message': f'Error deleting income source: {str(e)}'}), 500
+
+
+@budget_bp.route('/recalculate-income', methods=['POST'])
+@token_required
+def recalculate_income(current_user):
+    """Recalculate total income from all income sources."""
+    try:
+        success = BudgetService.recalculate_total_income(current_user.id)
+        if not success:
+            return jsonify({'message': 'No active budget found'}), 404
+        
+        return jsonify({'message': 'Total income recalculated successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Error recalculating income: {str(e)}'}), 500

@@ -57,5 +57,8 @@ class BudgetAllocation(db.Model):
     subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
     budget_id = db.Column(db.Integer, db.ForeignKey('budget.id'), nullable=False)
     
+    # Relationships
+    subcategory = db.relationship('Subcategory', backref='budget_allocations', lazy=True)
+    
     def __repr__(self):
         return f'<BudgetAllocation {self.allocated_amount}>'

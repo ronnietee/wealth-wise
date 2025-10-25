@@ -104,8 +104,12 @@ def update_subcategory(current_user, subcategory_id):
 @token_required
 def delete_subcategory(current_user, subcategory_id):
     """Delete a subcategory."""
-    success = CategoryService.delete_subcategory(subcategory_id)
-    if not success:
-        return jsonify({'message': 'Subcategory not found'}), 404
-    
-    return jsonify({'message': 'Subcategory deleted successfully'}), 200
+    try:
+        success = CategoryService.delete_subcategory(subcategory_id)
+        if not success:
+            return jsonify({'message': 'Subcategory not found'}), 404
+        
+        return jsonify({'message': 'Subcategory deleted successfully'}), 200
+    except Exception as e:
+        print(f"Error in delete_subcategory API: {str(e)}")
+        return jsonify({'message': f'Error deleting subcategory: {str(e)}'}), 500

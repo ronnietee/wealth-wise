@@ -88,7 +88,37 @@ class AccountService:
         """Get balance summary for all accounts."""
         accounts = Account.query.filter_by(user_id=user_id, is_active=True).all()
         
-        total_balance = sum(account.current_balance for account in accounts)
+        total_accounts_balance = sum(account.current_balance for account in accounts)
+        
+        # Get app balance from active budget
+        from ..models import Budget, BudgetPeriod
+        app_balance = 0
+        try:
+            active_period = BudgetPeriod.query.filter_by(user_id=user_id, is_active=True).first()
+            if active_period:
+                budget = Budget.query.filter_by(period_id=active_period.id, user_id=user_id).first()
+                if budget:
+                    # Calculate app balance as total income minus total spent
+                    total_income = (budget.total_income or 0) + (budget.balance_brought_forward or 0)
+                    
+                    # Calculate total spent from transactions
+                    from ..models import Transaction, Category, Subcategory
+                    from ..extensions import db
+                    user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == user_id).subquery()
+                    total_spent = db.session.query(db.func.sum(Transaction.amount)).filter(
+                        Transaction.subcategory_id.in_(user_subcategory_ids),
+                        Transaction.transaction_date >= active_period.start_date,
+                        Transaction.transaction_date <= active_period.end_date
+                    ).scalar() or 0
+                    
+                    app_balance = total_income - total_spent
+        except Exception as e:
+            print(f"Error calculating app balance: {str(e)}")
+            app_balance = 0
+        
+        balance_difference = total_accounts_balance - app_balance
+        alignment_percentage = 100 if app_balance == 0 else (total_accounts_balance / app_balance * 100) if app_balance > 0 else 0
+        is_aligned = abs(balance_difference) < 0.01  # Consider aligned if difference is less than 1 cent
         
         account_summary = []
         for account in accounts:
@@ -100,7 +130,11 @@ class AccountService:
             })
         
         return {
-            'total_balance': total_balance,
+            'total_accounts_balance': total_accounts_balance,
+            'app_balance': app_balance,
+            'balance_difference': balance_difference,
+            'alignment_percentage': alignment_percentage,
+            'is_aligned': is_aligned,
             'account_count': len(accounts),
             'accounts': account_summary
         }

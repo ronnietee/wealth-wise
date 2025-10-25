@@ -164,7 +164,7 @@ function handleExpenseSubmit(e) {
         transaction_date: formData.get('transaction_date')
     };
     
-    fetch('/api/transactions', {
+    fetch('/api/transactions/transactions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

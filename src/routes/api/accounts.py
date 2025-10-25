@@ -9,7 +9,7 @@ from ...services import AccountService
 accounts_bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 
-@accounts_bp.route('/accounts', methods=['GET'])
+@accounts_bp.route('/', methods=['GET'])
 @token_required
 def get_accounts(current_user):
     """Get all accounts for the current user."""
@@ -17,7 +17,7 @@ def get_accounts(current_user):
     return jsonify(accounts), 200
 
 
-@accounts_bp.route('/accounts', methods=['POST'])
+@accounts_bp.route('/', methods=['POST'])
 @token_required
 def create_account(current_user):
     """Create a new account."""
@@ -57,7 +57,7 @@ def create_account(current_user):
     }), 201
 
 
-@accounts_bp.route('/accounts/<int:account_id>', methods=['PUT'])
+@accounts_bp.route('/<int:account_id>', methods=['PUT'])
 @token_required
 def update_account(current_user, account_id):
     """Update an account."""
@@ -88,7 +88,7 @@ def update_account(current_user, account_id):
     return jsonify({'message': 'Account updated successfully'}), 200
 
 
-@accounts_bp.route('/accounts/<int:account_id>', methods=['DELETE'])
+@accounts_bp.route('/<int:account_id>', methods=['DELETE'])
 @token_required
 def delete_account(current_user, account_id):
     """Delete an account."""
@@ -99,7 +99,7 @@ def delete_account(current_user, account_id):
     return jsonify({'message': 'Account deleted successfully'}), 200
 
 
-@accounts_bp.route('/accounts/balance-summary', methods=['GET'])
+@accounts_bp.route('/balance-summary', methods=['GET'])
 @token_required
 def get_balance_summary(current_user):
     """Get balance summary for all accounts."""

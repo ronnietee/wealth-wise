@@ -727,10 +727,12 @@
             .then(data => {
                 showNotification('Currency updated successfully!', 'success');
                 closeCurrencyModal();
-                // Reload the page to update currency formatting
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Update global currency and dispatch event instead of reloading
+                userCurrency = currency;
+                // Dispatch currency loaded event to update all pages
+                window.dispatchEvent(new CustomEvent('currencyLoaded', {
+                    detail: { currency: currency }
+                }));
             })
             .catch(error => {
                 console.error('Error updating currency:', error);
@@ -953,7 +955,7 @@
             const linksToDisable = ['/income', '/breakdown', '/transactions', '/accounts'];
             
             // Check if budget exists
-            authenticatedFetch('/api/budget')
+            authenticatedFetch('/api/budget/budget')
                 .then(response => {
                     if (response.status === 404) {
                         // No budget found, disable the links

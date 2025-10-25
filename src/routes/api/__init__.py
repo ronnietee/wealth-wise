@@ -164,7 +164,7 @@ def resend_verification():
             return jsonify({'message': 'Email is already verified'}), 400
         
         # Create new verification token
-        from ..services import AuthService
+        from ...services import AuthService
         verification_token = AuthService.create_email_verification_token(user)
         
         # Send verification email
@@ -182,7 +182,7 @@ def resend_verification():
 def check_budget_balance(current_user):
     """Check if total income is sufficient for total allocated budget."""
     try:
-        from ..models import Budget, BudgetPeriod, BudgetAllocation
+        from ...models import Budget, BudgetPeriod, BudgetAllocation
         
         # Get active budget period
         active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
@@ -193,8 +193,8 @@ def check_budget_balance(current_user):
         if not budget:
             return jsonify({'message': 'No budget found for active period'}), 404
         
-        # Calculate total income
-        total_income = budget.total_income or 0
+        # Calculate total available income (income sources + balance brought forward)
+        total_income = (budget.total_income or 0) + (budget.balance_brought_forward or 0)
         
         # Calculate total allocated
         allocations = BudgetAllocation.query.filter_by(budget_id=budget.id).all()
@@ -208,6 +208,7 @@ def check_budget_balance(current_user):
             'total_income': total_income,
             'total_allocated': total_allocated,
             'balance': balance,
+            'deficit': abs(balance) if balance < 0 else 0,  # Add deficit for dashboard compatibility
             'is_balanced': is_balanced,
             'message': 'Budget is balanced' if is_balanced else 'Budget allocation exceeds income'
         }), 200
@@ -221,7 +222,7 @@ def check_budget_balance(current_user):
 def check_overspending(current_user):
     """Check for subcategories where spending exceeds allocation."""
     try:
-        from ..models import Budget, BudgetPeriod, BudgetAllocation, Transaction
+        from ...models import Budget, BudgetPeriod, BudgetAllocation, Transaction
         
         # Get active budget period
         active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
@@ -259,7 +260,8 @@ def check_overspending(current_user):
         
         return jsonify({
             'overspending': overspending,
-            'count': len(overspending)
+            'count': len(overspending),
+            'has_overspending': len(overspending) > 0
         }), 200
         
     except Exception as e:

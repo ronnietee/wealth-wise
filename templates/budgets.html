@@ -274,7 +274,7 @@ async function loadCurrentBudget() {
 // Load all budget periods
 async function loadBudgetPeriods() {
     try {
-        const response = await authenticatedFetch('/api/budget-periods');
+        const response = await authenticatedFetch('/api/budget/budget-periods');
         
         if (response.ok) {
             const periods = await response.json();
@@ -433,7 +433,7 @@ function renderBudgetPeriods(periods) {
 // Activate a budget period
 async function activateBudgetPeriod(periodId) {
     try {
-        const response = await authenticatedFetch(`/api/budget-periods/${periodId}/activate`, {
+        const response = await authenticatedFetch(`/api/budget/budget-periods/${periodId}/activate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -475,7 +475,7 @@ async function deleteBudgetPeriod(periodId) {
     }
     
     try {
-        const response = await authenticatedFetch(`/api/budget-periods/${periodId}`, {
+        const response = await authenticatedFetch(`/api/budget/budget-periods/${periodId}`, {
             method: 'DELETE'
         });
         
@@ -543,7 +543,7 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
     };
     
     try {
-        const response = await authenticatedFetch('/api/budget-periods', {
+        const response = await authenticatedFetch('/api/budget/budget-periods', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

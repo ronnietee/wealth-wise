@@ -122,60 +122,199 @@ def delete_user_account(current_user):
 def export_user_data(current_user):
     """Export user data to Excel."""
     try:
-        from openpyxl import Workbook
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-        from openpyxl.utils import get_column_letter
+        # Check if openpyxl is available
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.utils import get_column_letter
+        except ImportError:
+            return jsonify({'message': 'openpyxl library not installed. Please install it with: pip install openpyxl'}), 500
+        
         import io
+        from datetime import datetime
         
-        # Create workbook
+        # Create a new workbook
         wb = Workbook()
-        ws = wb.active
-        ws.title = "User Data Export"
         
-        # Add headers
-        headers = ['Data Type', 'Name', 'Amount', 'Date', 'Description', 'Category', 'Subcategory']
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col, value=header)
-            cell.font = Font(bold=True)
-            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        # Remove default sheet
+        wb.remove(wb.active)
         
-        row = 2
+        # Define styles
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="8B4513", end_color="8B4513", fill_type="solid")
+        border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
         
-        # Add user info
-        ws.cell(row=row, column=1, value="User Info")
-        ws.cell(row=row, column=2, value=f"{current_user.first_name} {current_user.last_name}")
-        ws.cell(row=row, column=3, value=current_user.email)
-        row += 1
+        # Create Summary Sheet
+        summary_ws = wb.create_sheet("Summary")
+        summary_ws.append(["STEWARD - Financial Data Export"])
+        summary_ws.append([f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"])
+        summary_ws.append([f"User: {current_user.username} ({current_user.email})"])
+        summary_ws.append([f"Currency: {current_user.currency}"])
+        summary_ws.append([])
         
-        # Add categories
-        from ..models import Category, Subcategory
+        # Get active budget period for summary
+        from ...models import BudgetPeriod, Budget, BudgetAllocation, Category, Subcategory, Transaction
+        from ...extensions import db
+        from ...utils.currency import get_currency_symbol
+        
+        active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
+        if active_period:
+            budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+            if budget:
+                # Calculate total income matching dashboard calculation (income sources + balance brought forward)
+                total_income_from_sources = sum(source.amount for source in budget.income_sources)
+                balance_brought_forward = budget.balance_brought_forward or 0
+                total_income = total_income_from_sources + balance_brought_forward
+                
+                # Calculate total allocated and spent amounts
+                total_allocated = sum(allocation.allocated_amount for allocation in budget.allocations)
+                
+                # Calculate total spent from transactions within the active period
+                user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == current_user.id).subquery()
+                total_spent = db.session.query(db.func.sum(Transaction.amount)).filter(
+                    Transaction.subcategory_id.in_(user_subcategory_ids),
+                    Transaction.transaction_date >= active_period.start_date,
+                    Transaction.transaction_date <= active_period.end_date
+                ).scalar() or 0
+                
+                # Calculate remaining amounts
+                remaining_to_allocate = total_income - total_allocated
+                current_balance = total_income - total_spent
+                
+                # Calculate days remaining
+                today = datetime.now().date()
+                start_date = active_period.start_date
+                end_date = active_period.end_date
+                
+                if today >= start_date and today <= end_date:
+                    days_remaining = (end_date - today).days
+                elif today < start_date:
+                    days_remaining = (end_date - start_date).days + 1
+                else:
+                    days_remaining = 0
+                
+                # Add comprehensive dashboard-style summary
+                summary_ws.append(["DASHBOARD SUMMARY"])
+                summary_ws.append([f"Period: {active_period.name}"])
+                summary_ws.append([f"Start Date: {active_period.start_date.strftime('%Y-%m-%d')}"])
+                summary_ws.append([f"End Date: {active_period.end_date.strftime('%Y-%m-%d')}"])
+                summary_ws.append([f"Days Remaining: {days_remaining}"])
+                summary_ws.append([])
+                
+                summary_ws.append(["FINANCIAL OVERVIEW"])
+                summary_ws.append([f"Total Income (Sources): {get_currency_symbol(current_user.currency)}{total_income_from_sources:,.2f}"])
+                summary_ws.append([f"Balance Brought Forward: {get_currency_symbol(current_user.currency)}{balance_brought_forward:,.2f}"])
+                summary_ws.append([f"TOTAL INCOME: {get_currency_symbol(current_user.currency)}{total_income:,.2f}"])
+                summary_ws.append([f"Total Allocated: {get_currency_symbol(current_user.currency)}{total_allocated:,.2f}"])
+                summary_ws.append([f"Total Spent: {get_currency_symbol(current_user.currency)}{total_spent:,.2f}"])
+                summary_ws.append([f"Available to Allocate: {get_currency_symbol(current_user.currency)}{remaining_to_allocate:,.2f}"])
+                summary_ws.append([f"Current Balance: {get_currency_symbol(current_user.currency)}{current_balance:,.2f}"])
+                summary_ws.append([])
+                
+                # Add spending progress
+                spending_percentage = (total_spent / total_income * 100) if total_income > 0 else 0
+                summary_ws.append(["SPENDING PROGRESS"])
+                summary_ws.append([f"Spending Percentage: {spending_percentage:.1f}%"])
+                summary_ws.append([f"Budget Health: {'Good' if spending_percentage < 75 else 'Moderate' if spending_percentage < 90 else 'High Spending'}"])
+                summary_ws.append([])
+        
+        # Get comprehensive transaction summary
+        all_transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        total_all_transactions = len(all_transactions)
+        total_all_spent = sum(t.amount for t in all_transactions)
+        
+        # Get transactions for current period only
+        current_period_transactions = []
+        if active_period:
+            current_period_transactions = Transaction.query.filter_by(user_id=current_user.id).filter(
+                Transaction.transaction_date >= active_period.start_date,
+                Transaction.transaction_date <= active_period.end_date
+            ).all()
+        
+        summary_ws.append(["TRANSACTION SUMMARY"])
+        summary_ws.append([f"Total Transactions (All Time): {total_all_transactions}"])
+        summary_ws.append([f"Total Spent (All Time): {get_currency_symbol(current_user.currency)}{total_all_spent:,.2f}"])
+        if active_period:
+            summary_ws.append([f"Transactions This Period: {len(current_period_transactions)}"])
+            summary_ws.append([f"Spent This Period: {get_currency_symbol(current_user.currency)}{sum(t.amount for t in current_period_transactions):,.2f}"])
+        else:
+            summary_ws.append(["No Active Budget Period"])
+            summary_ws.append(["Please create a budget period to track spending"])
+        summary_ws.append([])
+        
+        # Add note if no active budget period
+        if not active_period:
+            summary_ws.append(["NOTE"])
+            summary_ws.append(["No active budget period found for this user."])
+            summary_ws.append(["Dashboard calculations require an active budget period."])
+            summary_ws.append(["Please create a budget period to see complete financial overview."])
+            summary_ws.append([])
+        
+        # Create Allocations Sheet
+        allocations_ws = wb.create_sheet("Allocations")
+        allocations_ws.append(["Category", "Subcategory", "Allocated Amount", "Spent Amount", "Remaining", "Period"])
+        
+        # Style header row
+        for cell in allocations_ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+            cell.border = border
+        
+        # Get all allocations with spending data
         categories = Category.query.filter_by(user_id=current_user.id).all()
         for category in categories:
-            ws.cell(row=row, column=1, value="Category")
-            ws.cell(row=row, column=2, value=category.name)
-            row += 1
-            
             for subcategory in category.subcategories:
-                ws.cell(row=row, column=1, value="Subcategory")
-                ws.cell(row=row, column=2, value=subcategory.name)
-                ws.cell(row=row, column=6, value=category.name)
-                row += 1
+                # Get allocation for active period
+                allocated = 0
+                spent = 0
+                period_name = "No Active Period"
+                
+                if active_period:
+                    budget = Budget.query.filter_by(period_id=active_period.id, user_id=current_user.id).first()
+                    if budget:
+                        allocation = BudgetAllocation.query.filter_by(
+                            budget_id=budget.id,
+                            subcategory_id=subcategory.id
+                        ).first()
+                        if allocation:
+                            allocated = allocation.allocated_amount
+                        period_name = active_period.name
+                        
+                        # Calculate spent amount
+                        spent_transactions = Transaction.query.filter_by(
+                            user_id=current_user.id,
+                            subcategory_id=subcategory.id
+                        ).filter(
+                            Transaction.transaction_date >= active_period.start_date,
+                            Transaction.transaction_date <= active_period.end_date
+                        ).all()
+                        spent = sum(t.amount for t in spent_transactions)
+                
+                remaining = allocated - spent
+                allocations_ws.append([
+                    category.name,
+                    subcategory.name,
+                    allocated,
+                    spent,
+                    remaining,
+                    period_name
+                ])
         
-        # Add transactions
-        from ..models import Transaction
-        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
-        for transaction in transactions:
-            ws.cell(row=row, column=1, value="Transaction")
-            ws.cell(row=row, column=2, value=transaction.description or "")
-            ws.cell(row=row, column=3, value=transaction.amount)
-            ws.cell(row=row, column=4, value=transaction.transaction_date.strftime('%Y-%m-%d'))
-            ws.cell(row=row, column=5, value=transaction.comment or "")
-            ws.cell(row=row, column=6, value=transaction.subcategory.category.name)
-            ws.cell(row=row, column=7, value=transaction.subcategory.name)
-            row += 1
+        # Style allocation data rows
+        for row in allocations_ws.iter_rows(min_row=2):
+            for cell in row:
+                cell.border = border
+                if cell.column in [3, 4, 5]:  # Amount columns
+                    cell.number_format = '#,##0.00'
         
         # Auto-adjust column widths
-        for column in ws.columns:
+        for column in allocations_ws.columns:
             max_length = 0
             column_letter = get_column_letter(column[0].column)
             for cell in column:
@@ -185,22 +324,72 @@ def export_user_data(current_user):
                 except:
                     pass
             adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[column_letter].width = adjusted_width
+            allocations_ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Create Transactions Sheet
+        transactions_ws = wb.create_sheet("Transactions")
+        transactions_ws.append(["Date", "Category", "Subcategory", "Amount", "Description", "Comment"])
+        
+        # Style header row
+        for cell in transactions_ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+            cell.border = border
+        
+        # Add transaction data
+        for transaction in all_transactions:
+            subcategory = Subcategory.query.get(transaction.subcategory_id)
+            category = Category.query.get(subcategory.category_id) if subcategory else None
+            
+            transactions_ws.append([
+                transaction.transaction_date.strftime('%Y-%m-%d') if transaction.transaction_date else '',
+                category.name if category else 'Unknown',
+                subcategory.name if subcategory else 'Unknown',
+                transaction.amount,
+                transaction.description or '',
+                transaction.comment or ''
+            ])
+        
+        # Style transaction data rows
+        for row in transactions_ws.iter_rows(min_row=2):
+            for cell in row:
+                cell.border = border
+                if cell.column == 4:  # Amount column
+                    cell.number_format = '#,##0.00'
+        
+        # Auto-adjust column widths for transactions
+        for column in transactions_ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            transactions_ws.column_dimensions[column_letter].width = adjusted_width
         
         # Save to BytesIO
         output = io.BytesIO()
         wb.save(output)
         output.seek(0)
         
+        # Return file
+        filename = f"steward-export-{current_user.username}-{datetime.now().strftime('%Y%m%d')}.xlsx"
         from flask import send_file
         return send_file(
             output,
             as_attachment=True,
-            download_name=f"steward_export_{current_user.username}.xlsx",
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         
     except Exception as e:
+        import traceback
+        print(f"Export error: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         return jsonify({'message': f'Export failed: {str(e)}'}), 500
 
 
