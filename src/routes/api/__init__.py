@@ -93,24 +93,51 @@ def complete_onboarding():
     try:
         data = request.get_json()
         
-        # Extract form data
-        username = data.get('username', '').strip()
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        # Handle both frontend (camelCase) and backend (snake_case) field names
-        first_name = data.get('first_name', data.get('firstName', '')).strip()
-        last_name = data.get('last_name', data.get('lastName', '')).strip()
-        country = data.get('country', '').strip()
-        preferred_name = data.get('preferred_name', data.get('preferredName', '')).strip()
-        referral_source = data.get('referral_source', data.get('referralSource', '')).strip()
-        referral_details = data.get('referral_details', data.get('referralDetails', '')).strip()
+        # Debug: Log received data
+        print("=== ONBOARDING DATA RECEIVED ===")
+        print("Categories:", data.get('categories', []))
+        print("Subcategories:", data.get('subcategories', []))
+        print("Currency:", data.get('currency'))
+        print("First name:", data.get('firstName'), "or", data.get('first_name'))
+        print("Last name:", data.get('lastName'), "or", data.get('last_name'))
+        print("Username:", data.get('username'))
+        print("Email:", data.get('email'))
+        print("Password present:", bool(data.get('password')))
+        print("Full data keys:", list(data.keys()))
+        print("================================")
         
-        # Validation
-        if not all([username, email, password, first_name, last_name]):
-            return jsonify({'message': 'Username, email, password, first name, and last name are required'}), 400
+        # Extract form data
+        username = (data.get('username', '') or '').strip()
+        email = (data.get('email', '') or '').strip().lower()
+        password = data.get('password', '') or ''
+        # Handle both frontend (camelCase) and backend (snake_case) field names
+        first_name = (data.get('firstName') or data.get('first_name') or '').strip()
+        last_name = (data.get('lastName') or data.get('last_name') or '').strip()
+        country = (data.get('country', '') or '').strip()
+        preferred_name = (data.get('preferredName') or data.get('preferred_name') or '').strip()
+        referral_source = (data.get('referralSource') or data.get('referral_source') or '').strip()
+        referral_details = (data.get('referralDetailsText') or data.get('referral_details') or '').strip()
+        currency = data.get('currency', 'USD')  # Extract currency from data
+        
+        # Validation (username is optional, will be auto-generated)
+        if not all([email, password, first_name, last_name]):
+            return jsonify({'message': 'Email, password, first name, and last name are required'}), 400
         
         if len(password) < 6:
             return jsonify({'message': 'Password must be at least 6 characters long'}), 400
+        
+        # Auto-generate username if not provided
+        if not username:
+            # Use email prefix or generate from name
+            username = email.split('@')[0] if email else f"{first_name.lower()}_{last_name.lower()}"
+        
+        # Ensure username is unique
+        from ...models import User
+        counter = 1
+        original_username = username
+        while User.query.filter_by(username=username).first():
+            username = f"{original_username}{counter}"
+            counter += 1
         
         # Create user
         from ...services import UserService, AuthService
@@ -123,11 +150,28 @@ def complete_onboarding():
             country=country or None,
             preferred_name=preferred_name or None,
             referral_source=referral_source or None,
-            referral_details=referral_details or None
+            referral_details=referral_details or None,
+            currency=currency  # Pass currency to user creation
         )
         
         if error:
             return jsonify({'message': error}), 400
+        
+        # Create categories and subcategories based on user selection
+        categories = data.get('categories', [])
+        subcategories = data.get('subcategories', [])
+        custom_category_names = data.get('custom_category_names', {})
+        custom_subcategory_names = data.get('custom_subcategory_names', {})
+        
+        if categories or subcategories:
+            from ...services import CategoryService
+            CategoryService.create_onboarding_categories(
+                user_id=user.id,
+                categories=categories,
+                subcategories=subcategories,
+                custom_category_names=custom_category_names,
+                custom_subcategory_names=custom_subcategory_names
+            )
         
         # Create email verification token
         verification_token = AuthService.create_email_verification_token(user)
@@ -138,10 +182,16 @@ def complete_onboarding():
         
         return jsonify({
             'message': 'Account created successfully! Please check your email to verify your account.',
-            'user_id': user.id
+            'user_id': user.id,
+            'success': True,
+            'email_verification_required': True,
+            'email': user.email
         }), 201
         
     except Exception as e:
+        print(f"Onboarding error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'message': f'Error creating account: {str(e)}'}), 500
 
 

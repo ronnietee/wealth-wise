@@ -17,6 +17,9 @@ class PasswordResetToken(db.Model):
     expires_at = db.Column(db.DateTime, nullable=False)
     used = db.Column(db.Boolean, default=False)
     
+    # Relationships
+    user = db.relationship('User', backref='password_reset_tokens', lazy=True)
+    
     def __repr__(self):
         return f'<PasswordResetToken {self.token[:10]}...>'
 

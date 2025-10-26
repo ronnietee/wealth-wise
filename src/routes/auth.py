@@ -112,6 +112,13 @@ def login():
         if not user:
             return jsonify({'message': 'Invalid email/username or password'}), 401
         
+        # Check if email is verified
+        if not user.email_verified:
+            return jsonify({
+                'message': 'Please verify your email before logging in. Check your inbox for the verification email.',
+                'email_verified': False
+            }), 403
+        
         # Generate JWT token
         from flask import current_app
         token = AuthService.generate_jwt_token(user, current_app.config)
@@ -159,6 +166,13 @@ def frontend_login():
     
     if not user:
         return jsonify({'message': 'Invalid email/username or password'}), 401
+    
+    # Check if email is verified
+    if not user.email_verified:
+        return jsonify({
+            'message': 'Please verify your email before logging in. Check your inbox for the verification email.',
+            'email_verified': False
+        }), 403
     
     # Set session
     session['user_id'] = user.id

@@ -11,4 +11,5 @@ from src import create_app
 app = create_app(os.environ.get('FLASK_ENV', 'default'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Run on all interfaces (0.0.0.0) to allow mobile device connections
+    app.run(debug=True, host='0.0.0.0', port=5000)

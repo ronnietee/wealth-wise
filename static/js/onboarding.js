@@ -751,11 +751,11 @@ class OnboardingFlow {
                 <p class="verification-message">${result.message}</p>
                 <div class="verification-details">
                     <p>We've sent a verification link to:</p>
-                    <p class="email-address">${result.user.email}</p>
+                    <p class="email-address">${result.email}</p>
                     <p class="verification-note">Please check your inbox and click the verification link to complete your account setup.</p>
                 </div>
                 <div class="verification-actions">
-                    <button onclick="resendVerificationEmail('${result.user.email}')" class="btn btn-secondary">
+                    <button onclick="resendVerificationEmail('${result.email}')" class="btn btn-secondary">
                         <i class="fas fa-redo"></i>
                         Resend Verification Email
                     </button>

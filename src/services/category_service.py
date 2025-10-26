@@ -155,3 +155,180 @@ class CategoryService:
             print(f"Error deleting subcategory {subcategory_id}: {str(e)}")
             db.session.rollback()
             return False
+    
+    @staticmethod
+    def create_onboarding_categories(user_id, categories, subcategories, custom_category_names, custom_subcategory_names):
+        """Create categories and subcategories from onboarding data."""
+        # Define the category mapping (same as in original app)
+        category_mapping = {
+            'faithful-stewardship': {
+                'name': 'Giving',
+                'subcategories': {
+                    'tithe': 'Tithe',
+                    'offering': 'Offering',
+                    'social-responsibility': 'Social Responsibility'
+                }
+            },
+            'groceries': {
+                'name': 'Groceries',
+                'subcategories': {
+                    'food-home-essentials': 'Food & Home Essentials',
+                    'dining-out': 'Dining out'
+                }
+            },
+            'housing': {
+                'name': 'Housing',
+                'subcategories': {
+                    'mortgage-rent': 'Mortgage/Rent',
+                    'hoa-fees-levies': 'HOA Fees/Levies',
+                    'electricity-bill': 'Electricity Bill',
+                    'water-bill': 'Water Bill',
+                    'home-maintenance': 'Home maintenance',
+                    'home-insurance': 'Home Insurance',
+                    'internet': 'Internet'
+                }
+            },
+            'transportation': {
+                'name': 'Transportation',
+                'subcategories': {
+                    'loan-repayment': 'Loan repayment',
+                    'insurance': 'Insurance',
+                    'fuel': 'Fuel',
+                    'car-tracker': 'Car Tracker',
+                    'car-wash': 'Car wash'
+                }
+            },
+            'monthly-commitments': {
+                'name': 'Monthly Commitments',
+                'subcategories': {
+                    'life-cover': 'Life cover',
+                    'funeral-plan': 'Funeral Plan',
+                    'credit-card-repayment': 'Credit card repayment',
+                    'monthly-banking-fees': 'Monthly Banking Fees'
+                }
+            },
+            'leisure-entertainment': {
+                'name': 'Leisure/Entertainment',
+                'subcategories': {
+                    'spotify': 'Spotify',
+                    'weekend-adventures': 'Weekend adventures'
+                }
+            },
+            'personal-care': {
+                'name': 'Personal Care',
+                'subcategories': {
+                    'gym-membership': 'Gym membership',
+                    'haircuts': 'Haircuts',
+                    'clothing': 'Clothing'
+                }
+            },
+            'savings-goals': {
+                'name': 'Savings Goals',
+                'subcategories': {
+                    'emergency-fund': 'Emergency fund',
+                    'general-savings': 'General Savings',
+                    'short-term-goal': 'Short term goal'
+                }
+            },
+            'once-off-expenses': {
+                'name': 'Once-off expenses (populated as it happens)',
+                'subcategories': {
+                    'asset-purchase': 'Asset purchase',
+                    'emergency': 'Emergency'
+                }
+            }
+        }
+        
+        # Group custom subcategories by their parent category
+        custom_category_subcategories = {}
+        for subcategory_key in subcategories:
+            if subcategory_key.startswith('custom-subcategory-'):
+                parts = subcategory_key.split('-')
+                if len(parts) >= 4:
+                    if parts[2] == 'custom' and len(parts) >= 5:
+                        parent_category_id = f"{parts[2]}-{parts[3]}-{parts[4]}"
+                    else:
+                        parent_category_id = parts[2]
+                    
+                    if parent_category_id not in custom_category_subcategories:
+                        custom_category_subcategories[parent_category_id] = []
+                    custom_category_subcategories[parent_category_id].append(subcategory_key)
+        
+        # Process each selected category
+        for category_key in categories:
+            if category_key in category_mapping:
+                # Handle predefined categories
+                category_data = category_mapping[category_key]
+                category = Category(
+                    name=category_data['name'],
+                    user_id=user_id,
+                    is_template=True
+                )
+                db.session.add(category)
+                db.session.flush()
+                
+                # Add selected subcategories for this category (both predefined and custom)
+                for subcategory_key in subcategories:
+                    if subcategory_key in category_data['subcategories']:
+                        # Predefined subcategory
+                        subcategory = Subcategory(
+                            name=category_data['subcategories'][subcategory_key],
+                            category_id=category.id
+                        )
+                        db.session.add(subcategory)
+                    elif subcategory_key.startswith(f'custom-subcategory-{category_key}-'):
+                        # Custom subcategory under a predefined category
+                        subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
+                        # Only add if not already added (avoid duplicates from custom_category_subcategories)
+                        subcategory = Subcategory(
+                            name=subcategory_name,
+                            category_id=category.id
+                        )
+                        db.session.add(subcategory)
+                        
+            elif category_key.startswith('custom-category-'):
+                # Handle custom categories
+                custom_category_name = custom_category_names.get(category_key, f'Custom Category {category_key.split("-")[-1]}')
+                
+                category = Category(
+                    name=custom_category_name,
+                    user_id=user_id,
+                    is_template=False
+                )
+                db.session.add(category)
+                db.session.flush()
+                
+                # Add subcategories for this custom category
+                # First get the numeric part after 'custom-category-'
+                category_number = category_key.split('-')[-1]
+                matching_custom_subcategory_keys = []
+                
+                # Find all custom subcategories that belong to this custom category
+                # Pattern: custom-subcategory-custom-category-{number}-{counter}
+                # Example: custom-subcategory-custom-category-1-2
+                for subcategory_key in subcategories:
+                    # Check if this subcategory belongs to our custom category
+                    if subcategory_key.startswith(f'custom-subcategory-custom-category-{category_number}-'):
+                        matching_custom_subcategory_keys.append(subcategory_key)
+                
+                # Also check the grouped custom_category_subcategories (if it exists)
+                if category_key in custom_category_subcategories:
+                    # Only add if not already in matching keys to avoid duplicates
+                    for sub_key in custom_category_subcategories[category_key]:
+                        if sub_key not in matching_custom_subcategory_keys:
+                            matching_custom_subcategory_keys.append(sub_key)
+                
+                # Add the found subcategories (avoid duplicates by using set or checking)
+                added_names = set()
+                for subcategory_key in matching_custom_subcategory_keys:
+                    subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
+                    # Avoid adding duplicate subcategories with the same name
+                    if subcategory_name not in added_names:
+                        subcategory = Subcategory(
+                            name=subcategory_name,
+                            category_id=category.id
+                        )
+                        db.session.add(subcategory)
+                        added_names.add(subcategory_name)
+        
+        db.session.commit()

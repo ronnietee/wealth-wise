@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify
 from ...auth import token_required, get_current_user
 from ...services import UserService, EmailService
 from ...utils.currency import get_currency_symbol
+from ...extensions import db
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
@@ -88,11 +89,18 @@ def change_password(current_user):
 @token_required
 def reset_user_data(current_user):
     """Reset all user data except account."""
-    success, error = UserService.reset_user_data(current_user)
-    if not success:
-        return jsonify({'message': error}), 500
-    
-    return jsonify({'message': 'Data reset successfully'}), 200
+    try:
+        success, error = UserService.reset_user_data(current_user)
+        if not success:
+            print(f"Reset data failed: {error}")
+            return jsonify({'message': error or 'Failed to reset data'}), 500
+        
+        return jsonify({'message': 'Data reset successfully'}), 200
+    except Exception as e:
+        print(f"Reset data exception: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'message': f'Error resetting data: {str(e)}'}), 500
 
 
 @user_bp.route('/delete-account', methods=['POST'])
@@ -159,8 +167,6 @@ def export_user_data(current_user):
         
         # Get active budget period for summary
         from ...models import BudgetPeriod, Budget, BudgetAllocation, Category, Subcategory, Transaction
-        from ...extensions import db
-        from ...utils.currency import get_currency_symbol
         
         active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
         if active_period:
@@ -404,7 +410,6 @@ def update_user_theme(current_user):
         return jsonify({'message': 'Invalid theme. Must be "light" or "dark"'}), 400
     
     current_user.theme = theme
-    from ..extensions import db
     db.session.commit()
     
     return jsonify({'message': 'Theme updated successfully'}), 200

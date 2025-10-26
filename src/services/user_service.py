@@ -21,21 +21,22 @@ class UserService:
         if User.query.filter_by(username=username).first():
             return None, "Username already taken"
         
+        # Extract currency from kwargs if present
+        currency = kwargs.pop('currency', 'USD')
+        
         # Create user
         user = User(
             username=username,
             email=email,
             first_name=first_name,
             last_name=last_name,
+            currency=currency,
             **kwargs
         )
         user.set_password(password)
         
         db.session.add(user)
         db.session.commit()
-        
-        # Create default categories
-        create_default_categories(user.id)
         
         return user, None
     
@@ -94,46 +95,61 @@ class UserService:
             # Delete in correct order to respect foreign key constraints
             from ..models import (
                 Transaction, BudgetAllocation, IncomeSource, Budget, 
-                BudgetPeriod, Category, Subcategory, RecurringIncomeSource,
+                BudgetPeriod, RecurringIncomeSource,
                 RecurringBudgetAllocation, Account
             )
             
-            # Delete transactions
-            Transaction.query.filter_by(user_id=user.id).delete()
+            user_id = user.id
+            if not user_id:
+                return False, "Invalid user ID"
             
-            # Delete budget allocations
-            BudgetAllocation.query.join(Budget).filter(Budget.user_id == user.id).delete()
+            # Delete in correct order to respect foreign key constraints
+            # Get all relevant IDs first
+            budgets = Budget.query.filter_by(user_id=user_id).all()
+            budget_ids = [b.id for b in budgets]
             
-            # Delete income sources
-            IncomeSource.query.join(Budget).filter(Budget.user_id == user.id).delete()
+            budget_periods = BudgetPeriod.query.filter_by(user_id=user_id).all()
+            period_ids = [p.id for p in budget_periods]
             
-            # Delete budgets
-            Budget.query.filter_by(user_id=user.id).delete()
+            if budget_ids:
+                # 1. Delete budget allocations
+                BudgetAllocation.query.filter(BudgetAllocation.budget_id.in_(budget_ids)).delete(synchronize_session=False)
+                db.session.commit()
+                
+                # 2. Delete income sources
+                IncomeSource.query.filter(IncomeSource.budget_id.in_(budget_ids)).delete(synchronize_session=False)
+                db.session.commit()
             
-            # Delete budget periods
-            BudgetPeriod.query.filter_by(user_id=user.id).delete()
-            
-            # Delete subcategories
-            Subcategory.query.join(Category).filter(Category.user_id == user.id).delete()
-            
-            # Delete categories
-            Category.query.filter_by(user_id=user.id).delete()
-            
-            # Delete recurring income sources
-            RecurringIncomeSource.query.filter_by(user_id=user.id).delete()
-            
-            # Delete recurring allocations
-            RecurringBudgetAllocation.query.filter_by(user_id=user.id).delete()
-            
-            # Keep accounts but reset balances
-            Account.query.filter_by(user_id=user.id).update({'current_balance': 0})
-            
+            # 3. Delete transactions
+            Transaction.query.filter_by(user_id=user_id).delete(synchronize_session=False)
             db.session.commit()
             
-            # Recreate default categories
-            create_default_categories(user.id)
+            # 4. Delete budgets
+            if budget_ids:
+                Budget.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+                db.session.commit()
+            
+            # 5. Delete budget periods
+            if period_ids:
+                BudgetPeriod.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+                db.session.commit()
+            
+            # 6. Delete recurring income sources
+            RecurringIncomeSource.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+            db.session.commit()
+            
+            # 7. Delete recurring allocations
+            RecurringBudgetAllocation.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+            db.session.commit()
+            
+            # 8. Keep accounts but reset balances
+            Account.query.filter_by(user_id=user_id).update({'current_balance': 0})
+            db.session.commit()
             
             return True, None
         except Exception as e:
+            print(f"Error in reset_user_data: {str(e)}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
             db.session.rollback()
             return False, str(e)
