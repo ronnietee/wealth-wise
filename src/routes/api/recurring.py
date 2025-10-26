@@ -7,7 +7,7 @@ from ...auth import token_required
 from ...extensions import db
 from ...models import RecurringIncomeSource, RecurringBudgetAllocation
 
-recurring_bp = Blueprint('recurring', __name__, url_prefix='/recurring')
+recurring_bp = Blueprint('recurring', __name__, url_prefix='/')
 
 
 @recurring_bp.route('/recurring-income-sources', methods=['GET'])
