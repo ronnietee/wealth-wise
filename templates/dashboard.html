@@ -212,7 +212,7 @@
                                 <i class="fas fa-plus-circle"></i>
                             </div>
                             <div class="action-content">
-                                <h4>Add Expense</h4>
+                                <h4>Record Transaction</h4>
                                 <p>Record new transactions</p>
                             </div>
                             <div class="action-arrow">
@@ -813,7 +813,10 @@ function dismissOverspendingAlert() {
     hideOverspendingAlert();
 }
 
-function showNoBudgetMessage() {
+async function showNoBudgetMessage() {
+    // Check if user has any budget periods at all
+    const hasPeriods = await checkIfHasBudgetPeriods();
+    
     // Hide main dashboard content
     const mainContent = document.querySelector('.dashboard-content');
     if (mainContent) {
@@ -824,10 +827,43 @@ function showNoBudgetMessage() {
     const noBudgetMessage = document.getElementById('no-budget-message');
     if (noBudgetMessage) {
         noBudgetMessage.style.display = 'block';
+        
+        // Update message based on whether periods exist
+        const titleElement = noBudgetMessage.querySelector('h3');
+        const messageElement = noBudgetMessage.querySelector('p');
+        const buttonElement = noBudgetMessage.querySelector('a.btn');
+        
+        if (hasPeriods) {
+            titleElement.textContent = 'No Active Budget Period';
+            messageElement.textContent = 'You have budget periods but none are currently active. You can activate an existing budget period or create a new one to start managing your finances.';
+            if (buttonElement) {
+                buttonElement.textContent = 'Create/Activate Budget';
+            }
+        } else {
+            titleElement.textContent = 'No Budget Period Found';
+            messageElement.textContent = 'You don\'t have any budget periods set up yet. Create your first budget to start managing your finances.';
+            if (buttonElement) {
+                buttonElement.textContent = 'Create Budget';
+            }
+        }
     }
     
     // Update budget period indicator
     document.getElementById('current-budget-name').textContent = 'No Budget';
+}
+
+async function checkIfHasBudgetPeriods() {
+    try {
+        const response = await authenticatedFetch('/api/budget/budget-periods');
+        if (response.ok) {
+            const periods = await response.json();
+            return periods && periods.length > 0;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error checking for budget periods:', error);
+        return false;
+    }
 }
 
 function hideNoBudgetMessage() {
