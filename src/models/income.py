@@ -15,6 +15,8 @@ class IncomeSource(db.Model):
     name = db.Column(db.String(100), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     budget_id = db.Column(db.Integer, db.ForeignKey('budget.id'), nullable=False)
+    is_recurring_source = db.Column(db.Boolean, default=False)
+    recurring_source_id = db.Column(db.Integer, db.ForeignKey('recurring_income_source.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):

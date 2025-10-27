@@ -112,21 +112,18 @@ def get_recurring_allocations(current_user):
     
     result = []
     for allocation in allocations:
-        result.append({
-            'id': allocation.id,
-            'allocated_amount': allocation.allocated_amount,
-            'is_active': allocation.is_active,
-            'subcategory': {
-                'id': allocation.subcategory.id,
-                'name': allocation.subcategory.name,
-                'category': {
-                    'id': allocation.subcategory.category.id,
-                    'name': allocation.subcategory.category.name
-                }
-            },
-            'created_at': allocation.created_at.isoformat(),
-            'updated_at': allocation.updated_at.isoformat()
-        })
+        # Check if subcategory relationship exists
+        if allocation.subcategory:
+            result.append({
+                'id': allocation.id,
+                'allocated_amount': allocation.allocated_amount,
+                'is_active': allocation.is_active,
+                'category_name': allocation.subcategory.category.name if allocation.subcategory.category else '',
+                'subcategory_name': allocation.subcategory.name,
+                'subcategory_id': allocation.subcategory.id,
+                'created_at': allocation.created_at.isoformat(),
+                'updated_at': allocation.updated_at.isoformat()
+            })
     
     return jsonify(result), 200
 

@@ -12,7 +12,7 @@ class CategoryService:
     @staticmethod
     def get_user_categories(user_id):
         """Get all categories for a user with allocation data."""
-        from ..models import Budget, BudgetPeriod, BudgetAllocation
+        from ..models import Budget, BudgetPeriod, BudgetAllocation, RecurringBudgetAllocation
         
         categories = Category.query.filter_by(user_id=user_id).all()
         result = []
@@ -21,6 +21,13 @@ class CategoryService:
         active_period = BudgetPeriod.query.filter_by(user_id=user_id, is_active=True).first()
         allocations = {}
         spent_amounts = {}
+        
+        # Get all active recurring allocations to check if a subcategory has a recurring allocation
+        recurring_allocations = RecurringBudgetAllocation.query.filter_by(
+            user_id=user_id, 
+            is_active=True
+        ).all()
+        subcategory_has_recurring = {alloc.subcategory_id: True for alloc in recurring_allocations}
         
         if active_period:
             budget = Budget.query.filter_by(period_id=active_period.id, user_id=user_id).first()
@@ -59,6 +66,8 @@ class CategoryService:
                 allocated = allocations.get(subcategory.id, 0)
                 spent = spent_amounts.get(subcategory.id, 0)
                 balance = allocated - spent
+                # Check if this subcategory has an active recurring allocation
+                is_recurring = subcategory_has_recurring.get(subcategory.id, False)
                 
                 subcategory_data = {
                     'id': subcategory.id,
@@ -66,7 +75,8 @@ class CategoryService:
                     'created_at': subcategory.created_at.isoformat(),
                     'allocated': allocated,
                     'spent': spent,
-                    'balance': balance
+                    'balance': balance,
+                    'is_recurring_allocation': is_recurring
                 }
                 category_data['subcategories'].append(subcategory_data)
             

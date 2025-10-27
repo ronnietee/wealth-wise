@@ -58,6 +58,11 @@ class BudgetService:
         db.session.add(budget)
         db.session.commit()
         
+        # Populate budget from recurring sources
+        from ..models import User
+        user = User.query.get(user_id)
+        populate_budget_from_recurring(user, budget)
+        
         return period
     
     @staticmethod
@@ -72,6 +77,21 @@ class BudgetService:
             return None
         
         period.is_active = True
+        db.session.commit()
+        return period
+    
+    @staticmethod
+    def update_budget_period(period_id, user_id, name, period_type, start_date, end_date):
+        """Update a budget period."""
+        period = BudgetPeriod.query.filter_by(id=period_id, user_id=user_id).first()
+        if not period:
+            return None
+        
+        period.name = name
+        period.period_type = period_type
+        period.start_date = start_date
+        period.end_date = end_date
+        
         db.session.commit()
         return period
     
@@ -100,7 +120,12 @@ class BudgetService:
             
             # Get income sources
             income_sources = IncomeSource.query.filter_by(budget_id=budget.id).all()
-            income_data = [{'id': source.id, 'name': source.name, 'amount': source.amount} for source in income_sources]
+            income_data = [{
+                'id': source.id, 
+                'name': source.name, 
+                'amount': source.amount,
+                'is_recurring': source.is_recurring_source
+            } for source in income_sources]
             
             # Get allocations with error handling
             allocations = BudgetAllocation.query.filter_by(budget_id=budget.id).all()

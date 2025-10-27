@@ -56,6 +56,8 @@ class BudgetAllocation(db.Model):
     allocated_amount = db.Column(db.Float, default=0)
     subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
     budget_id = db.Column(db.Integer, db.ForeignKey('budget.id'), nullable=False)
+    is_recurring_allocation = db.Column(db.Boolean, default=False)
+    recurring_allocation_id = db.Column(db.Integer, db.ForeignKey('recurring_budget_allocation.id'), nullable=True)
     
     # Relationships
     subcategory = db.relationship('Subcategory', backref='budget_allocations', lazy=True)

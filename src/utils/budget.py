@@ -27,7 +27,9 @@ def populate_budget_from_recurring(user, budget):
             income_source = IncomeSource(
                 name=recurring_source.name,
                 amount=recurring_source.amount,
-                budget_id=budget.id
+                budget_id=budget.id,
+                is_recurring_source=True,
+                recurring_source_id=recurring_source.id
             )
             db.session.add(income_source)
         
@@ -41,7 +43,9 @@ def populate_budget_from_recurring(user, budget):
             budget_allocation = BudgetAllocation(
                 allocated_amount=recurring_allocation.allocated_amount,
                 subcategory_id=recurring_allocation.subcategory_id,
-                budget_id=budget.id
+                budget_id=budget.id,
+                is_recurring_allocation=True,
+                recurring_allocation_id=recurring_allocation.id
             )
             db.session.add(budget_allocation)
         

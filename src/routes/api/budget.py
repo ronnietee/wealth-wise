@@ -67,6 +67,50 @@ def activate_budget_period(current_user, period_id):
     return jsonify({'message': 'Budget period activated successfully'}), 200
 
 
+@budget_bp.route('/budget-periods/<int:period_id>', methods=['PUT'])
+@token_required
+def update_budget_period(current_user, period_id):
+    """Update a budget period."""
+    data = request.get_json()
+    
+    name = data.get('name', '').strip()
+    period_type = data.get('period_type', '').strip()
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    
+    if not all([name, period_type, start_date, end_date]):
+        return jsonify({'message': 'All fields are required'}), 400
+    
+    try:
+        from datetime import datetime
+        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00')).date()
+        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00')).date()
+    except (ValueError, AttributeError):
+        return jsonify({'message': 'Invalid date format'}), 400
+    
+    period = BudgetService.update_budget_period(
+        period_id=period_id,
+        user_id=current_user.id,
+        name=name,
+        period_type=period_type,
+        start_date=start_date,
+        end_date=end_date
+    )
+    
+    if not period:
+        return jsonify({'message': 'Budget period not found'}), 404
+    
+    return jsonify({
+        'id': period.id,
+        'name': period.name,
+        'period_type': period.period_type,
+        'start_date': period.start_date.isoformat(),
+        'end_date': period.end_date.isoformat(),
+        'is_active': period.is_active,
+        'message': 'Budget period updated successfully'
+    }), 200
+
+
 @budget_bp.route('/budget-periods/<int:period_id>', methods=['DELETE'])
 @token_required
 def delete_budget_period(current_user, period_id):

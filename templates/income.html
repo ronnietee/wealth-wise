@@ -304,7 +304,10 @@ function renderIncomeSources() {
     container.innerHTML = incomeSources.map(source => `
         <div class="income-source-item">
             <div class="source-info">
-                <div class="source-name">${source.name}</div>
+                <div class="source-name">
+                    ${source.name}
+                    ${source.is_recurring ? '<i class="fas fa-sync-alt" style="color: #28a745; margin-left: 8px;" title="Recurring Income Source"></i>' : ''}
+                </div>
                 <div class="source-amount">${formatCurrency(source.amount, userCurrency)}</div>
             </div>
             <div class="source-actions">
