@@ -18,7 +18,7 @@ class Category(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    subcategories = db.relationship('Subcategory', backref='category', lazy=True, cascade='all, delete-orphan')
+    subcategories = db.relationship('Subcategory', backref='category', lazy=True, cascade='all, delete')
     
     def __repr__(self):
         return f'<Category {self.name}>'
@@ -33,6 +33,9 @@ class Subcategory(db.Model):
     name = db.Column(db.String(100), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Unique constraint to prevent duplicate subcategory names within the same category
+    __table_args__ = (db.UniqueConstraint('name', 'category_id', name='uq_subcategory_name_category'),)
     
     # Relationships are defined in Category model
     

@@ -141,6 +141,8 @@ def complete_onboarding():
         
         # Create user
         from ...services import UserService, AuthService
+        from ...extensions import db
+        
         user, error = UserService.create_user(
             username=username,
             email=email,
@@ -163,15 +165,22 @@ def complete_onboarding():
         custom_category_names = data.get('custom_category_names', {})
         custom_subcategory_names = data.get('custom_subcategory_names', {})
         
-        if categories or subcategories:
-            from ...services import CategoryService
-            CategoryService.create_onboarding_categories(
-                user_id=user.id,
-                categories=categories,
-                subcategories=subcategories,
-                custom_category_names=custom_category_names,
-                custom_subcategory_names=custom_subcategory_names
-            )
+        try:
+            if categories or subcategories:
+                from ...services import CategoryService
+                CategoryService.create_onboarding_categories(
+                    user_id=user.id,
+                    categories=categories,
+                    subcategories=subcategories,
+                    custom_category_names=custom_category_names,
+                    custom_subcategory_names=custom_subcategory_names
+                )
+        except Exception as category_error:
+            # If category creation fails, rollback user creation
+            print(f"Category creation failed: {str(category_error)}")
+            db.session.delete(user)
+            db.session.commit()
+            return jsonify({'message': f'Error creating categories: {str(category_error)}'}), 500
         
         # Create email verification token
         verification_token = AuthService.create_email_verification_token(user)

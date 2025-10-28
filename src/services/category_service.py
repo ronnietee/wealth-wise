@@ -169,6 +169,23 @@ class CategoryService:
     @staticmethod
     def create_onboarding_categories(user_id, categories, subcategories, custom_category_names, custom_subcategory_names):
         """Create categories and subcategories from onboarding data."""
+        
+        # Validate input data to prevent duplicates
+        if not isinstance(categories, list) or not isinstance(subcategories, list):
+            raise ValueError("Categories and subcategories must be lists")
+        
+        # Check for duplicate subcategory keys
+        subcategory_counts = {}
+        for sub_key in subcategories:
+            subcategory_counts[sub_key] = subcategory_counts.get(sub_key, 0) + 1
+        
+        duplicates = [key for key, count in subcategory_counts.items() if count > 1]
+        if duplicates:
+            print(f"Warning: Duplicate subcategory keys found: {duplicates}")
+            # Remove duplicates, keeping only the first occurrence
+            subcategories = list(dict.fromkeys(subcategories))  # Preserves order, removes duplicates
+            print(f"Cleaned subcategories list: {subcategories}")
+        
         # Define the category mapping (same as in original app)
         category_mapping = {
             'faithful-stewardship': {
@@ -278,23 +295,62 @@ class CategoryService:
                 db.session.flush()
                 
                 # Add selected subcategories for this category (both predefined and custom)
+                # Only process subcategories that belong to this specific category
+                added_subcategories = set()  # Track added subcategories to prevent duplicates
+                
                 for subcategory_key in subcategories:
                     if subcategory_key in category_data['subcategories']:
-                        # Predefined subcategory
-                        subcategory = Subcategory(
-                            name=category_data['subcategories'][subcategory_key],
+                        # Predefined subcategory - only add if it belongs to this category
+                        subcategory_name = category_data['subcategories'][subcategory_key]
+                        
+                        # Check if this subcategory name was already added to any category
+                        existing_subcategory = Subcategory.query.filter_by(
+                            name=subcategory_name,
                             category_id=category.id
-                        )
-                        db.session.add(subcategory)
+                        ).first()
+                        
+                        if not existing_subcategory and subcategory_name not in added_subcategories:
+                            try:
+                                subcategory = Subcategory(
+                                    name=subcategory_name,
+                                    category_id=category.id
+                                )
+                                db.session.add(subcategory)
+                                db.session.flush()  # Flush to catch constraint errors immediately
+                                added_subcategories.add(subcategory_name)
+                                print(f"Added subcategory '{subcategory_name}' to category '{category_data['name']}'")
+                            except Exception as e:
+                                print(f"Failed to add subcategory '{subcategory_name}' to category '{category_data['name']}': {str(e)}")
+                                db.session.rollback()
+                                # This could happen due to unique constraint violation
+                                continue
+                        elif existing_subcategory:
+                            print(f"Subcategory '{subcategory_name}' already exists in category '{category_data['name']}'")
+                        else:
+                            print(f"Subcategory '{subcategory_name}' already added to this category")
+                            
                     elif subcategory_key.startswith(f'custom-subcategory-{category_key}-'):
                         # Custom subcategory under a predefined category
                         subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
-                        # Only add if not already added (avoid duplicates from custom_category_subcategories)
-                        subcategory = Subcategory(
-                            name=subcategory_name,
-                            category_id=category.id
-                        )
-                        db.session.add(subcategory)
+                        
+                        # Check if this custom subcategory name was already added
+                        if subcategory_name not in added_subcategories:
+                            try:
+                                subcategory = Subcategory(
+                                    name=subcategory_name,
+                                    category_id=category.id
+                                )
+                                db.session.add(subcategory)
+                                db.session.flush()  # Flush to catch constraint errors immediately
+                                added_subcategories.add(subcategory_name)
+                                print(f"Added custom subcategory '{subcategory_name}' to category '{category_data['name']}'")
+                            except Exception as e:
+                                print(f"Failed to add custom subcategory '{subcategory_name}' to category '{category_data['name']}': {str(e)}")
+                                db.session.rollback()
+                                # This could happen due to unique constraint violation
+                                continue
+                        else:
+                            print(f"Custom subcategory '{subcategory_name}' already added to this category")
                         
             elif category_key.startswith('custom-category-'):
                 # Handle custom categories
@@ -340,5 +396,30 @@ class CategoryService:
                         )
                         db.session.add(subcategory)
                         added_names.add(subcategory_name)
+        
+        # Final validation: Check for any remaining duplicate subcategories
+        print("\nPerforming final validation...")
+        all_user_subcategories = Subcategory.query.join(Category).filter(Category.user_id == user_id).all()
+        subcategory_names = {}
+        
+        for sub in all_user_subcategories:
+            if sub.name not in subcategory_names:
+                subcategory_names[sub.name] = []
+            subcategory_names[sub.name].append(sub)
+        
+        duplicates_found = False
+        for name, subs in subcategory_names.items():
+            if len(subs) > 1:
+                duplicates_found = True
+                print(f"ERROR: Found duplicate subcategory '{name}' in {len(subs)} categories:")
+                for sub in subs:
+                    cat_name = sub.category.name if sub.category else "Unknown"
+                    print(f"  - Category: {cat_name} (ID: {sub.category_id})")
+        
+        if duplicates_found:
+            print("ERROR: Duplicate subcategories detected after creation. This should not happen.")
+            raise ValueError("Duplicate subcategories detected in database")
+        else:
+            print("Validation passed: No duplicate subcategories found.")
         
         db.session.commit()

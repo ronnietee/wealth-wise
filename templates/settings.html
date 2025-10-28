@@ -405,6 +405,22 @@ function closePasswordModal() {
     });
 }
 
+function loadUserSettings() {
+    return fetch('/api/user/settings', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data;
+    })
+    .catch(error => {
+        console.error('Error loading user settings:', error);
+        return {};
+    });
+}
+
 function openDisplayNameModal() {
     // Load current display name
     loadUserSettings().then(settings => {
@@ -489,7 +505,12 @@ function updatePassword() {
 }
 
 function updateDisplayName() {
-    const displayName = document.getElementById('displayName').value.trim();
+    let displayName = document.getElementById('displayName').value.trim();
+    
+    // If empty, set to null so it can fall back to first name
+    if (displayName === '') {
+        displayName = null;
+    }
     
     // Make API call to update display name
     fetch('/api/user/settings', {
