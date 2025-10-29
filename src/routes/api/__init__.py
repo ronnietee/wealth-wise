@@ -282,6 +282,7 @@ def check_overspending(current_user):
     """Check for subcategories where spending exceeds allocation."""
     try:
         from ...models import Budget, BudgetPeriod, BudgetAllocation, Transaction
+        from ...extensions import db
         
         # Get active budget period
         active_period = BudgetPeriod.query.filter_by(user_id=current_user.id, is_active=True).first()
@@ -292,34 +293,77 @@ def check_overspending(current_user):
         if not budget:
             return jsonify({'message': 'No budget found for active period'}), 404
         
-        # Get allocations
+        # Get all allocations for this budget
         allocations = BudgetAllocation.query.filter_by(budget_id=budget.id).all()
         
+        # Get all transactions in the active period
+        from ...models import Category, Subcategory
+        user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(
+            Category.user_id == current_user.id
+        ).subquery()
+        
+        transactions = Transaction.query.filter(
+            Transaction.subcategory_id.in_(user_subcategory_ids),
+            Transaction.user_id == current_user.id,
+            Transaction.transaction_date >= active_period.start_date,
+            Transaction.transaction_date <= active_period.end_date
+        ).all()
+        
+        # Group transactions by subcategory
+        subcategory_spending = {}
+        for transaction in transactions:
+            if transaction.amount < 0:  # Only count expenses
+                subcategory_id = transaction.subcategory_id
+                if subcategory_id not in subcategory_spending:
+                    subcategory_spending[subcategory_id] = 0
+                subcategory_spending[subcategory_id] += abs(transaction.amount)
+        
+        # Check for overspending
         overspending = []
+        checked_subcategories = set()
+        
+        # Check subcategories that have allocations
         for allocation in allocations:
-            # Get transactions for this subcategory in the current period
-            transactions = Transaction.query.filter(
-                Transaction.subcategory_id == allocation.subcategory_id,
-                Transaction.user_id == current_user.id,
-                Transaction.transaction_date >= active_period.start_date,
-                Transaction.transaction_date <= active_period.end_date
-            ).all()
+            subcategory_id = allocation.subcategory_id
+            checked_subcategories.add(subcategory_id)
             
-            total_spent = sum(transaction.amount for transaction in transactions)
+            total_spent = subcategory_spending.get(subcategory_id, 0)
+            allocated = allocation.allocated_amount or 0
             
-            if total_spent > allocation.allocated_amount:
+            # Check if spending exceeds allocation
+            if total_spent > allocated:
+                overspent_amount = total_spent - allocated
+                overspent_percentage = (overspent_amount / allocated * 100) if allocated > 0 else 0
+                
                 overspending.append({
-                    'subcategory_id': allocation.subcategory_id,
+                    'subcategory_id': subcategory_id,
                     'subcategory_name': allocation.subcategory.name,
                     'category_name': allocation.subcategory.category.name,
-                    'allocated_amount': allocation.allocated_amount,
-                    'total_spent': total_spent,
-                    'overspend_amount': total_spent - allocation.allocated_amount
+                    'allocated': allocated,
+                    'spent': total_spent,
+                    'overspent_amount': overspent_amount,
+                    'overspent_percentage': overspent_percentage
                 })
         
+        # Check subcategories with spending but no allocations (spending > 0 with allocated = 0 is overspending)
+        for subcategory_id, total_spent in subcategory_spending.items():
+            if subcategory_id not in checked_subcategories and total_spent > 0:
+                # Get subcategory info
+                subcategory = Subcategory.query.get(subcategory_id)
+                if subcategory and subcategory.category.user_id == current_user.id:
+                    overspending.append({
+                        'subcategory_id': subcategory_id,
+                        'subcategory_name': subcategory.name,
+                        'category_name': subcategory.category.name,
+                        'allocated': 0,
+                        'spent': total_spent,
+                        'overspent_amount': total_spent,
+                        'overspent_percentage': 0  # Can't calculate percentage when allocated is 0
+                    })
+        
         return jsonify({
-            'overspending': overspending,
-            'count': len(overspending),
+            'overspent_categories': overspending,
+            'total_overspent_categories': len(overspending),
             'has_overspending': len(overspending) > 0
         }), 200
         
