@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>{% block title %}STEWARD - Christian Family Budgeting{% endblock %}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6.3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=6.4">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Global Loading Spinner Styles -->
@@ -269,7 +272,7 @@
         
                <nav class="sidebar-nav" role="menubar">
                    <a href="/dashboard" class="sidebar-link" role="menuitem" aria-label="Go to Dashboard" data-page="dashboard">
-                       <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                       <i class="fas fa-home" aria-hidden="true"></i>
                        <span class="sidebar-link-text">Dashboard</span>
                    </a>
                    <a href="/income" class="sidebar-link" role="menuitem" aria-label="Manage Income" data-page="income">
@@ -347,11 +350,11 @@
         </main>
     </div>
 
-    <!-- Add Expense Modal -->
+    <!-- Record Transaction Modal -->
     <div class="modal" id="addExpenseModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add New Expense</h2>
+                <h2>Record Transaction</h2>
                 <button class="close-btn" onclick="closeModal('addExpenseModal')">&times;</button>
             </div>
             <div class="modal-body">
@@ -392,7 +395,7 @@
                         <textarea id="modalComment" name="comment" rows="3" placeholder="Additional notes..."></textarea>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Add Expense</button>
+                        <button type="submit" class="btn btn-primary">Record Transaction</button>
                         <button type="button" class="btn btn-secondary" onclick="closeModal('addExpenseModal')">Cancel</button>
                     </div>
                 </form>
@@ -521,8 +524,11 @@
         </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=6.4"></script>
     <script>
+        // Global variables
+        let userCurrency = 'USD';
+        
         // Get authentication token from localStorage
         function getToken() {
             const token = localStorage.getItem('token');
@@ -727,10 +733,12 @@
             .then(data => {
                 showNotification('Currency updated successfully!', 'success');
                 closeCurrencyModal();
-                // Reload the page to update currency formatting
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Update global currency and dispatch event instead of reloading
+                userCurrency = currency;
+                // Dispatch currency loaded event to update all pages
+                window.dispatchEvent(new CustomEvent('currencyLoaded', {
+                    detail: { currency: currency }
+                }));
             })
             .catch(error => {
                 console.error('Error updating currency:', error);
@@ -953,7 +961,7 @@
             const linksToDisable = ['/income', '/breakdown', '/transactions', '/accounts'];
             
             // Check if budget exists
-            authenticatedFetch('/api/budget')
+            authenticatedFetch('/api/budget/budget')
                 .then(response => {
                     if (response.status === 404) {
                         // No budget found, disable the links

@@ -56,6 +56,10 @@
                             <i class="fas fa-save"></i>
                             Save Balance
                         </button>
+                        <button type="button" class="btn btn-secondary" onclick="recalculateIncome()">
+                            <i class="fas fa-calculator"></i>
+                            Recalculate Total
+                        </button>
                     </div>
                 </form>
             </div>
@@ -261,7 +265,7 @@ function updateCurrencySymbols() {
 }
 
 function loadCurrentBudget() {
-    fetch('/api/budget', {
+    fetch('/api/budget/budget', {
         headers: {
             'Authorization': 'Bearer ' + getToken()
         }
@@ -300,7 +304,10 @@ function renderIncomeSources() {
     container.innerHTML = incomeSources.map(source => `
         <div class="income-source-item">
             <div class="source-info">
-                <div class="source-name">${source.name}</div>
+                <div class="source-name">
+                    ${source.name}
+                    ${source.is_recurring ? '<i class="fas fa-sync-alt" style="color: #28a745; margin-left: 8px;" title="Recurring Income Source"></i>' : ''}
+                </div>
                 <div class="source-amount">${formatCurrency(source.amount, userCurrency)}</div>
             </div>
             <div class="source-actions">
@@ -367,7 +374,7 @@ function handleBalanceSubmit(e) {
         balance_brought_forward: parseFloat(formData.get('balance_brought_forward')) || 0
     };
     
-    fetch('/api/budget', {
+    fetch('/api/budget/budget', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -379,10 +386,11 @@ function handleBalanceSubmit(e) {
     .then(data => {
         showNotification('Balance updated successfully!', 'success');
         updateAvailableBalance();
-        // Trigger budget balance check for dashboard
-        if (typeof checkBudgetBalance === 'function') {
-            checkBudgetBalance();
-        }
+        // Dispatch event to refresh dashboard
+        console.log('Dispatching budgetDataChanged event for balance_updated');
+        window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+            detail: { type: 'balance_updated' }
+        }));
     })
     .catch(error => {
         console.error('Error updating budget:', error);
@@ -414,7 +422,7 @@ function handleAddIncomeSource(e) {
         amount: parseFloat(formData.get('amount'))
     };
     
-    fetch('/api/income-sources', {
+    fetch('/api/budget/income-sources', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -428,10 +436,11 @@ function handleAddIncomeSource(e) {
         closeModal('addIncomeSourceModal');
         e.target.reset();
         loadCurrentBudget();
-        // Trigger budget balance check for dashboard
-        if (typeof checkBudgetBalance === 'function') {
-            checkBudgetBalance();
-        }
+        // Dispatch event to refresh dashboard
+        console.log('Dispatching budgetDataChanged event for income_added');
+        window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+            detail: { type: 'income_added' }
+        }));
     })
     .catch(error => {
         console.error('Error adding income source:', error);
@@ -449,7 +458,7 @@ function handleEditIncomeSource(e) {
         amount: parseFloat(formData.get('amount'))
     };
     
-    fetch(`/api/income-sources/${sourceId}`, {
+    fetch(`/api/budget/income-sources/${sourceId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -462,10 +471,10 @@ function handleEditIncomeSource(e) {
         showNotification('Income source updated successfully!', 'success');
         closeModal('editIncomeSourceModal');
         loadCurrentBudget();
-        // Trigger budget balance check for dashboard
-        if (typeof checkBudgetBalance === 'function') {
-            checkBudgetBalance();
-        }
+        // Dispatch event to refresh dashboard
+        window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+            detail: { type: 'income_updated' }
+        }));
     })
     .catch(error => {
         console.error('Error updating income source:', error);
@@ -475,7 +484,7 @@ function handleEditIncomeSource(e) {
 
 function deleteIncomeSource(sourceId) {
     if (confirm('Are you sure you want to delete this income source?')) {
-        fetch(`/api/income-sources/${sourceId}`, {
+        fetch(`/api/budget/income-sources/${sourceId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': 'Bearer ' + getToken()
@@ -485,10 +494,10 @@ function deleteIncomeSource(sourceId) {
         .then(data => {
             showNotification('Income source deleted successfully!', 'success');
             loadCurrentBudget();
-            // Trigger budget balance check for dashboard
-            if (typeof checkBudgetBalance === 'function') {
-                checkBudgetBalance();
-            }
+            // Dispatch event to refresh dashboard
+            window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+                detail: { type: 'income_deleted' }
+            }));
         })
         .catch(error => {
             console.error('Error deleting income source:', error);
@@ -510,6 +519,30 @@ function formatCurrency(amount, currency = userCurrency || 'USD') {
         maximumFractionDigits: 2
     });
     return symbol + formatter.format(amount || 0);
+}
+
+function recalculateIncome() {
+    if (confirm('This will recalculate the total income from all income sources. Continue?')) {
+        fetch('/api/budget/recalculate-income', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification(data.message, 'success');
+            loadCurrentBudget();
+            // Dispatch event to refresh dashboard
+            window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+                detail: { type: 'income_recalculated' }
+            }));
+        })
+        .catch(error => {
+            console.error('Error recalculating income:', error);
+            showNotification('Error recalculating income. Please try again.', 'error');
+        });
+    }
 }
 
 // Recurring Income Management Functions

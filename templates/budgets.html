@@ -2,6 +2,12 @@
 
 {% block title %}Budget Management - STEWARD{% endblock %}
 
+{% block head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -140,7 +146,8 @@
 </div>
 
 <script>
-let userCurrency = 'USD';
+// Cache-busting: v6.4-1735200000 - Force browser to reload JavaScript
+// Global variables
 let allPeriods = []; // Store all periods for filtering
 
 // Show notification function
@@ -184,7 +191,16 @@ function toggleCreateForm() {
         createBtn.classList.remove('btn-secondary');
         createBtn.classList.add('btn-primary');
         // Reset form
-        document.getElementById('create-budget-form').reset();
+        const form = document.getElementById('create-budget-form');
+        form.reset();
+        
+        // Restore button text
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Create Budget Period';
+        
+        // Remove edit flags
+        delete form.dataset.periodId;
+        delete form.dataset.isEdit;
     }
 }
 
@@ -245,7 +261,7 @@ async function loadUserSettings() {
 // Load current active budget
 async function loadCurrentBudget() {
     try {
-        const response = await authenticatedFetch('/api/budget');
+        const response = await authenticatedFetch('/api/budget/budget');
         
         if (response.ok) {
             const budget = await response.json();
@@ -274,7 +290,7 @@ async function loadCurrentBudget() {
 // Load all budget periods
 async function loadBudgetPeriods() {
     try {
-        const response = await authenticatedFetch('/api/budget-periods');
+        const response = await authenticatedFetch('/api/budget/budget-periods');
         
         if (response.ok) {
             const periods = await response.json();
@@ -365,6 +381,9 @@ function renderBudgetPeriods(periods) {
                             <i class="fas fa-play"></i>
                         </button>`
                     }
+                    <button class="btn btn-sm btn-secondary" onclick="editBudgetPeriod(${period.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
                     <button class="btn btn-sm btn-danger" onclick="deleteBudgetPeriod(${period.id})" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -421,6 +440,9 @@ function renderBudgetPeriods(periods) {
                             <i class="fas fa-play"></i> Activate
                         </button>`
                     }
+                    <button class="btn btn-sm btn-secondary" onclick="editBudgetPeriod(${period.id})" title="Edit">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                     <button class="btn btn-sm btn-danger" onclick="deleteBudgetPeriod(${period.id})" title="Delete">
                         <i class="fas fa-trash"></i> Delete
                     </button>
@@ -433,7 +455,7 @@ function renderBudgetPeriods(periods) {
 // Activate a budget period
 async function activateBudgetPeriod(periodId) {
     try {
-        const response = await authenticatedFetch(`/api/budget-periods/${periodId}/activate`, {
+        const response = await authenticatedFetch(`/api/budget/budget-periods/${periodId}/activate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -458,6 +480,33 @@ async function activateBudgetPeriod(periodId) {
     }
 }
 
+// Edit a budget period
+async function editBudgetPeriod(periodId) {
+    const period = allPeriods.find(p => p.id === periodId);
+    if (!period) {
+        showNotification('Budget period not found', 'error');
+        return;
+    }
+    
+    // Open the create form and populate it with period data
+    toggleCreateForm();
+    
+    // Populate form fields
+    document.getElementById('budget-name').value = period.name;
+    document.getElementById('period-type').value = period.period_type;
+    document.getElementById('start-date').value = period.start_date;
+    document.getElementById('end-date').value = period.end_date;
+    
+    // Change form button to update
+    const submitBtn = document.getElementById('create-budget-form').querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Update Budget Period';
+    
+    // Store the period ID for update
+    const form = document.getElementById('create-budget-form');
+    form.dataset.periodId = periodId;
+    form.dataset.isEdit = 'true';
+}
+
 // Delete a budget period
 async function deleteBudgetPeriod(periodId) {
     // Find the period name for confirmation
@@ -475,7 +524,7 @@ async function deleteBudgetPeriod(periodId) {
     }
     
     try {
-        const response = await authenticatedFetch(`/api/budget-periods/${periodId}`, {
+        const response = await authenticatedFetch(`/api/budget/budget-periods/${periodId}`, {
             method: 'DELETE'
         });
         
@@ -542,37 +591,79 @@ document.getElementById('create-budget-form').addEventListener('submit', async f
         end_date: formData.get('end_date')
     };
     
+    // Check if this is an update operation
+    const periodId = e.target.dataset.periodId;
+    
     try {
-        const response = await authenticatedFetch('/api/budget-periods', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-            const newPeriod = await response.json();
-            showNotification('Budget period created successfully!', 'success');
-            e.target.reset();
+        if (periodId) {
+            // This is an update operation
+            const response = await authenticatedFetch(`/api/budget/budget-periods/${periodId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
             
-            // Reload the budget periods list
-            await loadBudgetPeriods();
-            await loadCurrentBudget();
-            
-            // Close the create form
-            toggleCreateForm();
-            
-            // Dispatch event to notify other pages of budget period change
-            document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
+            if (response.ok) {
+                showNotification('Budget period updated successfully!', 'success');
+                e.target.reset();
+                
+                // Remove edit flags
+                delete e.target.dataset.periodId;
+                delete e.target.dataset.isEdit;
+                
+                // Restore button text
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Create Budget Period';
+                
+                // Reload the budget periods list
+                await loadBudgetPeriods();
+                await loadCurrentBudget();
+                
+                // Close the create form
+                toggleCreateForm();
+                
+                // Dispatch event to notify other pages of budget period change
+                document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
+            } else {
+                const error = await response.json();
+                console.error('Error updating budget period:', error);
+                showNotification(error.message || 'Failed to update budget period', 'error');
+            }
         } else {
-            const error = await response.json();
-            console.error('Error creating budget period:', error);
-            showNotification(error.message || 'Failed to create budget period', 'error');
+            // This is a create operation
+            const response = await authenticatedFetch('/api/budget/budget-periods', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                const newPeriod = await response.json();
+                showNotification('Budget period created successfully!', 'success');
+                e.target.reset();
+                
+                // Reload the budget periods list
+                await loadBudgetPeriods();
+                await loadCurrentBudget();
+                
+                // Close the create form
+                toggleCreateForm();
+                
+                // Dispatch event to notify other pages of budget period change
+                document.dispatchEvent(new CustomEvent('budgetPeriodChanged'));
+            } else {
+                const error = await response.json();
+                console.error('Error creating budget period:', error);
+                showNotification(error.message || 'Failed to create budget period', 'error');
+            }
         }
     } catch (error) {
-        console.error('Error creating budget period:', error);
-        showNotification('Error creating budget period', 'error');
+        console.error('Error with budget period operation:', error);
+        showNotification('Error with budget period operation', 'error');
     }
 });
 

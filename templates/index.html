@@ -313,59 +313,8 @@
                 showLoginModal();
             }
             
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Save remember me preference
-                    saveCredentials();
-                    
-                    // Get form data
-                    const formData = new FormData(loginForm);
-                    const loginData = {
-                        username: formData.get('username'),
-                        password: formData.get('password'),
-                        remember: formData.get('rememberMe') === 'on'
-                    };
-                    
-                    // Show loading state
-                    const submitBtn = loginForm.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.textContent;
-                    submitBtn.textContent = 'Signing In...';
-                    submitBtn.disabled = true;
-                    
-                    // Submit to backend
-                    fetch('/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCsrfToken()
-                        },
-                        body: JSON.stringify(loginData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Close modal and redirect
-                            closeModal('loginModal');
-                            window.location.href = data.redirect || '/dashboard';
-                        } else {
-                            // Show error message
-                            showLoginError(data.message || 'Invalid credentials');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Login error:', error);
-                        showLoginError('Login failed. Please try again.');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        submitBtn.textContent = originalText;
-                        submitBtn.disabled = false;
-                    });
-                });
-            }
+            // Login form handler is now in static/js/auth.js
+            // This ensures we use JWT-based authentication consistently
         });
 
         // Get CSRF token
