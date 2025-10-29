@@ -105,11 +105,16 @@ class AccountService:
                     from ..models import Transaction, Category, Subcategory
                     from ..extensions import db
                     user_subcategory_ids = db.session.query(Subcategory.id).join(Category).filter(Category.user_id == user_id).subquery()
-                    total_spent = db.session.query(db.func.sum(Transaction.amount)).filter(
+                    # Get all transactions in the period
+                    transactions = Transaction.query.filter(
                         Transaction.subcategory_id.in_(user_subcategory_ids),
                         Transaction.transaction_date >= active_period.start_date,
                         Transaction.transaction_date <= active_period.end_date
-                    ).scalar() or 0
+                    ).all()
+                    
+                    # Calculate total spent as positive value (only count negative amounts as expenses)
+                    # This matches how category_service calculates spent amounts
+                    total_spent = sum(abs(t.amount) for t in transactions if t.amount < 0)
                     
                     app_balance = total_income - total_spent
         except Exception as e:
