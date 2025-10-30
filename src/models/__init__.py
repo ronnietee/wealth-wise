@@ -10,6 +10,7 @@ from .income import IncomeSource, RecurringIncomeSource
 from .account import Account
 from .auth import PasswordResetToken, EmailVerification
 from .recurring import RecurringBudgetAllocation
+from .subscription import SubscriptionPlan, Subscription, Payment
 
 __all__ = [
     'User',
@@ -19,5 +20,6 @@ __all__ = [
     'IncomeSource', 'RecurringIncomeSource',
     'Account',
     'PasswordResetToken', 'EmailVerification',
-    'RecurringBudgetAllocation'
+    'RecurringBudgetAllocation',
+    'SubscriptionPlan', 'Subscription', 'Payment'
 ]

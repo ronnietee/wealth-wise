@@ -34,6 +34,21 @@ class Config:
     # Application configuration
     APP_NAME = 'STEWARD'
 
+    # Subscription and billing
+    SUBSCRIPTIONS_ENABLED = os.environ.get('SUBSCRIPTIONS_ENABLED', 'true').lower() in ['true', 'on', '1']
+    ENFORCE_PAYMENT_AFTER_TRIAL = os.environ.get('ENFORCE_PAYMENT_AFTER_TRIAL', 'false').lower() in ['true', 'on', '1']
+    TRIAL_DAYS = int(os.environ.get('TRIAL_DAYS', 30))
+    DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'ZAR')
+
+    # PayFast configuration
+    PAYFAST_MERCHANT_ID = os.environ.get('PAYFAST_MERCHANT_ID', '')
+    PAYFAST_MERCHANT_KEY = os.environ.get('PAYFAST_MERCHANT_KEY', '')
+    PAYFAST_PASSPHRASE = os.environ.get('PAYFAST_PASSPHRASE', '')  # recommended in production
+    PAYFAST_TEST_MODE = os.environ.get('PAYFAST_TEST_MODE', 'true').lower() in ['true', 'on', '1']
+    PAYFAST_RETURN_URL = os.environ.get('PAYFAST_RETURN_URL', 'http://localhost:5000/payfast/return')
+    PAYFAST_CANCEL_URL = os.environ.get('PAYFAST_CANCEL_URL', 'http://localhost:5000/payfast/cancel')
+    PAYFAST_NOTIFY_URL = os.environ.get('PAYFAST_NOTIFY_URL', 'http://localhost:5000/api/subscriptions/webhook/payfast')
+
 
 class DevelopmentConfig(Config):
     """Development configuration."""

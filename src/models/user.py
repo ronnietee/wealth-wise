@@ -23,6 +23,17 @@ class User(db.Model):
     theme = db.Column(db.String(10), default='dark')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Subscription/trial fields
+    trial_start = db.Column(db.DateTime, nullable=True)
+    trial_end = db.Column(db.DateTime, nullable=True)
+    subscription_status = db.Column(db.String(30), default='trial')  # trial, active, past_due, cancelled, inactive
+    subscription_plan = db.Column(db.String(20), nullable=True)  # monthly, yearly
+    next_billing_at = db.Column(db.DateTime, nullable=True)
+    auto_renew = db.Column(db.Boolean, default=True)
+    payfast_token = db.Column(db.String(255), nullable=True)
+    payfast_subscription_id = db.Column(db.String(255), nullable=True)
+    billing_currency = db.Column(db.String(10), default='ZAR')
+    
     # Onboarding fields (optional for existing users)
     country = db.Column(db.String(100), nullable=True, default=None)
     preferred_name = db.Column(db.String(100), nullable=True, default=None)
@@ -35,6 +46,8 @@ class User(db.Model):
     transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')
     budgets = db.relationship('Budget', backref='user', lazy=True, cascade='all, delete-orphan')
     budget_periods = db.relationship('BudgetPeriod', backref='user', lazy=True, cascade='all, delete-orphan')
+    subscriptions = db.relationship('Subscription', backref='user', lazy=True, cascade='all, delete-orphan')
+    payments = db.relationship('Payment', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Set password hash for the user."""

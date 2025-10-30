@@ -3,7 +3,7 @@ Transactions API routes.
 """
 
 from flask import Blueprint, request, jsonify
-from ...auth import token_required
+from ...auth import token_required, subscription_required
 from ...services import TransactionService
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
@@ -11,6 +11,7 @@ transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions'
 
 @transactions_bp.route('/transactions', methods=['GET'])
 @token_required
+@subscription_required
 def get_transactions(current_user):
     """Get all transactions for the current user."""
     transactions = TransactionService.get_user_transactions(current_user.id)
@@ -19,6 +20,7 @@ def get_transactions(current_user):
 
 @transactions_bp.route('/transactions', methods=['POST'])
 @token_required
+@subscription_required
 def create_transaction(current_user):
     """Create a new transaction."""
     data = request.get_json()
@@ -59,6 +61,7 @@ def create_transaction(current_user):
 
 @transactions_bp.route('/transactions/<int:transaction_id>', methods=['PUT'])
 @token_required
+@subscription_required
 def update_transaction(current_user, transaction_id):
     """Update a transaction."""
     data = request.get_json()
@@ -95,6 +98,7 @@ def update_transaction(current_user, transaction_id):
 
 @transactions_bp.route('/transactions/<int:transaction_id>', methods=['DELETE'])
 @token_required
+@subscription_required
 def delete_transaction(current_user, transaction_id):
     """Delete a transaction."""
     success = TransactionService.delete_transaction(transaction_id, current_user.id)

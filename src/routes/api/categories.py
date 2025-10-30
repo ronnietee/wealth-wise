@@ -3,7 +3,7 @@ Categories API routes.
 """
 
 from flask import Blueprint, request, jsonify
-from ...auth import token_required
+from ...auth import token_required, subscription_required
 from ...services import CategoryService
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
@@ -11,6 +11,7 @@ categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 @categories_bp.route('/categories', methods=['GET'])
 @token_required
+@subscription_required
 def get_categories(current_user):
     """Get all categories for the current user."""
     categories = CategoryService.get_user_categories(current_user.id)
@@ -19,6 +20,7 @@ def get_categories(current_user):
 
 @categories_bp.route('/categories', methods=['POST'])
 @token_required
+@subscription_required
 def create_category(current_user):
     """Create a new category."""
     data = request.get_json()
@@ -38,6 +40,7 @@ def create_category(current_user):
 
 @categories_bp.route('/subcategories', methods=['POST'])
 @token_required
+@subscription_required
 def create_subcategory(current_user):
     """Create a new subcategory."""
     data = request.get_json()
@@ -58,6 +61,7 @@ def create_subcategory(current_user):
 
 @categories_bp.route('/categories/<int:category_id>', methods=['PUT'])
 @token_required
+@subscription_required
 def update_category(current_user, category_id):
     """Update a category."""
     data = request.get_json()
@@ -75,6 +79,7 @@ def update_category(current_user, category_id):
 
 @categories_bp.route('/categories/<int:category_id>', methods=['DELETE'])
 @token_required
+@subscription_required
 def delete_category(current_user, category_id):
     """Delete a category."""
     success = CategoryService.delete_category(category_id, current_user.id)
@@ -86,6 +91,7 @@ def delete_category(current_user, category_id):
 
 @categories_bp.route('/subcategories/<int:subcategory_id>', methods=['PUT'])
 @token_required
+@subscription_required
 def update_subcategory(current_user, subcategory_id):
     """Update a subcategory."""
     data = request.get_json()
@@ -102,6 +108,7 @@ def update_subcategory(current_user, subcategory_id):
 
 @categories_bp.route('/subcategories/<int:subcategory_id>', methods=['DELETE'])
 @token_required
+@subscription_required
 def delete_subcategory(current_user, subcategory_id):
     """Delete a subcategory."""
     try:

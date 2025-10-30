@@ -70,3 +70,40 @@ def get_current_user():
         return User.query.get(session['user_id'])
     
     return None
+
+
+def subscription_required(f):
+    """Decorator to enforce active subscription or valid trial depending on config flags."""
+    @wraps(f)
+    def decorated(current_user, *args, **kwargs):
+        from flask import current_app
+        if not current_app.config.get('SUBSCRIPTIONS_ENABLED', True):
+            return f(current_user, *args, **kwargs)
+
+        # If enforcement is off, allow during trial period without blocking
+        enforce = current_app.config.get('ENFORCE_PAYMENT_AFTER_TRIAL', False)
+
+        # Evaluate user status
+        status = (current_user.subscription_status or 'trial').lower()
+        now = datetime.utcnow()
+        trial_end = current_user.trial_end
+
+        if status == 'active':
+            return f(current_user, *args, **kwargs)
+
+        if status == 'trial':
+            if trial_end is None or now <= trial_end:
+                return f(current_user, *args, **kwargs)
+            # Trial expired
+            if not enforce:
+                return f(current_user, *args, **kwargs)
+            return jsonify({'message': 'Trial expired. Subscription required.'}), 402
+
+        # past_due or cancelled
+        if not enforce:
+            return f(current_user, *args, **kwargs)
+        return jsonify({'message': 'Subscription required to access this feature.'}), 402
+
+    from datetime import datetime
+    from flask import jsonify
+    return decorated

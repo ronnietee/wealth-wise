@@ -9,6 +9,7 @@ from .transactions import transactions_bp
 from .budget import budget_bp
 from .accounts import accounts_bp
 from .recurring import recurring_bp
+from .subscriptions import subscriptions_bp
 from ...auth import token_required, get_current_user
 from ...services import EmailService
 
@@ -21,6 +22,7 @@ api_bp.register_blueprint(transactions_bp)
 api_bp.register_blueprint(budget_bp)
 api_bp.register_blueprint(accounts_bp)
 api_bp.register_blueprint(recurring_bp)
+api_bp.register_blueprint(subscriptions_bp)
 
 
 @api_bp.route('/contact', methods=['POST'])
@@ -182,6 +184,16 @@ def complete_onboarding():
             db.session.commit()
             return jsonify({'message': f'Error creating categories: {str(category_error)}'}), 500
         
+        # Start trial subscription (optional, based on config)
+        try:
+            from flask import current_app
+            if current_app.config.get('SUBSCRIPTIONS_ENABLED', True):
+                from ...services.subscription_service import SubscriptionService
+                SubscriptionService.seed_default_plans(current_app.config.get('DEFAULT_CURRENCY', 'ZAR'))
+                SubscriptionService.start_trial(user, (data.get('plan') or 'monthly').lower(), current_app.config.get('TRIAL_DAYS', 30))
+        except Exception as sub_err:
+            print(f"Subscription trial setup failed: {str(sub_err)}")
+
         # Create email verification token
         verification_token = AuthService.create_email_verification_token(user)
         
@@ -371,4 +383,4 @@ def check_overspending(current_user):
         return jsonify({'message': f'Error checking overspending: {str(e)}'}), 500
 
 
-__all__ = ['user_bp', 'categories_bp', 'transactions_bp', 'budget_bp', 'accounts_bp', 'recurring_bp', 'api_bp']
+__all__ = ['user_bp', 'categories_bp', 'transactions_bp', 'budget_bp', 'accounts_bp', 'recurring_bp', 'subscriptions_bp', 'api_bp']

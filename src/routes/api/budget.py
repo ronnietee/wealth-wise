@@ -3,7 +3,7 @@ Budget API routes.
 """
 
 from flask import Blueprint, request, jsonify
-from ...auth import token_required
+from ...auth import token_required, subscription_required
 from ...services import BudgetService
 
 budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
@@ -11,6 +11,7 @@ budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
 
 @budget_bp.route('/budget-periods', methods=['GET'])
 @token_required
+@subscription_required
 def get_budget_periods(current_user):
     """Get all budget periods for the current user."""
     periods = BudgetService.get_budget_periods(current_user.id)
@@ -19,6 +20,7 @@ def get_budget_periods(current_user):
 
 @budget_bp.route('/budget-periods', methods=['POST'])
 @token_required
+@subscription_required
 def create_budget_period(current_user):
     """Create a new budget period."""
     data = request.get_json()
@@ -58,6 +60,7 @@ def create_budget_period(current_user):
 
 @budget_bp.route('/budget-periods/<int:period_id>/activate', methods=['POST'])
 @token_required
+@subscription_required
 def activate_budget_period(current_user, period_id):
     """Activate a budget period."""
     period = BudgetService.activate_budget_period(period_id, current_user.id)
@@ -69,6 +72,7 @@ def activate_budget_period(current_user, period_id):
 
 @budget_bp.route('/budget-periods/<int:period_id>', methods=['PUT'])
 @token_required
+@subscription_required
 def update_budget_period(current_user, period_id):
     """Update a budget period."""
     data = request.get_json()
@@ -113,6 +117,7 @@ def update_budget_period(current_user, period_id):
 
 @budget_bp.route('/budget-periods/<int:period_id>', methods=['DELETE'])
 @token_required
+@subscription_required
 def delete_budget_period(current_user, period_id):
     """Delete a budget period."""
     success = BudgetService.delete_budget_period(period_id, current_user.id)
@@ -124,6 +129,7 @@ def delete_budget_period(current_user, period_id):
 
 @budget_bp.route('/budget', methods=['GET'])
 @token_required
+@subscription_required
 def get_budget(current_user):
     """Get the active budget for the current user."""
     try:
@@ -139,6 +145,7 @@ def get_budget(current_user):
 
 @budget_bp.route('/budget', methods=['PUT'])
 @token_required
+@subscription_required
 def update_budget(current_user):
     """Update budget details."""
     data = request.get_json()
@@ -172,6 +179,7 @@ def update_budget(current_user):
 
 @budget_bp.route('/allocations', methods=['POST'])
 @token_required
+@subscription_required
 def update_allocations(current_user):
     """Update budget allocations."""
     data = request.get_json()
@@ -189,6 +197,7 @@ def update_allocations(current_user):
 
 @budget_bp.route('/income-sources', methods=['POST'])
 @token_required
+@subscription_required
 def create_income_source(current_user):
     """Create an income source for the active budget."""
     data = request.get_json()
@@ -217,6 +226,7 @@ def create_income_source(current_user):
 
 @budget_bp.route('/income-sources/<int:source_id>', methods=['PUT'])
 @token_required
+@subscription_required
 def update_income_source(current_user, source_id):
     """Update an income source."""
     data = request.get_json()
@@ -265,6 +275,7 @@ def update_income_source(current_user, source_id):
 
 @budget_bp.route('/income-sources/<int:source_id>', methods=['DELETE'])
 @token_required
+@subscription_required
 def delete_income_source(current_user, source_id):
     """Delete an income source."""
     try:
@@ -300,6 +311,7 @@ def delete_income_source(current_user, source_id):
 
 @budget_bp.route('/recalculate-income', methods=['POST'])
 @token_required
+@subscription_required
 def recalculate_income(current_user):
     """Recalculate total income from all income sources."""
     try:

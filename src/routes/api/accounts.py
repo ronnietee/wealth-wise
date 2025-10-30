@@ -3,7 +3,7 @@ Accounts API routes.
 """
 
 from flask import Blueprint, request, jsonify
-from ...auth import token_required
+from ...auth import token_required, subscription_required
 from ...services import AccountService
 
 accounts_bp = Blueprint('accounts', __name__, url_prefix='/accounts')
@@ -11,6 +11,7 @@ accounts_bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 @accounts_bp.route('/', methods=['GET'])
 @token_required
+@subscription_required
 def get_accounts(current_user):
     """Get all accounts for the current user."""
     accounts = AccountService.get_user_accounts(current_user.id)
@@ -19,6 +20,7 @@ def get_accounts(current_user):
 
 @accounts_bp.route('/', methods=['POST'])
 @token_required
+@subscription_required
 def create_account(current_user):
     """Create a new account."""
     data = request.get_json()
@@ -59,6 +61,7 @@ def create_account(current_user):
 
 @accounts_bp.route('/<int:account_id>', methods=['PUT'])
 @token_required
+@subscription_required
 def update_account(current_user, account_id):
     """Update an account."""
     data = request.get_json()
@@ -90,6 +93,7 @@ def update_account(current_user, account_id):
 
 @accounts_bp.route('/<int:account_id>', methods=['DELETE'])
 @token_required
+@subscription_required
 def delete_account(current_user, account_id):
     """Delete an account."""
     success = AccountService.delete_account(account_id, current_user.id)
@@ -101,6 +105,7 @@ def delete_account(current_user, account_id):
 
 @accounts_bp.route('/balance-summary', methods=['GET'])
 @token_required
+@subscription_required
 def get_balance_summary(current_user):
     """Get balance summary for all accounts."""
     summary = AccountService.get_balance_summary(current_user.id)
