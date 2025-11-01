@@ -41,6 +41,9 @@ class User(db.Model):
     referral_details = db.Column(db.Text, nullable=True, default=None)
     email_verified = db.Column(db.Boolean, default=False)
     
+    # Admin fields
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    
     # Relationships
     categories = db.relationship('Category', backref='user', lazy=True, cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='user', lazy=True, cascade='all, delete-orphan')

@@ -43,6 +43,79 @@ class SubscriptionService:
         db.session.add(sub)
         db.session.commit()
         return sub
+    
+    @staticmethod
+    def upgrade_subscription(user: User, subscription: Subscription, new_plan_code: str):
+        """Upgrade subscription to a higher tier."""
+        if not subscription:
+            return False
+        
+        old_plan = subscription.plan_code
+        subscription.plan_code = new_plan_code
+        user.subscription_plan = new_plan_code
+        
+        # Update billing cycle if needed
+        if old_plan == 'monthly' and new_plan_code == 'yearly':
+            # Upgrade: extend period
+            if subscription.current_period_end:
+                remaining_days = (subscription.current_period_end - datetime.utcnow()).days
+                subscription.current_period_end = datetime.utcnow() + timedelta(days=365 + remaining_days)
+        elif old_plan == 'yearly' and new_plan_code == 'monthly':
+            # Downgrade: adjust period
+            if subscription.current_period_end:
+                # Keep current period end, next billing will be monthly
+                user.next_billing_at = subscription.current_period_end
+        
+        db.session.commit()
+        return True
+    
+    @staticmethod
+    def downgrade_subscription(user: User, subscription: Subscription, new_plan_code: str):
+        """Downgrade subscription to a lower tier (takes effect at period end)."""
+        if not subscription:
+            return False
+        
+        # Mark for downgrade at period end
+        subscription.plan_code = new_plan_code
+        user.subscription_plan = new_plan_code
+        # Status remains active until period end
+        
+        db.session.commit()
+        return True
+    
+    @staticmethod
+    def process_renewal(subscription: Subscription):
+        """Process subscription renewal for recurring billing."""
+        if not subscription or subscription.status != 'active':
+            return False
+        
+        now = datetime.utcnow()
+        
+        # Check if renewal is due
+        if subscription.current_period_end and now >= subscription.current_period_end:
+            # Renew subscription
+            if subscription.plan_code == 'monthly':
+                next_period_start = subscription.current_period_end
+                next_period_end = next_period_start + timedelta(days=30)
+            elif subscription.plan_code == 'yearly':
+                next_period_start = subscription.current_period_end
+                next_period_end = next_period_start + timedelta(days=365)
+            else:
+                return False
+            
+            subscription.current_period_start = next_period_start
+            subscription.current_period_end = next_period_end
+            
+            # Update user next billing
+            from ..models import User
+            user = subscription.user
+            if user:
+                user.next_billing_at = next_period_end
+            
+            db.session.commit()
+            return True
+        
+        return False
 
     @staticmethod
     def activate_subscription(user: User, subscription: Subscription, next_billing_at: Optional[datetime] = None, gateway_sub_id: Optional[str] = None):
@@ -82,5 +155,89 @@ class SubscriptionService:
         if not enforce:
             return True, 'not_enforced'
         return False, 'blocked'
+
+    @staticmethod
+    def cancel_subscription(user: User, subscription: Subscription, cancel_immediately: bool = False):
+        """Cancel a subscription.
+        
+        Args:
+            user: User model instance
+            subscription: Subscription model instance
+            cancel_immediately: If True, cancel now; if False, cancel at period end
+        """
+        if cancel_immediately:
+            subscription.status = 'cancelled'
+            subscription.cancelled_at = datetime.utcnow()
+            user.subscription_status = 'cancelled'
+        else:
+            subscription.cancel_at = subscription.current_period_end
+            subscription.status = 'active'  # Keep active until period end
+            # User status remains active until period end
+        db.session.commit()
+        return subscription.cancel_at if not cancel_immediately else None
+
+    @staticmethod
+    def pause_subscription(user: User, subscription: Subscription):
+        """Pause a subscription (set status to inactive)."""
+        subscription.status = 'inactive'
+        user.subscription_status = 'inactive'
+        db.session.commit()
+
+    @staticmethod
+    def resume_subscription(user: User, subscription: Subscription):
+        """Resume a paused subscription."""
+        subscription.status = 'active'
+        user.subscription_status = 'active'
+        db.session.commit()
+
+    @staticmethod
+    def process_payfast_itn(payload: dict) -> Tuple[bool, Optional[User], Optional[Subscription], str]:
+        """Process PayFast ITN payload and map to user/subscription.
+        
+        Returns:
+            (success, user, subscription, message)
+        """
+        try:
+            # Extract custom fields for mapping
+            user_id_str = payload.get('custom_str1', '')
+            subscription_id_str = payload.get('custom_int1', '')
+            
+            if not user_id_str:
+                return False, None, None, 'Missing custom_str1 (user_id)'
+            
+            try:
+                user_id = int(user_id_str)
+                subscription_id = int(subscription_id_str) if subscription_id_str else None
+            except ValueError:
+                return False, None, None, 'Invalid user_id or subscription_id format'
+            
+            # Find user
+            user = User.query.get(user_id)
+            if not user:
+                return False, None, None, f'User {user_id} not found'
+            
+            # Find subscription (if provided)
+            subscription = None
+            if subscription_id:
+                subscription = Subscription.query.filter_by(
+                    id=subscription_id,
+                    user_id=user_id
+                ).first()
+                if not subscription:
+                    # Fallback: find active subscription for user
+                    subscription = Subscription.query.filter_by(
+                        user_id=user_id,
+                        status='trial'
+                    ).order_by(Subscription.created_at.desc()).first()
+            else:
+                # Find latest active/trial subscription for user
+                subscription = Subscription.query.filter_by(
+                    user_id=user_id
+                ).order_by(Subscription.created_at.desc()).first()
+            
+            return True, user, subscription, 'OK'
+            
+        except Exception as e:
+            return False, None, None, f'Error processing ITN: {str(e)}'
 
 

@@ -71,6 +71,48 @@
             </div>
         </div>
 
+        <!-- Subscription Management -->
+        <div class="settings-card" id="subscriptionCard">
+            <div class="settings-card-header">
+                <h2><i class="fas fa-credit-card"></i> Subscription & Billing</h2>
+            </div>
+            <div class="settings-card-body">
+                <div id="subscriptionStatus">
+                    <div class="subscription-info" style="margin-bottom: 20px;">
+                        <div id="subscriptionStatusBadge" class="status-badge" style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 15px;">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                        <div id="subscriptionDetails" style="margin-top: 10px;">
+                            <p id="subscriptionPlan">Plan: Loading...</p>
+                            <p id="subscriptionTrial">Trial: Loading...</p>
+                            <p id="subscriptionNextBilling" style="display: none;">Next Billing: Loading...</p>
+                        </div>
+                    </div>
+                    
+                    <div id="subscriptionActions" style="margin-top: 20px;">
+                        <button class="btn btn-primary" id="upgradeBtn" onclick="openUpgradeModal()" style="display: none;">
+                            <i class="fas fa-arrow-up"></i> Upgrade Subscription
+                        </button>
+                        <button class="btn btn-outline" id="viewPlansBtn" onclick="openPlansModal()">
+                            <i class="fas fa-list"></i> View Plans
+                        </button>
+                        <button class="btn btn-outline" id="viewPaymentsBtn" onclick="openPaymentsModal()">
+                            <i class="fas fa-history"></i> Payment History
+                        </button>
+                        <button class="btn btn-danger" id="cancelBtn" onclick="openCancelModal()" style="display: none;">
+                            <i class="fas fa-times"></i> Cancel Subscription
+                        </button>
+                        <button class="btn btn-outline" id="pauseBtn" onclick="pauseSubscription()" style="display: none;">
+                            <i class="fas fa-pause"></i> Pause Subscription
+                        </button>
+                        <button class="btn btn-outline" id="resumeBtn" onclick="resumeSubscription()" style="display: none;">
+                            <i class="fas fa-play"></i> Resume Subscription
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Data Management -->
         <div class="settings-card">
             <div class="settings-card-header">
@@ -326,6 +368,73 @@
             <button type="button" class="btn btn-secondary" onclick="closeResetModal()">Cancel</button>
             <button type="button" class="btn btn-danger" onclick="confirmResetData()" id="confirmResetBtn" disabled>
                 <i class="fas fa-trash"></i> Reset All Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Subscription Plans Modal -->
+<div class="modal" id="plansModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-list"></i> Available Plans</h3>
+            <button class="modal-close" onclick="closePlansModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="plansList"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closePlansModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History Modal -->
+<div class="modal" id="paymentsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-history"></i> Payment History</h3>
+            <button class="modal-close" onclick="closePaymentsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="paymentsList"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closePaymentsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Subscription Modal -->
+<div class="modal" id="cancelSubscriptionModal">
+    <div class="modal-content">
+        <div class="modal-header danger-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Cancel Subscription</h3>
+            <button class="modal-close" onclick="closeCancelModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-message">
+                <p>Are you sure you want to cancel your subscription?</p>
+                <p>You can choose to cancel immediately or at the end of your current billing period.</p>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="cancelImmediately" style="margin-right: 8px;">
+                    Cancel immediately (access will be revoked right away)
+                </label>
+                <small class="form-help">If unchecked, your subscription will remain active until the end of the current period.</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Keep Subscription</button>
+            <button type="button" class="btn btn-danger" onclick="confirmCancelSubscription()">
+                <i class="fas fa-times"></i> Cancel Subscription
             </button>
         </div>
     </div>
@@ -981,6 +1090,291 @@ function saveThemePreference(theme) {
 // Load theme on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadTheme();
+    loadSubscriptionStatus();
 });
+
+// Subscription Management Functions
+function loadSubscriptionStatus() {
+    fetch('/api/subscriptions/status', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateSubscriptionUI(data);
+    })
+    .catch(error => {
+        console.error('Error loading subscription status:', error);
+        document.getElementById('subscriptionStatusBadge').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error loading status';
+    });
+}
+
+function updateSubscriptionUI(status) {
+    const badge = document.getElementById('subscriptionStatusBadge');
+    const planEl = document.getElementById('subscriptionPlan');
+    const trialEl = document.getElementById('subscriptionTrial');
+    const nextBillingEl = document.getElementById('subscriptionNextBilling');
+    
+    const statusText = status.status || 'unknown';
+    const planText = status.plan ? status.plan.charAt(0).toUpperCase() + status.plan.slice(1) : 'No plan';
+    
+    // Update badge
+    let badgeClass = 'status-badge ';
+    let badgeIcon = '';
+    if (statusText === 'active') {
+        badgeClass += 'status-active';
+        badgeIcon = '<i class="fas fa-check-circle"></i> ';
+    } else if (statusText === 'trial') {
+        badgeClass += 'status-trial';
+        badgeIcon = '<i class="fas fa-clock"></i> ';
+    } else if (statusText === 'cancelled') {
+        badgeClass += 'status-cancelled';
+        badgeIcon = '<i class="fas fa-times-circle"></i> ';
+    } else if (statusText === 'inactive') {
+        badgeClass += 'status-inactive';
+        badgeIcon = '<i class="fas fa-pause-circle"></i> ';
+    }
+    
+    badge.className = badgeClass;
+    badge.innerHTML = badgeIcon + statusText.toUpperCase();
+    
+    // Update details
+    planEl.textContent = `Plan: ${planText}`;
+    
+    if (status.trial_end) {
+        const trialEnd = new Date(status.trial_end);
+        const now = new Date();
+        if (trialEnd > now) {
+            const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+            trialEl.textContent = `Trial: ${daysLeft} days remaining (ends ${trialEnd.toLocaleDateString()})`;
+        } else {
+            trialEl.textContent = `Trial: Ended on ${trialEnd.toLocaleDateString()}`;
+        }
+    } else {
+        trialEl.textContent = 'Trial: Not started';
+    }
+    
+    // Update action buttons
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    
+    upgradeBtn.style.display = (statusText === 'trial' || statusText === 'cancelled') ? 'inline-block' : 'none';
+    cancelBtn.style.display = (statusText === 'active') ? 'inline-block' : 'none';
+    pauseBtn.style.display = (statusText === 'active') ? 'inline-block' : 'none';
+    resumeBtn.style.display = (statusText === 'inactive') ? 'inline-block' : 'none';
+}
+
+function openPlansModal() {
+    fetch('/api/subscriptions/plans', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(plans => {
+        const plansList = document.getElementById('plansList');
+        plansList.innerHTML = plans.map(plan => {
+            const price = (plan.price_cents / 100).toFixed(2);
+            return `
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+                    <h3>${plan.name}</h3>
+                    <p style="font-size: 24px; font-weight: bold; color: #28a745;">R${price} / ${plan.interval}</p>
+                    <p style="color: #666;">Code: ${plan.code}</p>
+                    <button class="btn btn-primary" onclick="startSubscription('${plan.code}')">Start ${plan.name}</button>
+                </div>
+            `;
+        }).join('');
+        document.getElementById('plansModal').style.display = 'block';
+        document.body.classList.add('modal-open');
+    })
+    .catch(error => {
+        console.error('Error loading plans:', error);
+        showNotification('Error loading plans', 'error');
+    });
+}
+
+function closePlansModal() {
+    document.getElementById('plansModal').style.display = 'none';
+    document.body.classList.remove('modal-open');
+}
+
+function openPaymentsModal() {
+    fetch('/api/subscriptions/payments', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(payments => {
+        const paymentsList = document.getElementById('paymentsList');
+        if (payments.length === 0) {
+            paymentsList.innerHTML = '<p>No payment history found.</p>';
+        } else {
+            paymentsList.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #ddd;">
+                            <th style="padding: 10px; text-align: left;">Date</th>
+                            <th style="padding: 10px; text-align: left;">Amount</th>
+                            <th style="padding: 10px; text-align: left;">Status</th>
+                            <th style="padding: 10px; text-align: left;">Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${payments.map(payment => {
+                            const date = new Date(payment.created_at);
+                            const amount = (payment.amount_cents / 100).toFixed(2);
+                            return `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 10px;">${date.toLocaleDateString()}</td>
+                                    <td style="padding: 10px;">${payment.currency} ${amount}</td>
+                                    <td style="padding: 10px;"><span style="padding: 4px 8px; border-radius: 4px; background: ${payment.status === 'paid' ? '#d4edda' : payment.status === 'failed' ? '#f8d7da' : '#fff3cd'}; color: ${payment.status === 'paid' ? '#155724' : payment.status === 'failed' ? '#721c24' : '#856404'};">${payment.status}</span></td>
+                                    <td style="padding: 10px; font-size: 0.9em; color: #666;">${payment.gateway_reference || 'N/A'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        document.getElementById('paymentsModal').style.display = 'block';
+        document.body.classList.add('modal-open');
+    })
+    .catch(error => {
+        console.error('Error loading payments:', error);
+        showNotification('Error loading payment history', 'error');
+    });
+}
+
+function closePaymentsModal() {
+    document.getElementById('paymentsModal').style.display = 'none';
+    document.body.classList.remove('modal-open');
+}
+
+function startSubscription(planCode) {
+    fetch('/api/subscriptions/start', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ plan: planCode })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.payfast) {
+            // Redirect to PayFast
+            showNotification('Redirecting to PayFast...', 'info');
+            // Create form and submit to PayFast
+            const form = document.createElement('form');
+            form.method = 'POST';
+            // Use sandbox for testing, production URL otherwise
+            const isTestMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            form.action = isTestMode 
+                ? 'https://sandbox.payfast.co.za/eng/process' 
+                : 'https://www.payfast.co.za/eng/process';
+            
+            Object.keys(data.payfast).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = data.payfast[key];
+                form.appendChild(input);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            showNotification('Trial started successfully!', 'success');
+            closePlansModal();
+            loadSubscriptionStatus();
+        }
+    })
+    .catch(error => {
+        console.error('Error starting subscription:', error);
+        showNotification('Error starting subscription', 'error');
+    });
+}
+
+function openCancelModal() {
+    document.getElementById('cancelSubscriptionModal').style.display = 'block';
+    document.body.classList.add('modal-open');
+}
+
+function closeCancelModal() {
+    document.getElementById('cancelSubscriptionModal').style.display = 'none';
+    document.getElementById('cancelImmediately').checked = false;
+    document.body.classList.remove('modal-open');
+}
+
+function confirmCancelSubscription() {
+    const cancelImmediately = document.getElementById('cancelImmediately').checked;
+    
+    fetch('/api/subscriptions/cancel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ immediately: cancelImmediately })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification(data.message || 'Subscription cancelled successfully', 'success');
+        closeCancelModal();
+        loadSubscriptionStatus();
+    })
+    .catch(error => {
+        console.error('Error cancelling subscription:', error);
+        showNotification('Error cancelling subscription', 'error');
+    });
+}
+
+function pauseSubscription() {
+    if (!confirm('Are you sure you want to pause your subscription?')) {
+        return;
+    }
+    
+    fetch('/api/subscriptions/pause', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification(data.message || 'Subscription paused successfully', 'success');
+        loadSubscriptionStatus();
+    })
+    .catch(error => {
+        console.error('Error pausing subscription:', error);
+        showNotification('Error pausing subscription', 'error');
+    });
+}
+
+function resumeSubscription() {
+    fetch('/api/subscriptions/resume', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification(data.message || 'Subscription resumed successfully', 'success');
+        loadSubscriptionStatus();
+    })
+    .catch(error => {
+        console.error('Error resuming subscription:', error);
+        showNotification('Error resuming subscription', 'error');
+    });
+}
+
+function openUpgradeModal() {
+    openPlansModal();
+}
 </script>
 {% endblock %}

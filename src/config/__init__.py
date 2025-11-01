@@ -48,6 +48,10 @@ class Config:
     PAYFAST_RETURN_URL = os.environ.get('PAYFAST_RETURN_URL', 'http://localhost:5000/payfast/return')
     PAYFAST_CANCEL_URL = os.environ.get('PAYFAST_CANCEL_URL', 'http://localhost:5000/payfast/cancel')
     PAYFAST_NOTIFY_URL = os.environ.get('PAYFAST_NOTIFY_URL', 'http://localhost:5000/api/subscriptions/webhook/payfast')
+    
+    # Admin credentials (set in environment variables)
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')  # MUST be set in production
 
 
 class DevelopmentConfig(Config):

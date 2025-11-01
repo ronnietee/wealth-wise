@@ -1,0 +1,107 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Admin - Subscriptions{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="margin: 0 0 10px 0;"><i class="fas fa-credit-card"></i> Subscription Management</h1>
+        <div style="margin-top: 15px;">
+            <a href="/admin/dashboard" class="btn btn-outline">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px;">
+        <h2>Subscription Statistics</h2>
+        <div id="subscriptionStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;"></div>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px;">
+        <h2>All Subscriptions</h2>
+        <div id="subscriptionsTable" style="margin-top: 15px; overflow-x: auto;">
+            <p>Loading...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function getToken() {
+    return getAdminToken();
+}
+
+async function loadSubscriptions() {
+    try {
+        const response = await adminFetch('/api/subscriptions/admin/subscriptions', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.stats) {
+            // Display stats
+            const stats = data.stats;
+            document.getElementById('subscriptionStats').innerHTML = `
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>Total:</strong> ${stats.total || 0}
+                </div>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>By Status:</strong><br>
+                    ${Object.keys(stats.by_status || {}).length > 0 
+                        ? Object.entries(stats.by_status).map(([k, v]) => `${k}: ${v}`).join('<br>')
+                        : 'No status data'}
+                </div>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>By Plan:</strong><br>
+                    ${Object.keys(stats.by_plan || {}).length > 0 
+                        ? Object.entries(stats.by_plan).map(([k, v]) => `${k}: ${v}`).join('<br>')
+                        : 'No plan data'}
+                </div>
+            `;
+            
+            // Display subscriptions table
+            if (!data.subscriptions || data.subscriptions.length === 0) {
+                document.getElementById('subscriptionsTable').innerHTML = '<p>No subscriptions found.</p>';
+            } else {
+                const table = `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: left;">ID</th>
+                                <th style="padding: 10px; text-align: left;">User</th>
+                                <th style="padding: 10px; text-align: left;">Plan</th>
+                                <th style="padding: 10px; text-align: left;">Status</th>
+                                <th style="padding: 10px; text-align: left;">Started</th>
+                                <th style="padding: 10px; text-align: left;">Period End</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.subscriptions.map(sub => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 10px;">${sub.id}</td>
+                                    <td style="padding: 10px;">${sub.user_email || `User ${sub.user_id}`}</td>
+                                    <td style="padding: 10px;">${sub.plan_code}</td>
+                                    <td style="padding: 10px;"><span style="padding: 4px 8px; border-radius: 4px; background: ${sub.status === 'active' ? '#d4edda' : sub.status === 'trial' ? '#fff3cd' : '#f8d7da'}; color: ${sub.status === 'active' ? '#155724' : sub.status === 'trial' ? '#856404' : '#721c24'};">${sub.status}</span></td>
+                                    <td style="padding: 10px;">${sub.started_at ? new Date(sub.started_at).toLocaleDateString() : 'N/A'}</td>
+                                    <td style="padding: 10px;">${sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('subscriptionsTable').innerHTML = table;
+            }
+        } else {
+            document.getElementById('subscriptionsTable').innerHTML = '<p>Error loading subscriptions.</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('subscriptionsTable').innerHTML = '<p>Error loading subscriptions.</p>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadSubscriptions);
+</script>
+{% endblock %}
+

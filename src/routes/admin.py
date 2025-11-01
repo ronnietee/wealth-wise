@@ -1,0 +1,149 @@
+"""
+Admin portal routes with separate credential authentication.
+"""
+
+from flask import Blueprint, render_template, request, jsonify, session, current_app
+from werkzeug.security import check_password_hash, generate_password_hash
+import jwt
+from datetime import datetime, timedelta
+
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+
+def verify_admin_session():
+    """Verify if admin session is valid."""
+    if 'admin_logged_in' in session and session.get('admin_logged_in'):
+        # Verify session hasn't expired (24 hours)
+        if 'admin_login_time' in session:
+            login_time = session['admin_login_time']
+            
+            # Handle both datetime objects and timestamps
+            if isinstance(login_time, datetime):
+                # Convert to UTC naive datetime if timezone-aware
+                if login_time.tzinfo is not None:
+                    login_time = login_time.replace(tzinfo=None)
+                
+                # Compare with UTC naive datetime
+                now = datetime.utcnow()
+                if (now - login_time).total_seconds() > 86400:
+                    session.pop('admin_logged_in', None)
+                    session.pop('admin_login_time', None)
+                    return False
+            elif isinstance(login_time, (int, float)):
+                # Stored as timestamp
+                elapsed = (datetime.utcnow().timestamp() - login_time)
+                if elapsed > 86400:
+                    session.pop('admin_logged_in', None)
+                    session.pop('admin_login_time', None)
+                    return False
+        return True
+    return False
+
+
+def generate_admin_token():
+    """Generate JWT token for admin access."""
+    payload = {
+        'admin': True,
+        'exp': datetime.utcnow() + timedelta(hours=24)
+    }
+    return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
+
+
+def verify_admin_token(token):
+    """Verify admin JWT token."""
+    try:
+        payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        return payload.get('admin') == True
+    except:
+        return False
+
+
+@admin_bp.route('/')
+def admin_index():
+    """Admin portal login page."""
+    if verify_admin_session():
+        return render_template('admin/dashboard.html')
+    return render_template('admin/login.html')
+
+
+@admin_bp.route('/login', methods=['POST'])
+def admin_login():
+    """Admin login endpoint using environment credentials."""
+    data = request.get_json() or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    
+    if not username or not password:
+        return jsonify({'message': 'Username and password required'}), 400
+    
+    # Get admin credentials from config
+    admin_username = current_app.config.get('ADMIN_USERNAME', 'admin')
+    admin_password = current_app.config.get('ADMIN_PASSWORD', '')
+    
+    # Check if admin password is configured
+    if not admin_password:
+        current_app.logger.error('ADMIN_PASSWORD not configured in environment variables')
+        return jsonify({'message': 'Admin access not configured'}), 500
+    
+    # Verify credentials
+    if username == admin_username and password == admin_password:
+        # Set admin session (store timestamp to avoid timezone issues)
+        session['admin_logged_in'] = True
+        session['admin_login_time'] = datetime.utcnow().timestamp()  # Store as timestamp
+        session['admin_username'] = username
+        
+        # Generate admin token
+        token = generate_admin_token()
+        
+        return jsonify({
+            'message': 'Login successful',
+            'token': token,
+            'user': {
+                'username': username,
+                'role': 'admin'
+            }
+        }), 200
+    else:
+        return jsonify({'message': 'Invalid credentials'}), 401
+
+
+@admin_bp.route('/logout', methods=['POST'])
+def admin_logout():
+    """Admin logout endpoint."""
+    session.pop('admin_logged_in', None)
+    session.pop('admin_login_time', None)
+    session.pop('admin_username', None)
+    return jsonify({'message': 'Logout successful'}), 200
+
+
+@admin_bp.route('/dashboard')
+def admin_dashboard():
+    """Admin dashboard page."""
+    if not verify_admin_session():
+        return render_template('admin/login.html')
+    return render_template('admin/dashboard.html')
+
+
+@admin_bp.route('/users', methods=['GET'])
+def admin_users():
+    """Admin users management page."""
+    if not verify_admin_session():
+        return render_template('admin/login.html')
+    return render_template('admin/users.html')
+
+
+@admin_bp.route('/subscriptions', methods=['GET'])
+def admin_subscriptions_page():
+    """Admin subscriptions management page."""
+    if not verify_admin_session():
+        return render_template('admin/login.html')
+    return render_template('admin/subscriptions.html')
+
+
+@admin_bp.route('/payments', methods=['GET'])
+def admin_payments_page():
+    """Admin payments management page."""
+    if not verify_admin_session():
+        return render_template('admin/login.html')
+    return render_template('admin/payments.html')
+

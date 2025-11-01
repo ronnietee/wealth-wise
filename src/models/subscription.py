@@ -34,6 +34,8 @@ class Subscription(db.Model):
     payfast_subscription_id = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Relationship to User is defined via backref in User model
+
 
 class Payment(db.Model):
     __tablename__ = 'payment'
@@ -48,5 +50,8 @@ class Payment(db.Model):
     gateway_reference = db.Column(db.String(255), nullable=True)
     paid_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships - User relationship is defined via backref in User model
+    subscription = db.relationship('Subscription', backref='payments', lazy='select')
 
 

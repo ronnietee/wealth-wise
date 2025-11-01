@@ -84,3 +84,30 @@ def onboarding():
 def favicon():
     """Favicon."""
     return send_file('../static/images/logo.png', mimetype='image/png')
+
+
+@main_bp.route('/payfast/return')
+def payfast_return():
+    """PayFast return URL - user redirected here after successful payment."""
+    # Extract query parameters if any
+    payment_id = request.args.get('pf_payment_id', '')
+    payment_status = request.args.get('payment_status', '').upper()
+    
+    # Redirect to settings page with success message
+    from flask import redirect, url_for, flash
+    if payment_status == 'COMPLETE':
+        flash('Payment successful! Your subscription has been activated.', 'success')
+    elif payment_status == 'PENDING':
+        flash('Payment is pending. Your subscription will be activated once payment is confirmed.', 'info')
+    else:
+        flash('Payment status: ' + payment_status, 'info')
+    
+    return redirect(url_for('main.settings'))
+
+
+@main_bp.route('/payfast/cancel')
+def payfast_cancel():
+    """PayFast cancel URL - user redirected here if payment is cancelled."""
+    from flask import redirect, url_for, flash
+    flash('Payment was cancelled. You can try again from your subscription settings.', 'warning')
+    return redirect(url_for('main.settings'))

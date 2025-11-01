@@ -1,0 +1,217 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Admin Dashboard - STEWARD{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="margin: 0 0 10px 0;"><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
+        <p style="color: #666; margin: 0;">Manage subscriptions, payments, and users</p>
+    </div>
+
+    <div style="display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;">
+        <a href="/admin/dashboard" class="btn btn-primary">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/admin/subscriptions" class="btn btn-outline">
+            <i class="fas fa-credit-card"></i> Subscriptions
+        </a>
+        <a href="/admin/payments" class="btn btn-outline">
+            <i class="fas fa-money-bill"></i> Payments
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 10px 0; color: #666;">Total Users</h3>
+            <div id="totalUsers" style="font-size: 32px; font-weight: bold; color: var(--primary-color);">-</div>
+        </div>
+        
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 10px 0; color: #666;">Active Subscriptions</h3>
+            <div id="activeSubscriptions" style="font-size: 32px; font-weight: bold; color: #28a745;">-</div>
+        </div>
+        
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 10px 0; color: #666;">Total Revenue</h3>
+            <div id="totalRevenue" style="font-size: 32px; font-weight: bold; color: #28a745;">-</div>
+        </div>
+        
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 10px 0; color: #666;">Trial Users</h3>
+            <div id="trialUsers" style="font-size: 32px; font-weight: bold; color: #ffc107;">-</div>
+        </div>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2><i class="fas fa-cog"></i> Quick Actions</h2>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="processRenewals()">
+                <i class="fas fa-sync"></i> Process Renewals
+            </button>
+            <button id="enforcementBtn" class="btn btn-outline" onclick="toggleEnforcement()">
+                <i class="fas fa-toggle-off"></i> <span id="enforcementStatus">Payment Enforcement: Loading...</span>
+            </button>
+        </div>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px;">
+        <h2><i class="fas fa-chart-line"></i> Recent Activity</h2>
+        <div id="recentActivity" style="margin-top: 15px;">
+            <p style="color: #666;">View recent subscriptions and payments on their respective pages.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function getToken() {
+    // Admin-specific token getter
+    return getAdminToken();
+}
+
+async function loadEnforcementStatus() {
+    try {
+        const response = await adminFetch('/api/subscriptions/enforcement/status', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            updateEnforcementButton(data.enforce_payment_after_trial);
+        }
+    } catch (error) {
+        console.error('Error loading enforcement status:', error);
+    }
+}
+
+function updateEnforcementButton(enabled) {
+    const btn = document.getElementById('enforcementBtn');
+    const statusSpan = document.getElementById('enforcementStatus');
+    const icon = btn.querySelector('i');
+    
+    if (enabled) {
+        statusSpan.textContent = 'Payment Enforcement: ON';
+        icon.className = 'fas fa-toggle-on';
+        btn.classList.remove('btn-outline');
+        btn.classList.add('btn-success');
+        btn.title = 'Currently ENABLED - Users with expired trials will be BLOCKED';
+    } else {
+        statusSpan.textContent = 'Payment Enforcement: OFF';
+        icon.className = 'fas fa-toggle-off';
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline');
+        btn.title = 'Currently DISABLED - Users can continue using app after trial expires';
+    }
+}
+
+async function loadDashboardStats() {
+    try {
+        // Load subscription stats
+        const subResponse = await adminFetch('/api/subscriptions/admin/subscriptions', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (subResponse.ok) {
+            const subData = await subResponse.json();
+            document.getElementById('activeSubscriptions').textContent = subData.stats.by_status.active || 0;
+            document.getElementById('trialUsers').textContent = subData.stats.by_status.trial || 0;
+            document.getElementById('totalUsers').textContent = subData.stats.total || 0;
+        } else {
+            console.error('Failed to load subscriptions:', await subResponse.text());
+        }
+        
+        // Load payment stats
+        const payResponse = await adminFetch('/api/subscriptions/admin/payments', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (payResponse.ok) {
+            const payData = await payResponse.json();
+            const revenueZAR = payData.stats.total_revenue_by_currency.ZAR || 0;
+            document.getElementById('totalRevenue').textContent = `R${(revenueZAR / 100).toFixed(2)}`;
+        } else {
+            console.error('Failed to load payments:', await payResponse.text());
+        }
+        
+        // Load enforcement status
+        await loadEnforcementStatus();
+        
+    } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+        showNotification('Error loading dashboard data: ' + error.message, 'error');
+    }
+}
+
+async function processRenewals() {
+    if (!confirm('Process all subscription renewals now?')) {
+        return;
+    }
+    
+    try {
+        const response = await adminFetch('/api/subscriptions/renewal/process', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+            showNotification(`Renewals processed: ${data.renewed} successful, ${data.failed.length} failed`, 'success');
+            loadDashboardStats();
+        } else {
+            showNotification('Error: ' + data.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error processing renewals', 'error');
+    }
+}
+
+async function toggleEnforcement() {
+    try {
+        // Get current state from button
+        const currentState = document.getElementById('enforcementBtn').classList.contains('btn-success');
+        const newState = !currentState;
+        const stateText = newState ? 'ENABLED' : 'DISABLED';
+        const warningText = newState 
+            ? 'WARNING: Enabling enforcement will BLOCK users with expired trials from accessing the app. They will need an active subscription.\n\nContinue?'
+            : 'Disabling enforcement will allow users to continue using the app even after their trial expires.\n\nContinue?';
+        
+        if (!confirm(`${warningText}`)) {
+            return;
+        }
+        
+        const response = await adminFetch('/api/subscriptions/toggle-enforcement', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        
+        // Update button to reflect new state
+        updateEnforcementButton(data.enforce_payment_after_trial);
+        
+        showNotification(data.message || `Payment enforcement ${stateText}`, 'success');
+    } catch (error) {
+        showNotification('Error toggling enforcement', 'error');
+    }
+}
+
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+});
+</script>
+{% endblock %}
+
+

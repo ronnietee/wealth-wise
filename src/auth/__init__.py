@@ -3,6 +3,7 @@ Authentication and authorization utilities.
 """
 
 from functools import wraps
+from datetime import datetime
 from flask import request, jsonify, session
 import jwt
 from ..extensions import db
@@ -104,6 +105,66 @@ def subscription_required(f):
             return f(current_user, *args, **kwargs)
         return jsonify({'message': 'Subscription required to access this feature.'}), 402
 
-    from datetime import datetime
-    from flask import jsonify
+    return decorated
+
+
+def admin_required(f):
+    """Decorator to require admin access (supports both session and token-based auth)."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        from flask import current_app, session
+        
+        # Check session first (for web-based admin portal)
+        if 'admin_logged_in' in session and session.get('admin_logged_in'):
+            # Verify session hasn't expired (24 hours)
+            if 'admin_login_time' in session:
+                login_time = session.get('admin_login_time')
+                
+                # Handle both datetime objects and timestamps
+                elapsed_seconds = None
+                if isinstance(login_time, datetime):
+                    # Convert to UTC naive if timezone-aware
+                    login_dt = login_time.replace(tzinfo=None) if login_time.tzinfo else login_time
+                    elapsed_seconds = (datetime.utcnow() - login_dt).total_seconds()
+                elif isinstance(login_time, (int, float)):
+                    # Stored as timestamp
+                    elapsed_seconds = datetime.utcnow().timestamp() - login_time
+                
+                if elapsed_seconds is not None and elapsed_seconds <= 86400:
+                    # Session valid, pass None for current_user (admin doesn't need user object)
+                    return f(None, *args, **kwargs)
+            
+            # Session expired, clear it
+            session.pop('admin_logged_in', None)
+            session.pop('admin_login_time', None)
+        
+        # Check JWT token (for API access)
+        token = request.headers.get('Authorization')
+        if token:
+            try:
+                if token.startswith('Bearer '):
+                    token = token[7:]
+                data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+                
+                # Check if it's an admin token (has 'admin': True) or user token with is_admin
+                if data.get('admin') == True:
+                    # Admin token, allow access
+                    return f(None, *args, **kwargs)
+                
+                # Try user-based admin check (for backward compatibility)
+                if 'user_id' in data:
+                    current_user = User.query.filter_by(id=data['user_id']).first()
+                    if current_user and current_user.is_admin:
+                        return f(current_user, *args, **kwargs)
+                        
+            except jwt.ExpiredSignatureError:
+                return jsonify({'message': 'Token has expired!'}), 401
+            except jwt.InvalidTokenError:
+                pass  # Try session below
+            except Exception as e:
+                current_app.logger.warning(f"Admin token validation error: {e}")
+        
+        # No valid session or token
+        return jsonify({'message': 'Admin access required!'}), 403
+        
     return decorated
