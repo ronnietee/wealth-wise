@@ -1,0 +1,27 @@
+# Example crontab entry for subscription renewals
+# This file shows how to set up automatic renewal processing
+# 
+# To install:
+# 1. Copy this file and adjust paths/variables as needed
+# 2. Run: crontab -e
+# 3. Add the line below (or source from this file)
+# 4. Save and exit
+#
+# To verify: crontab -l
+#
+# CRON SYNTAX: minute hour day month weekday command
+#
+# Run daily at 2:00 AM
+0 2 * * * cd /path/to/wealth-wise && /usr/bin/python3 scripts/process_renewals.py >> logs/renewals.log 2>&1
+#
+# Or with environment variables inline:
+# 0 2 * * * cd /path/to/wealth-wise && ADMIN_USERNAME=admin ADMIN_PASSWORD=your-password APP_URL=http://localhost:5000 /usr/bin/python3 scripts/process_renewals.py >> logs/renewals.log 2>&1
+#
+# Or source environment from a file (recommended):
+# 0 2 * * * cd /path/to/wealth-wise && . .env && /usr/bin/python3 scripts/process_renewals.py >> logs/renewals.log 2>&1
+#
+# RECOMMENDED SETUP:
+# 1. Create a shell script wrapper that loads .env and runs the Python script
+# 2. Make the wrapper executable: chmod +x scripts/renewals.sh
+# 3. Add the wrapper to crontab instead
+
