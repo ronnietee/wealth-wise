@@ -98,10 +98,18 @@ ADMIN_USERNAME=admin              # Admin username (default: 'admin')
 ADMIN_PASSWORD=your-password      # Admin password (REQUIRED - no default)
 ```
 
-## Migration from User-Based Admin
+## Backward Compatibility
 
-If you previously used user-based admin (with `is_admin` flag):
-- User-based admin tokens still work for API access (backward compatible)
-- Web portal now uses separate credentials
-- You can keep both systems running simultaneously
+The system supports both credential-based and user-based admin access:
+
+- **Credential-based** (Primary): Uses `ADMIN_USERNAME`/`ADMIN_PASSWORD` from environment
+  - Used by web portal (`/admin/*`)
+  - Creates admin JWT tokens for API access
+  
+- **User-based** (Optional): Uses `is_admin` flag on User model
+  - Still supported for API token authentication
+  - Useful if you want to promote regular users to admin
+  - Not used by web portal (web portal only uses credentials)
+
+You can use both systems simultaneously if needed.
 
