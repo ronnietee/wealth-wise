@@ -70,16 +70,23 @@ class PayFastService:
             return True, f'POST-back error (signature valid): {str(e)}'
 
     @staticmethod
-    def build_subscription_payload(user, subscription_id: int, plan_code: str, amount_cents: int) -> Dict[str, str]:
+    def build_subscription_payload(user, subscription_id: int, plan_code: str, amount_cents: int, billing_date=None, defer_payment=False) -> Dict[str, str]:
         """Build payload for creating a subscription via PayFast (redirect form post).
         
         Args:
             user: User model instance
             subscription_id: Subscription ID to track in PayFast custom fields
             plan_code: Plan code (monthly or yearly)
-            amount_cents: Amount in cents
+            amount_cents: Amount in cents for recurring charge
+            billing_date: Optional datetime object for when billing should start (for trial periods).
+                          If provided, PayFast will save payment method but won't charge until this date.
+                          Format: YYYY-MM-DD
+            defer_payment: If True, set initial amount to 0.00 to save payment method without charging.
+                          The recurring_amount will be charged starting on billing_date.
         """
-        amount = f"{amount_cents / 100:.2f}"
+        recurring_amount = f"{amount_cents / 100:.2f}"
+        # For trial periods: set initial amount to 0.00 to save payment details without charging
+        initial_amount = '0.00' if defer_payment else recurring_amount
         
         # PayFast frequency values: 3 = monthly, 6 = bi-annual (6 months)
         # For yearly, we need to use cycles=2 with frequency=6 (bi-annual) OR use custom frequency
@@ -87,21 +94,31 @@ class PayFastService:
         frequency = 3 if plan_code == 'monthly' else 6  # 3=monthly, 6=bi-annual
         cycles = 0 if plan_code == 'monthly' else 2  # For yearly: 2 cycles of bi-annual = 1 year
         
+        # Format billing_date if provided (PayFast expects YYYY-MM-DD)
+        billing_date_str = ''
+        if billing_date:
+            if hasattr(billing_date, 'strftime'):
+                # It's a datetime/date object
+                billing_date_str = billing_date.strftime('%Y-%m-%d')
+            else:
+                # Assume it's already a string in correct format
+                billing_date_str = str(billing_date)
+        
         base = {
             'merchant_id': current_app.config.get('PAYFAST_MERCHANT_ID', ''),
             'merchant_key': current_app.config.get('PAYFAST_MERCHANT_KEY', ''),
             'return_url': current_app.config.get('PAYFAST_RETURN_URL'),
             'cancel_url': current_app.config.get('PAYFAST_CANCEL_URL'),
             'notify_url': current_app.config.get('PAYFAST_NOTIFY_URL'),
-            'amount': amount,
+            'amount': initial_amount,  # 0.00 for trials (saves payment method), full amount for immediate charge
             'item_name': f"STEWARD {plan_code.capitalize()} Subscription",
             'email_address': user.email,
             'name_first': user.first_name,
             'name_last': user.last_name,
             # Subscription params (PayFast)
             'subscription_type': 1,  # 1 for subscription
-            'billing_date': '',      # optional start date
-            'recurring_amount': amount,
+            'billing_date': billing_date_str,  # Set to trial_end date to defer first charge
+            'recurring_amount': recurring_amount,  # Amount charged after billing_date
             'frequency': frequency,
             'cycles': cycles,  # 0 for indefinite (monthly), 2 for yearly (bi-annual cycles)
             # Custom fields to map ITN back to user/subscription

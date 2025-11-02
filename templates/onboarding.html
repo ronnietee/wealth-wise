@@ -518,8 +518,46 @@
                 </form>
             </div>
 
-            <!-- Step 5: Welcome Message -->
+            <!-- Step 5: Trial Information & Payment Setup -->
             <div class="onboarding-step" id="step5" >
+                <div class="step-header">
+                    <h2>Almost there! Set up your payment</h2>
+                    <p>You'll be redirected to our secure payment partner to complete setup</p>
+                </div>
+                <div class="trial-info-box" style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+                    <div style="display: flex; align-items: start; gap: 15px;">
+                        <div style="font-size: 24px; color: #3b82f6;">ℹ️</div>
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 18px;">30-Day Free Trial</h3>
+                            <p style="margin: 0 0 8px 0; color: #1e293b; line-height: 1.6;">
+                                By signing up, you're automatically enrolled in a <strong>30-day free trial</strong>. 
+                                Your card will <strong>not be charged</strong> during the trial period.
+                            </p>
+                            <p style="margin: 0 0 8px 0; color: #1e293b; line-height: 1.6;">
+                                After 30 days, your subscription will automatically begin. You can upgrade to a plan anytime via <strong>Settings</strong>, or cancel before the trial ends to avoid charges.
+                            </p>
+                            <p style="margin: 0; color: #1e293b; line-height: 1.6;">
+                                <strong>Next step:</strong> You'll be redirected to our secure payment partner (PayFast) to securely enter your payment information. Your card details never touch our servers - they're handled entirely by PayFast's PCI DSS Level 1 compliant platform.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="payment-security-note" style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <i class="fas fa-lock" style="color: #28a745; font-size: 20px;"></i>
+                        <h4 style="margin: 0; color: #1e293b; font-size: 16px;">Secure Payment Processing</h4>
+                    </div>
+                    <ul style="margin: 0; padding-left: 20px; color: #6c757d; line-height: 1.8;">
+                        <li>Payment handled by PayFast (PCI DSS Level 1 compliant)</li>
+                        <li>Your card details never touch our servers</li>
+                        <li>Encrypted HTTPS transmission</li>
+                        <li>No charges during your 30-day free trial</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 6: Welcome Message -->
+            <div class="onboarding-step" id="step6" >
                 <div class="step-header">
                     <h2>Welcome to STEWARD!</h2>
                     <p>You're all set up and ready to take control of your finances</p>

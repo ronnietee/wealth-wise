@@ -57,8 +57,14 @@ def start_subscription(current_user):
     )
 
     # Build PayFast payload for redirect-based subscription setup (optional step)
+    # For manual trial start, also defer payment until trial ends
     amount_cents = MONTHLY_PRICE_CENTS if plan_code == 'monthly' else YEARLY_PRICE_CENTS
-    payload = PayFastService.build_subscription_payload(current_user, sub.id, plan_code, amount_cents)
+    billing_date = current_user.trial_end if current_user.trial_end else None
+    payload = PayFastService.build_subscription_payload(
+        current_user, sub.id, plan_code, amount_cents,
+        billing_date=billing_date,
+        defer_payment=True  # Save payment method but don't charge until trial ends
+    )
 
     return jsonify({
         'message': 'Trial started',

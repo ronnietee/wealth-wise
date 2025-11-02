@@ -88,19 +88,32 @@ def favicon():
 
 @main_bp.route('/payfast/return')
 def payfast_return():
-    """PayFast return URL - user redirected here after successful payment."""
+    """PayFast return URL - user redirected here after successful payment setup during onboarding."""
     # Extract query parameters if any
     payment_id = request.args.get('pf_payment_id', '')
     payment_status = request.args.get('payment_status', '').upper()
     
-    # Redirect to settings page with success message
-    from flask import redirect, url_for, flash
+    # Check if user is coming from onboarding (no session yet) or settings
+    from flask import redirect, url_for, flash, session
+    from ...models import User
+    
+    # Try to identify user from session or token
+    user_id = session.get('user_id') or None
+    token = request.args.get('token')
+    
+    # If coming from onboarding, redirect to dashboard with success message
+    if not user_id and not token:
+        # Coming from onboarding - payment setup completed
+        flash('Payment method set up successfully! Your 30-day free trial has started.', 'success')
+        return redirect(url_for('main.index'))
+    
+    # Otherwise redirect to settings page with success message
     if payment_status == 'COMPLETE':
         flash('Payment successful! Your subscription has been activated.', 'success')
     elif payment_status == 'PENDING':
         flash('Payment is pending. Your subscription will be activated once payment is confirmed.', 'info')
     else:
-        flash('Payment status: ' + payment_status, 'info')
+        flash('Payment method set up successfully!', 'success')
     
     return redirect(url_for('main.settings'))
 
@@ -108,6 +121,16 @@ def payfast_return():
 @main_bp.route('/payfast/cancel')
 def payfast_cancel():
     """PayFast cancel URL - user redirected here if payment is cancelled."""
-    from flask import redirect, url_for, flash
+    from flask import redirect, url_for, flash, session
+    
+    # Check if user is coming from onboarding (no session yet) or settings
+    user_id = session.get('user_id') or None
+    
+    if not user_id:
+        # Coming from onboarding - allow user to continue with trial, setup payment later
+        flash('You can continue with your free trial. Set up payment anytime from Settings to ensure uninterrupted service.', 'info')
+        return redirect(url_for('main.index'))
+    
+    # Otherwise redirect to settings
     flash('Payment was cancelled. You can try again from your subscription settings.', 'warning')
     return redirect(url_for('main.settings'))

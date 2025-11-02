@@ -185,12 +185,48 @@ def complete_onboarding():
             return jsonify({'message': f'Error creating categories: {str(category_error)}'}), 500
         
         # Start trial subscription (optional, based on config)
+        subscription = None
+        payfast_payload = None
+        subscriptions_enabled = False
         try:
             from flask import current_app
-            if current_app.config.get('SUBSCRIPTIONS_ENABLED', True):
+            # Check if subscriptions are enabled (config converts string to boolean)
+            subscriptions_enabled = current_app.config.get('SUBSCRIPTIONS_ENABLED', True)
+            if subscriptions_enabled:
                 from ...services.subscription_service import SubscriptionService
+                from ...services.payfast_service import PayFastService
+                
                 SubscriptionService.seed_default_plans(current_app.config.get('DEFAULT_CURRENCY', 'ZAR'))
-                SubscriptionService.start_trial(user, (data.get('plan') or 'monthly').lower(), current_app.config.get('TRIAL_DAYS', 30))
+                plan_code = (data.get('plan') or 'monthly').lower()
+                subscription = SubscriptionService.start_trial(user, plan_code, current_app.config.get('TRIAL_DAYS', 30))
+                
+                # Send trial started email
+                # EmailService is already imported at the top of the file (line 14)
+                trial_days = current_app.config.get('TRIAL_DAYS', 30)
+                EmailService.send_subscription_email(
+                    user=user,
+                    email_type='trial_started',
+                    app_config=current_app.config,
+                    trial_days=trial_days,
+                    trial_start=user.trial_start.isoformat() if user.trial_start else 'N/A',
+                    trial_end=user.trial_end.isoformat() if user.trial_end else 'N/A',
+                    plan=plan_code
+                )
+                
+                # Build PayFast payload for redirect to hosted payment page
+                # User will enter card details securely on PayFast's platform
+                # Set amount to 0.00 and billing_date to trial_end so PayFast saves payment method
+                # but doesn't charge until trial period ends
+                from ...services.subscription_service import MONTHLY_PRICE_CENTS, YEARLY_PRICE_CENTS
+                amount_cents = MONTHLY_PRICE_CENTS if plan_code == 'monthly' else YEARLY_PRICE_CENTS
+                # Pass trial_end as billing_date and defer_payment=True to save payment method without charging
+                billing_date = user.trial_end if user.trial_end else None
+                payfast_payload = PayFastService.build_subscription_payload(
+                    user, subscription.id, plan_code, amount_cents, 
+                    billing_date=billing_date, 
+                    defer_payment=True  # Save payment method but don't charge until trial ends
+                )
+                payfast_payload['test_mode'] = 'true' if current_app.config.get('PAYFAST_TEST_MODE', True) else 'false'
         except Exception as sub_err:
             print(f"Subscription trial setup failed: {str(sub_err)}")
 
@@ -201,13 +237,22 @@ def complete_onboarding():
         from flask import current_app
         EmailService.send_verification_email(user, verification_token, current_app.config)
         
-        return jsonify({
+        response_data = {
             'message': 'Account created successfully! Please check your email to verify your account.',
             'user_id': user.id,
             'success': True,
             'email_verification_required': True,
             'email': user.email
-        }), 201
+        }
+        
+        # Only include PayFast redirect if subscriptions are enabled AND payload was created
+        # subscriptions_enabled is already checked above, so if we reach here with payload, it's valid
+        if subscriptions_enabled and subscription and payfast_payload:
+            response_data['redirect_to_payfast'] = True
+            response_data['payfast'] = payfast_payload
+            response_data['message'] = 'Account created! Redirecting to secure payment setup...'
+        
+        return jsonify(response_data), 201
         
     except Exception as e:
         print(f"Onboarding error: {str(e)}")

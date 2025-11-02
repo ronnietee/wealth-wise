@@ -30,11 +30,24 @@ See [billing/README.md](./billing/README.md) for comprehensive documentation cov
 - PayFast setup, signature validation, and payloads
 - Test scenarios and manual verification steps
 
+Additional billing documentation:
+- [Payment Security](./billing/PAYMENT_SECURITY.md) - PCI compliance and payment security implementation
+- [Onboarding Flow](./billing/ONBOARDING_FLOW.md) - Complete onboarding process documentation
+- [Admin Setup](./billing/ADMIN_SETUP.md) - Admin portal configuration
+- [Cron Setup](./billing/CRON_SETUP.md) - Automated renewal processing
+
 ## 📚 Quick Links
 
+### Database
 - [Database Documentation](./database/README.md)
 - [ERD (Entity Relationship Diagram)](./database/DATABASE_ERD.md)
 - [SQLite vs PostgreSQL Guide](./database/SQLITE_VS_POSTGRESQL.md)
 - [Migration Guide](./database/MIGRATION_GUIDE.md)
- - [Billing & Subscriptions](./billing/README.md)
+
+### Billing & Subscriptions
+- [Billing & Subscriptions Overview](./billing/README.md)
+- [Payment Security](./billing/PAYMENT_SECURITY.md)
+- [Onboarding Flow](./billing/ONBOARDING_FLOW.md)
+- [Admin Setup](./billing/ADMIN_SETUP.md)
+- [Cron Setup](./billing/CRON_SETUP.md)
 

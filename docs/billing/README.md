@@ -138,31 +138,53 @@ Apply with: `flask db upgrade`
 
 ## Subscription Flow
 
-### 1. Trial Start
+### 1. Trial Start (Onboarding)
 
-- Automatically starts on signup (`POST /api/onboarding/complete`)
-- Or manually: `POST /api/subscriptions/start` with `{ "plan": "monthly" | "yearly" }`
-- Sets `trial_start` and `trial_end` (trial_start + TRIAL_DAYS)
-- User status set to `trial`
-- Email notification sent (if configured)
+**Automatic Trial Start During Signup:**
+- User completes onboarding steps (personal info, password, referral, currency/categories)
+- On Step 5: User sees trial information and clicks "Get Started"
+- Account created via `POST /api/onboarding/complete`
+- Trial automatically starts:
+  - Sets `trial_start` and `trial_end` (trial_start + TRIAL_DAYS, default 30 days)
+  - User status set to `trial`
+  - Trial started email sent
+- User immediately redirected to PayFast hosted payment page to save payment method
+- **No charge occurs** - payment method saved for future billing
 
-### 2. Subscription Activation
+**Manual Trial Start:**
+- User can also start trial manually: `POST /api/subscriptions/start` with `{ "plan": "monthly" | "yearly" }`
+- Returns PayFast payload for payment setup (optional)
 
-- User completes payment via PayFast redirect
-- PayFast sends ITN (Instant Transaction Notification) to webhook
+### 2. Payment Method Setup (PayFast)
+
+**During Onboarding:**
+- User redirected to PayFast's secure, PCI DSS Level 1 compliant payment page
+- User enters card details directly on PayFast's platform (never touches our servers)
+- PayFast saves payment method (tokenizes card) with:
+  - Initial amount: `0.00` (no charge)
+  - Billing date: Trial end date
+  - Recurring amount: Full subscription amount
+- PayFast redirects user back to our site
+- Payment method is ready for automatic billing when trial ends
+
+### 3. Subscription Activation (After Trial)
+
+**Automatic Billing:**
+- When trial period ends, PayFast automatically charges the recurring subscription amount
+- PayFast sends ITN (Instant Transaction Notification) to webhook endpoint
 - Webhook validates signature and POST-back with PayFast
 - Payment recorded in `payment` table
 - Subscription status changed from `trial` to `active`
-- Email notification sent
+- Subscription activated email sent
 
-### 3. Renewals
+### 4. Renewals
 
 - Automatic renewal processing via `POST /api/subscriptions/renewal/process`
 - Designed for cron job execution (daily recommended)
 - Extends subscription period based on plan interval
 - Can be triggered manually from admin dashboard
 
-### 4. Cancellation
+### 5. Cancellation
 
 - User can cancel: `POST /api/subscriptions/cancel`
 - Options:
@@ -170,7 +192,7 @@ Apply with: `flask db upgrade`
   - Cancel at period end (continues until current period expires)
 - Email notification sent
 
-### 5. Upgrade/Downgrade
+### 6. Upgrade/Downgrade
 
 - **Upgrade**: `POST /api/subscriptions/upgrade` - Immediate with prorated billing
 - **Downgrade**: `POST /api/subscriptions/downgrade` - Scheduled at period end
@@ -264,16 +286,32 @@ Process subscription renewals (for cron jobs).
 2. **ITN Validation**: Validates PayFast signature from webhook payload
 3. **POST-back Validation**: Server-to-server verification with PayFast (additional security layer)
 4. **Subscription Payload**: Builds redirect form data for subscription checkout
+5. **Payment Deferral**: Supports setting initial amount to `0.00` with future billing date
+   - Used during trial periods to save payment method without charging
+   - Billing date set to trial end date for automatic billing
+   - Parameters: `defer_payment=True` and `billing_date=trial_end`
 
 ### Integration Flow
 
-1. User clicks "Subscribe" → Frontend calls `POST /api/subscriptions/start`
-2. Backend creates trial subscription and returns PayFast payload
-3. Frontend POSTs form data to PayFast sandbox/production URL
-4. User completes payment on PayFast
-5. PayFast redirects back to `PAYFAST_RETURN_URL` (success) or `PAYFAST_CANCEL_URL`
-6. PayFast sends ITN to `PAYFAST_NOTIFY_URL`
-7. Webhook validates signature and POST-back, then activates subscription
+**Onboarding Flow (Automatic):**
+1. User completes onboarding and clicks "Get Started"
+2. Backend creates account and starts trial via `POST /api/onboarding/complete`
+3. Backend builds PayFast subscription payload with:
+   - Initial amount: `0.00` (saves payment method without charging)
+   - Billing date: Trial end date (deferred payment)
+   - Recurring amount: Full subscription price
+4. Frontend automatically redirects user to PayFast hosted payment page
+5. User enters card details on PayFast's secure platform
+6. PayFast saves payment method and redirects back to `PAYFAST_RETURN_URL` or `PAYFAST_CANCEL_URL`
+7. When trial ends, PayFast automatically charges recurring amount
+8. PayFast sends ITN to `PAYFAST_NOTIFY_URL` when payment is processed
+9. Webhook validates signature and POST-back, then activates subscription
+
+**Manual Subscription Start:**
+1. User calls `POST /api/subscriptions/start` with plan selection
+2. Backend creates trial and returns PayFast payload (same structure as above)
+3. Frontend can redirect to PayFast for payment setup
+4. Same flow continues as onboarding
 
 ### Custom Fields
 
@@ -348,13 +386,35 @@ ENFORCE_PAYMENT_AFTER_TRIAL=true
 ### Daily Tasks
 
 #### Process Renewals (Cron Job)
+
+**Automated setup is recommended.** See **[CRON_SETUP.md](./CRON_SETUP.md)** for complete setup instructions.
+
+**Quick Setup (Linux/Unix):**
 ```bash
-# Recommended: Daily at 2 AM
-0 2 * * * curl -X POST http://your-domain.com/api/subscriptions/renewal/process \
-  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+# 1. Make script executable
+chmod +x scripts/renewals.sh
+
+# 2. Test manually
+./scripts/renewals.sh
+
+# 3. Add to crontab (daily at 2 AM)
+crontab -e
+# Add: 0 2 * * * /full/path/to/wealth-wise/scripts/renewals.sh >> /full/path/to/wealth-wise/logs/renewals.log 2>&1
 ```
 
-Or set up a scheduled task to call the endpoint with admin authentication.
+**Quick Setup (Windows):**
+1. Use Task Scheduler to run `scripts/process_renewals.py` daily at 2 AM
+2. See [CRON_SETUP.md](./CRON_SETUP.md) for detailed Windows instructions
+
+**Manual Testing:**
+```bash
+# Run the Python script directly
+python scripts/process_renewals.py
+
+# Or use curl (requires admin token)
+curl -X POST http://localhost:5000/api/subscriptions/renewal/process \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+```
 
 ### Manual Operations
 
@@ -491,9 +551,12 @@ Protected with `@admin_required` decorator:
 
 ## Related Documentation
 
+- **[PAYMENT_SECURITY.md](./PAYMENT_SECURITY.md)** - Payment security implementation and PCI compliance
+- **[ONBOARDING_FLOW.md](./ONBOARDING_FLOW.md)** - Complete onboarding flow documentation
 - **[ADMIN_SETUP.md](./ADMIN_SETUP.md)** - Detailed admin portal setup guide
+- **[CRON_SETUP.md](./CRON_SETUP.md)** - Automated renewal processing setup guide
 - **PayFast Docs**: https://developers.payfast.co.za/docs
 
 ---
 
-**Last Updated**: November 2025
+**Last Updated**: December 2024

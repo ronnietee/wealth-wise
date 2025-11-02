@@ -331,6 +331,8 @@ class OnboardingFlow {
         if (this.currentStep === 4) {
             isValid = this.validateDetails() && isValid;
         }
+        
+        // Step 5: Trial info (no validation needed)
 
         // Update next button state
         const nextBtn = document.getElementById('nextBtn');
@@ -523,7 +525,6 @@ class OnboardingFlow {
         return isValid;
     }
 
-
     clearAllFieldErrors() {
         // Clear email and username validation errors
         const emailError = document.getElementById('email-error');
@@ -627,7 +628,7 @@ class OnboardingFlow {
                 console.log('Custom subcategory names:', window.customSubcategoryNames);
             }
         }
-
+        
         this.formData = { ...this.formData, ...stepData };
         
         // Debug: Log the collected data
@@ -652,8 +653,9 @@ class OnboardingFlow {
         const finishBtn = document.getElementById('finishBtn');
         const navigation = document.querySelector('.onboarding-navigation');
 
-        // Hide navigation on welcome page (step 5)
-        if (this.currentStep === 5) {
+        // Hide navigation on welcome page (step 6) - if it exists
+        const step6 = document.getElementById('step6');
+        if (step6 && this.currentStep === 6) {
             navigation.style.display = 'none';
             return;
         } else {
@@ -667,12 +669,12 @@ class OnboardingFlow {
         if (this.currentStep < 4) { // Show next button for steps 1-3
             nextBtn.style.display = 'block';
             finishBtn.style.display = 'none';
-        } else if (this.currentStep === 4) { // Show finish button for step 4
+        } else if (this.currentStep === 4) { // Show next button for step 4 (categories)
+            nextBtn.style.display = 'block';
+            finishBtn.style.display = 'none';
+        } else if (this.currentStep === 5) { // Show finish button for step 5 (trial info)
             nextBtn.style.display = 'none';
             finishBtn.style.display = 'block';
-        } else { // Hide both for step 5 (welcome page)
-            nextBtn.style.display = 'none';
-            finishBtn.style.display = 'none';
         }
     }
 
@@ -702,18 +704,31 @@ class OnboardingFlow {
             const result = await response.json();
 
             if (result.success) {
-                if (result.email_verification_required) {
-                    // Show email verification step instead of welcome page
+                // Store JWT token if provided (for existing users)
+                if (result.token) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('steward_token', result.token);
+                }
+                
+                // If PayFast redirect is required, do that first
+                // User can verify email after payment setup
+                if (result.payfast && result.redirect_to_payfast) {
+                    // Redirect to PayFast for secure payment setup
+                    // After PayFast redirects back, user can verify email
+                    this.redirectToPayFast(result.payfast);
+                } else if (result.email_verification_required) {
+                    // Show email verification step if no PayFast redirect
                     this.showEmailVerificationStep(result);
                 } else {
-                    // Store JWT token for API access (for existing users)
-                    if (result.token) {
-                        localStorage.setItem('token', result.token);
-                        localStorage.setItem('steward_token', result.token);
+                    // Show welcome page (step 6) if no email verification or PayFast redirect
+                    // Step 5 is the trial info page, step 6 is the welcome page
+                    const step6 = document.getElementById('step6');
+                    if (step6) {
+                        this.showStep(6);
+                    } else {
+                        // If step 6 doesn't exist, redirect to dashboard
+                        window.location.href = '/dashboard';
                     }
-                    
-                    // Show welcome page (step 5) after successful account creation
-                    this.showStep(5);
                 }
             } else {
                 // Show specific error message from server
@@ -732,7 +747,8 @@ class OnboardingFlow {
     showEmailVerificationStep(result) {
         // Hide all steps
         for (let i = 1; i <= this.totalSteps; i++) {
-            document.getElementById(`step${i}`).style.display = 'none';
+            const step = document.getElementById(`step${i}`);
+            if (step) step.style.display = 'none';
         }
         
         // Hide navigation
@@ -804,6 +820,28 @@ class OnboardingFlow {
     getCsrfToken() {
         const metaToken = document.querySelector('meta[name="csrf-token"]');
         return metaToken ? metaToken.getAttribute('content') : 'dummy_token';
+    }
+
+    redirectToPayFast(payfastPayload) {
+        // Create a form to POST to PayFast
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = payfastPayload.test_mode === 'true' 
+            ? 'https://sandbox.payfast.co.za/eng/process' 
+            : 'https://www.payfast.co.za/eng/process';
+        
+        // Add all PayFast fields as hidden inputs
+        for (const [key, value] of Object.entries(payfastPayload)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+        
+        // Add form to body and submit
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
