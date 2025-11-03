@@ -9563,4 +9563,79 @@ button,
     }
 }
 
+/* Floating Record Transaction Button */
+.floating-record-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.floating-record-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.5);
+    background: linear-gradient(135deg, #A0522D 0%, #E3964A 100%);
+}
+
+.floating-record-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4);
+}
+
+.floating-record-btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.floating-btn-text {
+    white-space: nowrap;
+}
+
+/* Mobile responsive - show only icon on small screens */
+@media (max-width: 768px) {
+    .floating-record-btn {
+        bottom: 20px;
+        right: 20px;
+        padding: 18px;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        justify-content: center;
+    }
+    
+    .floating-btn-text {
+        display: none;
+    }
+    
+    .floating-record-btn i {
+        font-size: 24px;
+        margin: 0;
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .floating-record-btn {
+    background: linear-gradient(135deg, #A0522D 0%, #D2691E 100%);
+    box-shadow: 0 6px 20px rgba(210, 105, 30, 0.5);
+}
+
+[data-theme="dark"] .floating-record-btn:hover {
+    background: linear-gradient(135deg, #B87333 0%, #E3964A 100%);
+    box-shadow: 0 8px 25px rgba(210, 105, 30, 0.6);
+}
+
 

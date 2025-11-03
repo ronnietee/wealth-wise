@@ -57,6 +57,12 @@
             </button>
         </div>
     </div>
+    
+    <!-- Floating Record Transaction Button -->
+    <button class="floating-record-btn" onclick="openAddExpenseModal()" title="Record New Transaction">
+        <i class="fas fa-plus"></i>
+        <span class="floating-btn-text">Record Transaction</span>
+    </button>
 </div>
 
 <!-- Recurring Allocations Modal -->
@@ -1162,6 +1168,144 @@ function deleteRecurringAllocation(allocationId) {
 
 // Debug and cleanup functions removed from user interface
 // These are available as API endpoints for admin use if needed
+
+// Transaction Modal Functions (for floating button)
+function openAddExpenseModal() {
+    document.getElementById('modalTransactionDate').value = new Date().toISOString().split('T')[0];
+    loadModalCategories();
+    document.getElementById('addExpenseModal').style.display = 'block';
+}
+
+function loadModalCategories() {
+    fetch('/api/categories/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + getToken()
+        }
+    })
+    .then(response => response.json())
+    .then(categories => {
+        const categorySelect = document.getElementById('modalCategory');
+        if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Select a category</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                option.dataset.subcategories = JSON.stringify(category.subcategories);
+                categorySelect.appendChild(option);
+            });
+        }
+    })
+    .catch(error => console.error('Error loading categories:', error));
+}
+
+function loadModalSubcategories() {
+    const categorySelect = document.getElementById('modalCategory');
+    const subcategorySelect = document.getElementById('modalSubcategory');
+    
+    if (!categorySelect || !subcategorySelect) return;
+    
+    subcategorySelect.innerHTML = '<option value="">Select a subcategory</option>';
+    
+    const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+    if (selectedCategory.value && selectedCategory.dataset.subcategories) {
+        const subcategories = JSON.parse(selectedCategory.dataset.subcategories);
+        subcategories.forEach(subcategory => {
+            const option = document.createElement('option');
+            option.value = subcategory.id;
+            option.textContent = subcategory.name;
+            subcategorySelect.appendChild(option);
+        });
+    }
+}
+
+// Setup form listener for transaction modal
+document.addEventListener('DOMContentLoaded', function() {
+    const addExpenseForm = document.getElementById('addExpenseForm');
+    if (addExpenseForm) {
+        addExpenseForm.addEventListener('submit', handleModalExpenseSubmit);
+    }
+});
+
+function handleModalExpenseSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        amount: parseFloat(formData.get('amount')),
+        transaction_date: formData.get('transaction_date'),
+        description: formData.get('description'),
+        comment: formData.get('comment'),
+        subcategory_id: parseInt(formData.get('subcategory'))
+    };
+    
+    // Validation
+    if (!data.amount || data.amount <= 0) {
+        showNotification('Please enter a valid amount', 'error');
+        return;
+    }
+    
+    if (!data.transaction_date) {
+        showNotification('Please select a transaction date', 'error');
+        return;
+    }
+    
+    if (!data.subcategory_id) {
+        showNotification('Please select a subcategory', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    submitBtn.disabled = true;
+    
+    // Make API call
+    fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
+    .then(data => {
+        showNotification('Transaction added successfully!', 'success');
+        closeModal('addExpenseModal');
+        // Reset form
+        const form = document.getElementById('addExpenseForm');
+        if (form) {
+            form.reset();
+            document.getElementById('modalTransactionDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modalSubcategory').innerHTML = '<option value="">Select a subcategory</option>';
+        }
+        // Reload categories to update spent amounts
+        loadCategories();
+        // Dispatch event to refresh dashboard
+        window.dispatchEvent(new CustomEvent('budgetDataChanged', {
+            detail: { type: 'transaction_added' }
+        }));
+    })
+    .catch(error => {
+        console.error('Error adding transaction:', error);
+        const errorMessage = error.error || error.message || 'Error adding transaction. Please try again.';
+        showNotification(errorMessage, 'error');
+    })
+    .finally(() => {
+        if (submitBtn) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
 </script>
 {% endblock %}
 
