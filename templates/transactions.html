@@ -260,12 +260,17 @@ async function loadActiveBudgetPeriod() {
 
 function loadTransactions() {
     console.log('Loading transactions...');
-    fetch('/api/transactions/transactions', {
+    fetch('/api/transactions', {
         headers: {
             'Authorization': 'Bearer ' + getToken()
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         console.log('Transactions loaded:', data);
         transactions = data;
@@ -613,13 +618,18 @@ function loadModalSubcategories() {
 
 function deleteTransaction(transactionId) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-        fetch(`/api/transactions/transactions/${transactionId}`, {
+        fetch(`/api/transactions/${transactionId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': 'Bearer ' + getToken()
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             showNotification('Transaction deleted successfully!', 'success');
             loadTransactions();
@@ -688,7 +698,7 @@ function handleModalExpenseSubmit(e) {
     submitBtn.disabled = true;
     
     // Make API call
-    fetch('/api/transactions/transactions', {
+    fetch('/api/transactions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -750,7 +760,14 @@ function handleEditTransaction(e) {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         showNotification('Transaction updated successfully!', 'success');
         closeModal('editTransactionModal');
@@ -834,7 +851,7 @@ function handleExpenseSubmit(e) {
     showLoading(submitBtn);
     
     // Make API call
-    fetch('/api/transactions/transactions', {
+    fetch('/api/transactions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -9,7 +9,7 @@ from ...services import TransactionService
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
 
-@transactions_bp.route('/transactions', methods=['GET'])
+@transactions_bp.route('', methods=['GET'])
 @token_required
 @subscription_required
 def get_transactions(current_user):
@@ -18,7 +18,7 @@ def get_transactions(current_user):
     return jsonify(transactions), 200
 
 
-@transactions_bp.route('/transactions', methods=['POST'])
+@transactions_bp.route('', methods=['POST'])
 @token_required
 @subscription_required
 def create_transaction(current_user):
@@ -59,7 +59,7 @@ def create_transaction(current_user):
     }), 201
 
 
-@transactions_bp.route('/transactions/<int:transaction_id>', methods=['PUT'])
+@transactions_bp.route('/<int:transaction_id>', methods=['PUT'])
 @token_required
 @subscription_required
 def update_transaction(current_user, transaction_id):
@@ -96,7 +96,7 @@ def update_transaction(current_user, transaction_id):
     return jsonify({'message': 'Transaction updated successfully'}), 200
 
 
-@transactions_bp.route('/transactions/<int:transaction_id>', methods=['DELETE'])
+@transactions_bp.route('/<int:transaction_id>', methods=['DELETE'])
 @token_required
 @subscription_required
 def delete_transaction(current_user, transaction_id):
