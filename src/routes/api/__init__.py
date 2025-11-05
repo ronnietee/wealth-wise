@@ -121,6 +121,15 @@ def complete_onboarding():
         referral_details = (data.get('referralDetailsText') or data.get('referral_details') or '').strip()
         currency = data.get('currency', 'USD')  # Extract currency from data
         
+        # Legal acceptance validation (MANDATORY)
+        accept_terms = data.get('acceptTerms', False) or data.get('accept_terms', False)
+        accept_privacy = data.get('acceptPrivacy', False) or data.get('accept_privacy', False)
+        
+        if not accept_terms:
+            return jsonify({'message': 'You must accept the Terms and Conditions to create an account'}), 400
+        if not accept_privacy:
+            return jsonify({'message': 'You must accept the Privacy Policy to create an account'}), 400
+        
         # Validation (username is optional, will be auto-generated)
         if not all([email, password, first_name, last_name]):
             return jsonify({'message': 'Email, password, first name, and last name are required'}), 400
@@ -144,6 +153,7 @@ def complete_onboarding():
         # Create user
         from ...services import UserService, AuthService
         from ...extensions import db
+        from datetime import datetime
         
         user, error = UserService.create_user(
             username=username,
@@ -157,6 +167,17 @@ def complete_onboarding():
             referral_details=referral_details or None,
             currency=currency  # Pass currency to user creation
         )
+        
+        # Store legal acceptance (MANDATORY - validated above)
+        if user:
+            user.terms_accepted = True
+            user.privacy_policy_accepted = True
+            user.terms_accepted_at = datetime.utcnow()
+            user.privacy_policy_accepted_at = datetime.utcnow()
+            # Store version identifiers (you can update these when documents change)
+            user.terms_version = '1.0'  # Update when Terms change
+            user.privacy_policy_version = '1.0'  # Update when Privacy Policy changes
+            db.session.commit()
         
         if error:
             return jsonify({'message': error}), 400

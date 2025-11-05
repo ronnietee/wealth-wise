@@ -2,7 +2,7 @@
 class OnboardingFlow {
     constructor() {
         this.currentStep = 1;
-        this.totalSteps = 5;
+        this.totalSteps = 6;
         this.formData = {};
         this.emailValidationTimeout = null;
         this.usernameValidationTimeout = null;
@@ -35,6 +35,7 @@ class OnboardingFlow {
         document.getElementById('referralForm').addEventListener('input', () => this.validateCurrentStep());
         document.getElementById('detailsForm').addEventListener('change', () => this.validateCurrentStep());
         document.getElementById('detailsForm').addEventListener('input', () => this.validateCurrentStep());
+        document.getElementById('legalAcceptanceForm').addEventListener('change', () => this.validateCurrentStep());
 
         // Password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', () => this.validatePasswordMatch());
@@ -265,7 +266,20 @@ class OnboardingFlow {
         field.style.borderColor = '#e53e3e';
         field.style.boxShadow = '0 0 0 3px rgba(229, 62, 62, 0.1)';
         
-        // Create error message
+        // For acceptance checkboxes, find the wrapper and insert error below
+        if (fieldId === 'acceptTerms' || fieldId === 'acceptPrivacy') {
+            const wrapper = field.closest('.acceptance-checkbox-wrapper');
+            if (wrapper) {
+                const errorDiv = wrapper.querySelector(`#${errorId}`);
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+            }
+        }
+        
+        // Create error message for other fields
         const errorDiv = document.createElement('div');
         errorDiv.id = errorId;
         errorDiv.className = 'field-error';
@@ -293,7 +307,18 @@ class OnboardingFlow {
         field.style.borderColor = '';
         field.style.boxShadow = '';
         
-        // Remove error message
+        // For acceptance checkboxes, hide error in wrapper
+        if (fieldId === 'acceptTerms' || fieldId === 'acceptPrivacy') {
+            const errorId = `${fieldId}-error`;
+            const errorDiv = document.getElementById(errorId);
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+            }
+            return;
+        }
+        
+        // Remove error message for other fields
         const errorId = `${fieldId}-error`;
         const errorDiv = document.getElementById(errorId);
         
@@ -332,7 +357,12 @@ class OnboardingFlow {
             isValid = this.validateDetails() && isValid;
         }
         
-        // Step 5: Trial info (no validation needed)
+        // Step 5: Legal Acceptance
+        if (this.currentStep === 5) {
+            isValid = this.validateLegalAcceptance() && isValid;
+        }
+        
+        // Step 6: Trial info (no validation needed)
 
         // Update next button state
         const nextBtn = document.getElementById('nextBtn');
@@ -525,6 +555,30 @@ class OnboardingFlow {
         return isValid;
     }
 
+    validateLegalAcceptance() {
+        let isValid = true;
+        
+        // Terms acceptance
+        const acceptTerms = document.getElementById('acceptTerms');
+        if (!acceptTerms || !acceptTerms.checked) {
+            this.showFieldError('acceptTerms', 'You must accept the Terms and Conditions to continue');
+            isValid = false;
+        } else {
+            this.clearFieldError('acceptTerms');
+        }
+
+        // Privacy Policy acceptance
+        const acceptPrivacy = document.getElementById('acceptPrivacy');
+        if (!acceptPrivacy || !acceptPrivacy.checked) {
+            this.showFieldError('acceptPrivacy', 'You must accept the Privacy Policy to continue');
+            isValid = false;
+        } else {
+            this.clearFieldError('acceptPrivacy');
+        }
+
+        return isValid;
+    }
+
     clearAllFieldErrors() {
         // Clear email and username validation errors
         const emailError = document.getElementById('email-error');
@@ -540,9 +594,10 @@ class OnboardingFlow {
     }
 
     showStep(stepNumber) {
-        // Hide all steps
-        for (let i = 1; i <= this.totalSteps; i++) {
-            document.getElementById(`step${i}`).style.display = 'none';
+        // Hide all steps (including step 7 welcome page)
+        for (let i = 1; i <= 7; i++) {
+            const step = document.getElementById(`step${i}`);
+            if (step) step.style.display = 'none';
         }
         
         // Show current step
@@ -629,6 +684,14 @@ class OnboardingFlow {
             }
         }
         
+        // Special handling for step 5 (legal acceptance)
+        if (this.currentStep === 5) {
+            const acceptTerms = document.getElementById('acceptTerms');
+            const acceptPrivacy = document.getElementById('acceptPrivacy');
+            stepData.acceptTerms = acceptTerms && acceptTerms.checked;
+            stepData.acceptPrivacy = acceptPrivacy && acceptPrivacy.checked;
+        }
+        
         this.formData = { ...this.formData, ...stepData };
         
         // Debug: Log the collected data
@@ -653,9 +716,9 @@ class OnboardingFlow {
         const finishBtn = document.getElementById('finishBtn');
         const navigation = document.querySelector('.onboarding-navigation');
 
-        // Hide navigation on welcome page (step 6) - if it exists
-        const step6 = document.getElementById('step6');
-        if (step6 && this.currentStep === 6) {
+        // Hide navigation on welcome page (step 7) - if it exists
+        const step7 = document.getElementById('step7');
+        if (step7 && this.currentStep === 7) {
             navigation.style.display = 'none';
             return;
         } else {
@@ -672,7 +735,10 @@ class OnboardingFlow {
         } else if (this.currentStep === 4) { // Show next button for step 4 (categories)
             nextBtn.style.display = 'block';
             finishBtn.style.display = 'none';
-        } else if (this.currentStep === 5) { // Show finish button for step 5 (trial info)
+        } else if (this.currentStep === 5) { // Show next button for step 5 (legal acceptance)
+            nextBtn.style.display = 'block';
+            finishBtn.style.display = 'none';
+        } else if (this.currentStep === 6) { // Show finish button for step 6 (trial info)
             nextBtn.style.display = 'none';
             finishBtn.style.display = 'block';
         }
@@ -720,13 +786,13 @@ class OnboardingFlow {
                     // Show email verification step if no PayFast redirect
                     this.showEmailVerificationStep(result);
                 } else {
-                    // Show welcome page (step 6) if no email verification or PayFast redirect
-                    // Step 5 is the trial info page, step 6 is the welcome page
-                    const step6 = document.getElementById('step6');
-                    if (step6) {
-                        this.showStep(6);
+                    // Show welcome page (step 7) if no email verification or PayFast redirect
+                    // Step 6 is the trial info page, step 7 is the welcome page
+                    const step7 = document.getElementById('step7');
+                    if (step7) {
+                        this.showStep(7);
                     } else {
-                        // If step 6 doesn't exist, redirect to dashboard
+                        // If step 7 doesn't exist, redirect to dashboard
                         window.location.href = '/dashboard';
                     }
                 }
@@ -745,8 +811,8 @@ class OnboardingFlow {
     }
 
     showEmailVerificationStep(result) {
-        // Hide all steps
-        for (let i = 1; i <= this.totalSteps; i++) {
+        // Hide all steps (including step 7 welcome page)
+        for (let i = 1; i <= 7; i++) {
             const step = document.getElementById(`step${i}`);
             if (step) step.style.display = 'none';
         }

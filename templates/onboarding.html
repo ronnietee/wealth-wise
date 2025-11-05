@@ -16,7 +16,7 @@
                 <div class="progress-fill" id="progressFill"></div>
             </div>
             <div class="progress-text">
-                <span id="currentStep">1</span> of <span id="totalSteps">5</span>
+                <span id="currentStep">1</span> of <span id="totalSteps">6</span>
             </div>
         </div>
 
@@ -518,36 +518,110 @@
                 </form>
             </div>
 
-            <!-- Step 5: Trial Information & Payment Setup -->
-            <div class="onboarding-step" id="step5" >
+            <!-- Step 5: Terms & Privacy Policy Acceptance -->
+            <div class="onboarding-step" id="step5">
+                <div class="step-header">
+                    <h2>Terms & Privacy Policy</h2>
+                    <p>Please review and accept our terms to continue</p>
+                </div>
+                <form class="onboarding-form legal-acceptance-form" id="legalAcceptanceForm">
+                    <div class="legal-acceptance-container">
+                        <div class="legal-document-box">
+                            <h3>
+                                <i class="fas fa-file-contract"></i>
+                                Terms and Conditions
+                            </h3>
+                            <div class="legal-content">
+                                <p><strong>You agree to:</strong> Use the Service lawfully, maintain account security, accept liability limitations, and indemnify us against claims.</p>
+                                <p class="legal-link">
+                                    <a href="/legal/terms" target="_blank">
+                                        Read full Terms <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="legal-document-box">
+                            <h3>
+                                <i class="fas fa-shield-alt"></i>
+                                Privacy Policy
+                            </h3>
+                            <div class="legal-content">
+                                <p><strong>We collect information to:</strong> Provide services, process transactions, comply with POPIA/GDPR, and protect against fraud.</p>
+                                <p><strong>Your Rights:</strong> Access, correct, delete, object to processing, and request data portability.</p>
+                                <p class="legal-link">
+                                    <a href="/legal/privacy" target="_blank">
+                                        Read full Privacy Policy <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="acceptance-checkboxes">
+                            <div class="acceptance-checkbox-wrapper">
+                                <label class="acceptance-checkbox">
+                                    <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                                    <div class="checkbox-text">
+                                        <strong>I accept the Terms and Conditions *</strong>
+                                        <span>I have read and agree to be bound by the Terms and Conditions</span>
+                                    </div>
+                                </label>
+                                <div id="acceptTerms-error" class="field-error" style="display: none;"></div>
+                            </div>
+                            
+                            <div class="acceptance-checkbox-wrapper">
+                                <label class="acceptance-checkbox">
+                                    <input type="checkbox" id="acceptPrivacy" name="acceptPrivacy" required>
+                                    <div class="checkbox-text">
+                                        <strong>I accept the Privacy Policy *</strong>
+                                        <span>I have read and understand how my personal information will be collected and used</span>
+                                    </div>
+                                </label>
+                                <div id="acceptPrivacy-error" class="field-error" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="legal-notice">
+                            <p>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Important:</strong> You must accept both the Terms and Conditions and Privacy Policy to use STEWARD. 
+                                Your acceptance is recorded and timestamped for compliance purposes.
+                            </p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 6: Trial Information & Payment Setup -->
+            <div class="onboarding-step" id="step6" >
                 <div class="step-header">
                     <h2>Almost there! Set up your payment</h2>
                     <p>You'll be redirected to our secure payment partner to complete setup</p>
                 </div>
-                <div class="trial-info-box" style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-                    <div style="display: flex; align-items: start; gap: 15px;">
-                        <div style="font-size: 24px; color: #3b82f6;">ℹ️</div>
-                        <div style="flex: 1;">
-                            <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 18px;">30-Day Free Trial</h3>
-                            <p style="margin: 0 0 8px 0; color: #1e293b; line-height: 1.6;">
+                <div class="trial-info-box">
+                    <div class="trial-info-content">
+                        <div class="trial-info-icon">ℹ️</div>
+                        <div class="trial-info-text">
+                            <h3>30-Day Free Trial</h3>
+                            <p>
                                 By signing up, you're automatically enrolled in a <strong>30-day free trial</strong>. 
                                 Your card will <strong>not be charged</strong> during the trial period.
                             </p>
-                            <p style="margin: 0 0 8px 0; color: #1e293b; line-height: 1.6;">
+                            <p>
                                 After 30 days, your subscription will automatically begin. You can upgrade to a plan anytime via <strong>Settings</strong>, or cancel before the trial ends to avoid charges.
                             </p>
-                            <p style="margin: 0; color: #1e293b; line-height: 1.6;">
+                            <p>
                                 <strong>Next step:</strong> You'll be redirected to our secure payment partner (PayFast) to securely enter your payment information. Your card details never touch our servers - they're handled entirely by PayFast's PCI DSS Level 1 compliant platform.
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="payment-security-note" style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 20px;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <i class="fas fa-lock" style="color: #28a745; font-size: 20px;"></i>
-                        <h4 style="margin: 0; color: #1e293b; font-size: 16px;">Secure Payment Processing</h4>
+                <div class="payment-security-note">
+                    <div class="payment-security-header">
+                        <i class="fas fa-lock"></i>
+                        <h4>Secure Payment Processing</h4>
                     </div>
-                    <ul style="margin: 0; padding-left: 20px; color: #6c757d; line-height: 1.8;">
+                    <ul class="payment-security-list">
                         <li>Payment handled by PayFast (PCI DSS Level 1 compliant)</li>
                         <li>Your card details never touch our servers</li>
                         <li>Encrypted HTTPS transmission</li>
@@ -556,8 +630,8 @@
                 </div>
             </div>
 
-            <!-- Step 6: Welcome Message -->
-            <div class="onboarding-step" id="step6" >
+            <!-- Step 7: Welcome Message -->
+            <div class="onboarding-step" id="step7" >
                 <div class="step-header">
                     <h2>Welcome to STEWARD!</h2>
                     <p>You're all set up and ready to take control of your finances</p>

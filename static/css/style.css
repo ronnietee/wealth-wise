@@ -8441,6 +8441,352 @@ button,
     margin: 0 auto;
 }
 
+/* Legal Acceptance Form - Wider Layout */
+.legal-acceptance-form {
+    max-width: 900px !important;
+    width: 100% !important;
+}
+
+#step5 .onboarding-form {
+    max-width: 900px !important;
+    width: 100% !important;
+}
+
+.legal-acceptance-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block;
+}
+
+.legal-document-box {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    max-height: none;
+    overflow-y: visible;
+    width: 100%;
+}
+
+.legal-document-box h3 {
+    margin-top: 0;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legal-document-box h3 i {
+    color: #8B4513;
+    font-size: 16px;
+}
+
+.legal-content {
+    color: #64748b;
+    line-height: 1.6;
+    font-size: 11px;
+    width: 100%;
+}
+
+.legal-content p {
+    margin-bottom: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.legal-content ul {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.legal-content li {
+    margin-bottom: 2px;
+    font-size: 11px;
+}
+
+.legal-content strong {
+    font-size: 11px;
+}
+
+.legal-link {
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+}
+
+.legal-link a {
+    color: #8B4513;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.legal-link a:hover {
+    color: #A0522D;
+}
+
+.legal-link i {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.acceptance-checkboxes {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.acceptance-checkbox-wrapper {
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.acceptance-checkbox-wrapper:last-of-type {
+    margin-bottom: 0;
+}
+
+.acceptance-checkbox {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 0;
+    cursor: pointer;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+#acceptTerms-error,
+#acceptPrivacy-error {
+    display: none;
+    color: #e53e3e;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    margin-left: 38px;
+    font-weight: 600;
+    padding: 6px 10px;
+    background: rgba(229, 62, 62, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #e53e3e;
+}
+
+.acceptance-checkbox:hover {
+    background-color: #f8f9fa;
+}
+
+.acceptance-checkbox input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    flex-grow: 0;
+    accent-color: #8B4513;
+}
+
+.checkbox-text {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    display: block;
+    width: auto;
+    max-width: none !important;
+}
+
+.checkbox-text strong {
+    color: #1e293b;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 16px;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.checkbox-text span {
+    color: #64748b;
+    font-size: 14px;
+    display: block;
+    line-height: 1.6;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.legal-notice {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Step 6: Trial Information & Payment Setup Styles */
+.trial-info-box {
+    background: #f0f9ff;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.trial-info-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.trial-info-icon {
+    font-size: 18px;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.trial-info-text {
+    flex: 1;
+}
+
+.trial-info-text h3 {
+    margin: 0 0 8px 0;
+    color: #1e40af;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.trial-info-text p {
+    margin: 0 0 6px 0;
+    color: #1e293b;
+    line-height: 1.5;
+    font-size: 11px;
+}
+
+.trial-info-text p:last-child {
+    margin-bottom: 0;
+}
+
+.trial-info-text strong {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.payment-security-note {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 16px;
+}
+
+.payment-security-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.payment-security-header i {
+    color: #28a745;
+    font-size: 16px;
+}
+
+.payment-security-header h4 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.payment-security-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #6c757d;
+    line-height: 1.6;
+    font-size: 11px;
+}
+
+.payment-security-list li {
+    margin-bottom: 4px;
+}
+
+.payment-security-list li:last-child {
+    margin-bottom: 0;
+}
+
+.legal-notice p {
+    margin: 0;
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.legal-notice i {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Responsive adjustments for legal acceptance */
+@media (max-width: 768px) {
+    .legal-acceptance-form {
+        max-width: 100% !important;
+    }
+    
+    .legal-document-box {
+        padding: 10px 12px;
+        max-height: none;
+    }
+    
+    .acceptance-checkboxes {
+        padding: 12px;
+    }
+    
+    #acceptTerms-error,
+    #acceptPrivacy-error {
+        margin-left: 32px;
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+    
+    .legal-document-box h3 {
+        font-size: 13px;
+    }
+    
+    .legal-content {
+        font-size: 10px;
+    }
+    
+    .legal-content p,
+    .legal-content li,
+    .legal-content strong {
+        font-size: 10px;
+    }
+    
+    .acceptance-checkbox {
+        gap: 12px;
+        padding: 10px;
+    }
+    
+    .acceptance-checkbox input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .checkbox-text strong {
+        font-size: 15px;
+    }
+    
+    .checkbox-text span {
+        font-size: 13px;
+    }
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
