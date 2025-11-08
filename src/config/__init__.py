@@ -65,7 +65,8 @@ class Config:
     
     # Admin credentials (set in environment variables)
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')  # MUST be set in production
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')  # Legacy - use ADMIN_PASSWORD_HASH instead
+    ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', '')  # Hashed admin password (preferred)
     
     # Session security
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() in ['true', 'on', '1']

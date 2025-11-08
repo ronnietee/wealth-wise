@@ -2,7 +2,7 @@
 API route blueprints.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from .user import user_bp
 from .categories import categories_bp
 from .transactions import transactions_bp
@@ -13,6 +13,7 @@ from .subscriptions import subscriptions_bp
 from ...auth import token_required, get_current_user
 from ...services import EmailService
 from ...extensions import limiter, csrf
+from ...utils.password import validate_password_strength
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -66,10 +67,9 @@ def validate_email():
         if not email:
             return jsonify({'message': 'Email is required'}), 400
         
-        from ...models import User
-        user = User.query.filter_by(email=email).first()
-        
-        return jsonify({'available': user is None}), 200
+        # Always return the same response to prevent email enumeration
+        # Don't reveal whether email exists or not
+        return jsonify({'available': True, 'message': 'Email validation complete'}), 200
         
     except Exception as e:
         return jsonify({'message': 'Error validating email'}), 500
@@ -127,8 +127,10 @@ def complete_onboarding():
         if not all([email, password, first_name, last_name]):
             return jsonify({'message': 'Email, password, first name, and last name are required'}), 400
         
-        if len(password) < 6:
-            return jsonify({'message': 'Password must be at least 6 characters long'}), 400
+        # Validate password strength
+        is_valid, error_message = validate_password_strength(password)
+        if not is_valid:
+            return jsonify({'message': error_message}), 400
         
         # Auto-generate username if not provided
         if not username:

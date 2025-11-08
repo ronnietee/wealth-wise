@@ -107,7 +107,7 @@ class OnboardingFlow {
     calculatePasswordStrength(password) {
         let score = 0;
         const requirements = {
-            length: password.length >= 8,
+            length: password.length >= 12,
             uppercase: /[A-Z]/.test(password),
             lowercase: /[a-z]/.test(password),
             number: /\d/.test(password),
@@ -126,11 +126,11 @@ class OnboardingFlow {
 
     updatePasswordRequirements(password) {
         const requirements = {
-            length: password.length >= 8,
+            length: password.length >= 12,
             uppercase: /[A-Z]/.test(password),
             lowercase: /[a-z]/.test(password),
             number: /\d/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)
         };
 
         Object.keys(requirements).forEach(req => {
@@ -462,11 +462,11 @@ class OnboardingFlow {
 
         // Password requirements
         const requirements = {
-            length: password.length >= 8,
+            length: password.length >= 12,
             uppercase: /[A-Z]/.test(password),
             lowercase: /[a-z]/.test(password),
             number: /\d/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)
         };
 
         if (!password) {
@@ -475,7 +475,7 @@ class OnboardingFlow {
         } else {
             // Check each requirement
             if (!requirements.length) {
-                this.showFieldError('password', 'Password must be at least 8 characters long');
+                this.showFieldError('password', 'Password must be at least 12 characters long');
                 isValid = false;
             } else if (!requirements.uppercase) {
                 this.showFieldError('password', 'Password must contain at least one uppercase letter');

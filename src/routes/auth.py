@@ -2,10 +2,11 @@
 Authentication routes.
 """
 
-from flask import Blueprint, render_template, request, jsonify, session
+from flask import Blueprint, render_template, request, jsonify, session, current_app
 from ..auth import get_current_user
 from ..services import AuthService, UserService, EmailService
 from ..extensions import limiter, csrf
+from ..utils.password import validate_password_strength
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -58,8 +59,10 @@ def register():
     if not all([username, email, password, first_name, last_name]):
         return jsonify({'message': 'All fields are required'}), 400
     
-    if len(password) < 6:
-        return jsonify({'message': 'Password must be at least 6 characters long'}), 400
+    # Validate password strength
+    is_valid, error_message = validate_password_strength(password)
+    if not is_valid:
+        return jsonify({'message': error_message}), 400
     
     # Create user
     user, error = UserService.create_user(
@@ -258,16 +261,23 @@ def forgot_password():
         return jsonify({'message': 'Email is required'}), 400
     
     user = UserService.get_user_by_email(email)
-    if not user:
-        return jsonify({'message': 'If an account with that email exists, a password reset link has been sent.'}), 200
     
-    # Create password reset token
-    reset_token = AuthService.create_password_reset_token(user)
+    # Always send email if user exists (prevents email enumeration)
+    if user:
+        # Create password reset token
+        reset_token = AuthService.create_password_reset_token(user)
+        
+        # Send reset email
+        from flask import current_app
+        EmailService.send_password_reset_email(user, reset_token, current_app.config)
+        
+        # Log password reset request for security monitoring
+        current_app.logger.info(
+            f"Password reset requested - Email: {email}, IP: {request.remote_addr}"
+        )
     
-    # Send reset email
-    from flask import current_app
-    EmailService.send_password_reset_email(user, reset_token, current_app.config)
-    
+    # Always return the same response regardless of whether email exists
+    # This prevents email enumeration attacks
     return jsonify({'message': 'If an account with that email exists, a password reset link has been sent.'}), 200
 
 
@@ -283,8 +293,10 @@ def reset_password():
     if not token or not new_password:
         return jsonify({'message': 'Token and password are required'}), 400
     
-    if len(new_password) < 6:
-        return jsonify({'message': 'Password must be at least 6 characters long'}), 400
+    # Validate password strength
+    is_valid, error_message = validate_password_strength(new_password)
+    if not is_valid:
+        return jsonify({'message': error_message}), 400
     
     user = AuthService.verify_password_reset_token(token)
     if not user:

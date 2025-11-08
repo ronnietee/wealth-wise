@@ -577,7 +577,7 @@ function validateEmail(email) {
 
 function validatePassword(password) {
     // Enhanced password validation - same as reset password requirements
-    if (password.length < 8) return false;
+    if (password.length < 12) return false;
     if (!/[a-z]/.test(password)) return false; // lowercase
     if (!/[A-Z]/.test(password)) return false; // uppercase
     if (!/[0-9]/.test(password)) return false; // number
@@ -589,8 +589,8 @@ function checkPasswordStrength(password) {
     let score = 0;
     let feedback = [];
     
-    if (password.length >= 8) score += 1;
-    else feedback.push('At least 8 characters');
+    if (password.length >= 12) score += 1;
+    else feedback.push('At least 12 characters');
     
     if (/[a-z]/.test(password)) score += 1;
     else feedback.push('Lowercase letter');
