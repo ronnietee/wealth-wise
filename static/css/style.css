@@ -8850,6 +8850,13 @@ button,
     font-size: 11px;
 }
 
+/* Onboarding form placeholders - italic and light grey */
+.onboarding-form .form-group input::placeholder,
+.onboarding-form .form-group select::placeholder {
+    font-style: italic;
+    color: #999;
+}
+
 .password-strength {
     margin-top: 0.5rem;
     padding: 0.6rem;
@@ -9171,7 +9178,7 @@ button,
 
 .welcome-actions .btn-primary {
     padding: 0.75rem 1.5rem;
-    font-size: 11px;
+    font-size: 0.9rem;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -9185,12 +9192,13 @@ button,
     padding: 1rem 0;
 }
 
-.btn-primary,
-.btn-secondary {
+/* Onboarding navigation buttons - match modal button font size */
+.onboarding-navigation .btn-primary,
+.onboarding-navigation .btn-secondary {
     padding: 0.6rem 1.5rem;
     border: none;
     border-radius: 10px;
-    font-size: 11px;
+    font-size: 0.9rem;
     font-weight: 400;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -9200,6 +9208,8 @@ button,
     text-transform: capitalize;
     letter-spacing: 0.5px;
 }
+
+/* Removed general button font-size override - using base .btn font-size: 0.9rem */
 
 .btn-primary {
     background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
@@ -9388,11 +9398,11 @@ button,
         padding: 1rem 0;
     }
     
-    .btn-primary,
-    .btn-secondary {
+    .onboarding-navigation .btn-primary,
+    .onboarding-navigation .btn-secondary {
         width: 100%;
         padding: 0.6rem 1.25rem;
-        font-size: 11px;
+        font-size: 0.9rem;
     }
     
     .progress-container {
@@ -9434,10 +9444,10 @@ button,
         margin-bottom: 1rem;
     }
     
-    .btn-primary,
-    .btn-secondary {
+    .onboarding-navigation .btn-primary,
+    .onboarding-navigation .btn-secondary {
         padding: 0.5rem 1rem;
-        font-size: 10px;
+        font-size: 0.85rem;
     }
     
     .form-group {

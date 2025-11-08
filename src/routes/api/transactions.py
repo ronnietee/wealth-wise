@@ -5,8 +5,12 @@ Transactions API routes.
 from flask import Blueprint, request, jsonify
 from ...auth import token_required, subscription_required
 from ...services import TransactionService
+from ...extensions import csrf
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
+
+# Exempt from CSRF (uses JWT tokens)
+csrf.exempt(transactions_bp)
 
 
 @transactions_bp.route('', methods=['GET'])

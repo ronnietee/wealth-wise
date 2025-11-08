@@ -5,6 +5,7 @@ Authentication routes.
 from flask import Blueprint, render_template, request, jsonify, session
 from ..auth import get_current_user
 from ..services import AuthService, UserService, EmailService
+from ..extensions import limiter, csrf
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -41,6 +42,8 @@ def verify_email():
 
 
 @auth_bp.route('/api/register', methods=['POST'])
+@limiter.limit("5 per minute")
+@csrf.exempt
 def register():
     """Register a new user."""
     data = request.get_json()
@@ -84,6 +87,8 @@ def register():
 
 
 @auth_bp.route('/api/login', methods=['POST'])
+@limiter.limit("5 per minute")
+@csrf.exempt
 def login():
     """Login user with JWT token."""
     try:
@@ -121,7 +126,7 @@ def login():
         
         # Generate JWT token
         from flask import current_app
-        token = AuthService.generate_jwt_token(user, current_app.config)
+        token = AuthService.generate_jwt_token(user, current_app.config, request)
         
         return jsonify({
             'message': 'Login successful',
@@ -144,6 +149,7 @@ def login():
 
 
 @auth_bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def frontend_login():
     """Login route for frontend form submission with session management."""
     data = request.get_json()
@@ -195,12 +201,15 @@ def frontend_login():
 
 
 @auth_bp.route('/api/csrf-token', methods=['GET'])
+@csrf.exempt
 def get_csrf_token():
     """Get CSRF token for frontend forms."""
-    return jsonify({'csrf_token': 'dummy_token'})  # Temporary for testing
+    from flask_wtf.csrf import generate_csrf
+    return jsonify({'csrf_token': generate_csrf()})
 
 
 @auth_bp.route('/api/session/validate', methods=['GET'])
+@csrf.exempt
 def validate_user_session():
     """Validate current user session and return user info."""
     user = get_current_user()
@@ -230,6 +239,7 @@ def logout():
 
 
 @auth_bp.route('/api/logout', methods=['POST'])
+@csrf.exempt
 def api_logout():
     """API logout route."""
     session.clear()
@@ -237,6 +247,8 @@ def api_logout():
 
 
 @auth_bp.route('/api/forgot-password', methods=['POST'])
+@limiter.limit("3 per hour")
+@csrf.exempt
 def forgot_password():
     """Send password reset email."""
     data = request.get_json()
@@ -260,6 +272,8 @@ def forgot_password():
 
 
 @auth_bp.route('/api/reset-password', methods=['POST'])
+@limiter.limit("5 per hour")
+@csrf.exempt
 def reset_password():
     """Reset user password."""
     data = request.get_json()

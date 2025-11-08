@@ -12,10 +12,11 @@ from .recurring import recurring_bp
 from .subscriptions import subscriptions_bp
 from ...auth import token_required, get_current_user
 from ...services import EmailService
+from ...extensions import limiter, csrf
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-# Register all API blueprints
+# Register all API blueprints first
 api_bp.register_blueprint(user_bp)
 api_bp.register_blueprint(categories_bp)
 api_bp.register_blueprint(transactions_bp)
@@ -23,6 +24,10 @@ api_bp.register_blueprint(budget_bp)
 api_bp.register_blueprint(accounts_bp)
 api_bp.register_blueprint(recurring_bp)
 api_bp.register_blueprint(subscriptions_bp)
+
+# Exempt all API routes from CSRF protection (they use JWT tokens)
+# Must be done after registering nested blueprints
+csrf.exempt(api_bp)
 
 
 @api_bp.route('/contact', methods=['POST'])
@@ -90,23 +95,11 @@ def validate_username():
 
 
 @api_bp.route('/onboarding/complete', methods=['POST'])
+@limiter.limit("3 per hour")
 def complete_onboarding():
     """Complete the onboarding process and create user account."""
     try:
         data = request.get_json()
-        
-        # Debug: Log received data
-        print("=== ONBOARDING DATA RECEIVED ===")
-        print("Categories:", data.get('categories', []))
-        print("Subcategories:", data.get('subcategories', []))
-        print("Currency:", data.get('currency'))
-        print("First name:", data.get('firstName'), "or", data.get('first_name'))
-        print("Last name:", data.get('lastName'), "or", data.get('last_name'))
-        print("Username:", data.get('username'))
-        print("Email:", data.get('email'))
-        print("Password present:", bool(data.get('password')))
-        print("Full data keys:", list(data.keys()))
-        print("================================")
         
         # Extract form data
         username = (data.get('username', '') or '').strip()
@@ -200,10 +193,11 @@ def complete_onboarding():
                 )
         except Exception as category_error:
             # If category creation fails, rollback user creation
-            print(f"Category creation failed: {str(category_error)}")
+            from flask import current_app
+            current_app.logger.error(f"Category creation failed: {str(category_error)}")
             db.session.delete(user)
             db.session.commit()
-            return jsonify({'message': f'Error creating categories: {str(category_error)}'}), 500
+            return jsonify({'message': 'Error creating categories. Please try again.'}), 500
         
         # Start trial subscription (optional, based on config)
         subscription = None
@@ -249,7 +243,8 @@ def complete_onboarding():
                 )
                 payfast_payload['test_mode'] = 'true' if current_app.config.get('PAYFAST_TEST_MODE', True) else 'false'
         except Exception as sub_err:
-            print(f"Subscription trial setup failed: {str(sub_err)}")
+            from flask import current_app
+            current_app.logger.error(f"Subscription trial setup failed: {str(sub_err)}")
 
         # Create email verification token
         verification_token = AuthService.create_email_verification_token(user)
@@ -276,13 +271,13 @@ def complete_onboarding():
         return jsonify(response_data), 201
         
     except Exception as e:
-        print(f"Onboarding error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'message': f'Error creating account: {str(e)}'}), 500
+        from flask import current_app
+        current_app.logger.error(f"Onboarding error: {str(e)}", exc_info=True)
+        return jsonify({'message': 'Error creating account. Please try again.'}), 500
 
 
 @api_bp.route('/resend-verification', methods=['POST'])
+@limiter.limit("3 per hour")
 def resend_verification():
     """Resend verification email."""
     try:
