@@ -22,6 +22,7 @@ def get_recurring_income_sources(current_user):
             'id': source.id,
             'name': source.name,
             'amount': source.amount,
+            'period_type': source.period_type,
             'is_active': source.is_active,
             'created_at': source.created_at.isoformat(),
             'updated_at': source.updated_at.isoformat()
@@ -38,9 +39,15 @@ def create_recurring_income_source(current_user):
     
     name = data.get('name', '').strip()
     amount = data.get('amount')
+    period_type = data.get('period_type', 'monthly')  # Default to monthly if not provided
     
     if not name or amount is None:
         return jsonify({'message': 'Name and amount are required'}), 400
+    
+    # Validate period_type
+    valid_period_types = ['monthly', 'quarterly', 'yearly', 'custom']
+    if period_type not in valid_period_types:
+        return jsonify({'message': f'Period type must be one of: {", ".join(valid_period_types)}'}), 400
     
     try:
         amount = float(amount)
@@ -50,6 +57,7 @@ def create_recurring_income_source(current_user):
     source = RecurringIncomeSource(
         name=name,
         amount=amount,
+        period_type=period_type,
         user_id=current_user.id
     )
     
@@ -60,6 +68,7 @@ def create_recurring_income_source(current_user):
         'id': source.id,
         'name': source.name,
         'amount': source.amount,
+        'period_type': source.period_type,
         'is_active': source.is_active,
         'created_at': source.created_at.isoformat()
     }), 201
@@ -82,6 +91,11 @@ def update_recurring_income_source(current_user, source_id):
             source.amount = float(data['amount'])
         except (ValueError, TypeError):
             return jsonify({'message': 'Invalid amount'}), 400
+    if 'period_type' in data:
+        valid_period_types = ['monthly', 'quarterly', 'yearly', 'custom']
+        if data['period_type'] not in valid_period_types:
+            return jsonify({'message': f'Period type must be one of: {", ".join(valid_period_types)}'}), 400
+        source.period_type = data['period_type']
     if 'is_active' in data:
         source.is_active = bool(data['is_active'])
     
@@ -117,6 +131,7 @@ def get_recurring_allocations(current_user):
             result.append({
                 'id': allocation.id,
                 'allocated_amount': allocation.allocated_amount,
+                'period_type': allocation.period_type,
                 'is_active': allocation.is_active,
                 'category_name': allocation.subcategory.category.name if allocation.subcategory.category else '',
                 'subcategory_name': allocation.subcategory.name,
@@ -136,9 +151,15 @@ def create_recurring_allocation(current_user):
     
     allocated_amount = data.get('allocated_amount')
     subcategory_id = data.get('subcategory_id')
+    period_type = data.get('period_type', 'monthly')  # Default to monthly if not provided
     
     if allocated_amount is None or not subcategory_id:
         return jsonify({'message': 'Allocated amount and subcategory are required'}), 400
+    
+    # Validate period_type
+    valid_period_types = ['monthly', 'quarterly', 'yearly', 'custom']
+    if period_type not in valid_period_types:
+        return jsonify({'message': f'Period type must be one of: {", ".join(valid_period_types)}'}), 400
     
     try:
         allocated_amount = float(allocated_amount)
@@ -148,6 +169,7 @@ def create_recurring_allocation(current_user):
     allocation = RecurringBudgetAllocation(
         allocated_amount=allocated_amount,
         subcategory_id=subcategory_id,
+        period_type=period_type,
         user_id=current_user.id
     )
     
@@ -158,6 +180,7 @@ def create_recurring_allocation(current_user):
         'id': allocation.id,
         'allocated_amount': allocation.allocated_amount,
         'subcategory_id': allocation.subcategory_id,
+        'period_type': allocation.period_type,
         'is_active': allocation.is_active,
         'created_at': allocation.created_at.isoformat()
     }), 201
@@ -180,6 +203,11 @@ def update_recurring_allocation(current_user, allocation_id):
             return jsonify({'message': 'Invalid allocated amount'}), 400
     if 'subcategory_id' in data:
         allocation.subcategory_id = data['subcategory_id']
+    if 'period_type' in data:
+        valid_period_types = ['monthly', 'quarterly', 'yearly', 'custom']
+        if data['period_type'] not in valid_period_types:
+            return jsonify({'message': f'Period type must be one of: {", ".join(valid_period_types)}'}), 400
+        allocation.period_type = data['period_type']
     if 'is_active' in data:
         allocation.is_active = bool(data['is_active'])
     

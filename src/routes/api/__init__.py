@@ -34,19 +34,27 @@ csrf.exempt(api_bp)
 @api_bp.route('/contact', methods=['POST'])
 def submit_contact():
     """Submit contact form."""
+    from marshmallow import ValidationError
+    from ...schemas import ContactFormSchema
+    from ...utils.validation import handle_validation_error
+    
+    schema = ContactFormSchema()
+    
     try:
-        data = request.get_json()
-        name = data.get('name', '').strip()
-        email = data.get('email', '').strip()
-        subject = data.get('subject', '').strip()
-        message = data.get('message', '').strip()
-        
-        if not all([name, email, subject, message]):
-            return jsonify({'message': 'All fields are required'}), 400
-        
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
+    
+    try:
         # Send email
         from flask import current_app
-        success = EmailService.send_contact_email(name, email, subject, message, current_app.config)
+        success = EmailService.send_contact_email(
+            validated_data['name'],
+            validated_data['email'],
+            validated_data['subject'],
+            validated_data['message'],
+            current_app.config
+        )
         
         if success:
             return jsonify({'message': 'Message sent successfully'}), 200
@@ -54,6 +62,7 @@ def submit_contact():
             return jsonify({'message': 'Failed to send message. Please try again later.'}), 500
             
     except Exception as e:
+        current_app.logger.error(f"Error sending contact email: {str(e)}")
         return jsonify({'message': 'An error occurred while sending the message'}), 500
 
 
@@ -98,39 +107,29 @@ def validate_username():
 @limiter.limit("3 per hour")
 def complete_onboarding():
     """Complete the onboarding process and create user account."""
+    from marshmallow import ValidationError
+    from ...schemas import OnboardingSchema
+    from ...utils.validation import handle_validation_error
+    
+    schema = OnboardingSchema()
+    
     try:
-        data = request.get_json()
-        
-        # Extract form data
-        username = (data.get('username', '') or '').strip()
-        email = (data.get('email', '') or '').strip().lower()
-        password = data.get('password', '') or ''
-        # Handle both frontend (camelCase) and backend (snake_case) field names
-        first_name = (data.get('firstName') or data.get('first_name') or '').strip()
-        last_name = (data.get('lastName') or data.get('last_name') or '').strip()
-        country = (data.get('country', '') or '').strip()
-        preferred_name = (data.get('preferredName') or data.get('preferred_name') or '').strip()
-        referral_source = (data.get('referralSource') or data.get('referral_source') or '').strip()
-        referral_details = (data.get('referralDetailsText') or data.get('referral_details') or '').strip()
-        currency = data.get('currency', 'USD')  # Extract currency from data
-        
-        # Legal acceptance validation (MANDATORY)
-        accept_terms = data.get('acceptTerms', False) or data.get('accept_terms', False)
-        accept_privacy = data.get('acceptPrivacy', False) or data.get('accept_privacy', False)
-        
-        if not accept_terms:
-            return jsonify({'message': 'You must accept the Terms and Conditions to create an account'}), 400
-        if not accept_privacy:
-            return jsonify({'message': 'You must accept the Privacy Policy to create an account'}), 400
-        
-        # Validation (username is optional, will be auto-generated)
-        if not all([email, password, first_name, last_name]):
-            return jsonify({'message': 'Email, password, first name, and last name are required'}), 400
-        
-        # Validate password strength
-        is_valid, error_message = validate_password_strength(password)
-        if not is_valid:
-            return jsonify({'message': error_message}), 400
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
+    
+    try:
+        # Extract validated data
+        username = validated_data.get('username')
+        email = validated_data['email']
+        password = validated_data['password']
+        first_name = validated_data['first_name']
+        last_name = validated_data['last_name']
+        country = validated_data.get('country')
+        preferred_name = validated_data.get('preferred_name')
+        referral_source = validated_data.get('referral_source')
+        referral_details = validated_data.get('referral_details')
+        currency = validated_data.get('currency', 'USD')
         
         # Auto-generate username if not provided
         if not username:
@@ -156,14 +155,14 @@ def complete_onboarding():
             password=password,
             first_name=first_name,
             last_name=last_name,
-            country=country or None,
-            preferred_name=preferred_name or None,
-            referral_source=referral_source or None,
-            referral_details=referral_details or None,
-            currency=currency  # Pass currency to user creation
+            country=country,
+            preferred_name=preferred_name,
+            referral_source=referral_source,
+            referral_details=referral_details,
+            currency=currency
         )
         
-        # Store legal acceptance (MANDATORY - validated above)
+        # Store legal acceptance (MANDATORY - validated by schema)
         if user:
             user.terms_accepted = True
             user.privacy_policy_accepted = True
@@ -178,10 +177,10 @@ def complete_onboarding():
             return jsonify({'message': error}), 400
         
         # Create categories and subcategories based on user selection
-        categories = data.get('categories', [])
-        subcategories = data.get('subcategories', [])
-        custom_category_names = data.get('custom_category_names', {})
-        custom_subcategory_names = data.get('custom_subcategory_names', {})
+        categories = validated_data.get('categories', [])
+        subcategories = validated_data.get('subcategories', [])
+        custom_category_names = validated_data.get('custom_category_names', {})
+        custom_subcategory_names = validated_data.get('custom_subcategory_names', {})
         
         try:
             if categories or subcategories:
@@ -214,7 +213,7 @@ def complete_onboarding():
                 from ...services.payfast_service import PayFastService
                 
                 SubscriptionService.seed_default_plans(current_app.config.get('DEFAULT_CURRENCY', 'ZAR'))
-                plan_code = (data.get('plan') or 'monthly').lower()
+                plan_code = validated_data.get('plan', 'monthly').lower()
                 subscription = SubscriptionService.start_trial(user, plan_code, current_app.config.get('TRIAL_DAYS', 30))
                 
                 # Send trial started email
@@ -312,6 +311,7 @@ def resend_verification():
 
 
 @api_bp.route('/budget/balance-check', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 def check_budget_balance(current_user):
     """Check if total income is sufficient for total allocated budget."""
@@ -352,6 +352,7 @@ def check_budget_balance(current_user):
 
 
 @api_bp.route('/budget/overspending-check', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 def check_overspending(current_user):
     """Check for subcategories where spending exceeds allocation."""

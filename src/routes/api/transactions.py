@@ -3,9 +3,12 @@ Transactions API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from marshmallow import ValidationError
 from ...auth import token_required, subscription_required
 from ...services import TransactionService
-from ...extensions import csrf
+from ...extensions import csrf, limiter
+from ...schemas import TransactionSchema, TransactionUpdateSchema
+from ...utils.validation import handle_validation_error
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
@@ -14,6 +17,7 @@ csrf.exempt(transactions_bp)
 
 
 @transactions_bp.route('', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 @subscription_required
 def get_transactions(current_user):
@@ -27,30 +31,19 @@ def get_transactions(current_user):
 @subscription_required
 def create_transaction(current_user):
     """Create a new transaction."""
-    data = request.get_json()
-    
-    amount = data.get('amount')
-    subcategory_id = data.get('subcategory_id')
-    description = data.get('description', '').strip()
-    comment = data.get('comment', '').strip()
-    
-    if not amount or not subcategory_id:
-        return jsonify({'message': 'Amount and subcategory are required'}), 400
+    schema = TransactionSchema()
     
     try:
-        amount = float(amount)
-        # Make expenses negative (expenses should be negative values)
-        if amount > 0:
-            amount = -amount
-    except (ValueError, TypeError):
-        return jsonify({'message': 'Invalid amount'}), 400
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
     transaction = TransactionService.create_transaction(
         user_id=current_user.id,
-        amount=amount,
-        subcategory_id=subcategory_id,
-        description=description or None,
-        comment=comment or None
+        amount=validated_data['amount'],
+        subcategory_id=validated_data['subcategory_id'],
+        description=validated_data.get('description'),
+        comment=validated_data.get('comment')
     )
     
     return jsonify({
@@ -68,32 +61,17 @@ def create_transaction(current_user):
 @subscription_required
 def update_transaction(current_user, transaction_id):
     """Update a transaction."""
-    data = request.get_json()
+    schema = TransactionUpdateSchema()
     
-    update_data = {}
-    if 'amount' in data:
-        try:
-            amount = float(data['amount'])
-            # Make expenses negative (expenses should be negative values)
-            if amount > 0:
-                amount = -amount
-            update_data['amount'] = amount
-        except (ValueError, TypeError):
-            return jsonify({'message': 'Invalid amount'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {}, partial=True)
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    if 'description' in data:
-        update_data['description'] = data['description'].strip() or None
-    
-    if 'comment' in data:
-        update_data['comment'] = data['comment'].strip() or None
-    
-    if 'subcategory_id' in data:
-        update_data['subcategory_id'] = data['subcategory_id']
-    
-    if not update_data:
+    if not validated_data:
         return jsonify({'message': 'No valid fields to update'}), 400
     
-    transaction = TransactionService.update_transaction(transaction_id, current_user.id, **update_data)
+    transaction = TransactionService.update_transaction(transaction_id, current_user.id, **validated_data)
     if not transaction:
         return jsonify({'message': 'Transaction not found'}), 404
     

@@ -6,12 +6,13 @@ from flask import Blueprint, request, jsonify
 from ...auth import token_required, get_current_user
 from ...services import UserService, EmailService
 from ...utils.currency import get_currency_symbol
-from ...extensions import db
+from ...extensions import db, limiter
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 
 @user_bp.route('/profile')
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 def get_user_profile(current_user):
     """Get current user profile."""
@@ -32,6 +33,7 @@ def get_user_profile(current_user):
 
 
 @user_bp.route('/settings', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 def get_user_settings(current_user):
     """Get user settings."""
@@ -127,6 +129,7 @@ def delete_user_account(current_user):
 
 
 @user_bp.route('/export-data', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting (large file export)
 @token_required
 def export_user_data(current_user):
     """Export user data to Excel."""

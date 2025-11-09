@@ -6,8 +6,8 @@ from ..extensions import db
 from ..models import IncomeSource, BudgetAllocation, RecurringIncomeSource, RecurringBudgetAllocation
 
 
-def populate_budget_from_recurring(user, budget):
-    """Populate a new budget with recurring income sources and allocations."""
+def populate_budget_from_recurring(user, budget, period_type):
+    """Populate a new budget with recurring income sources and allocations matching the period type."""
     try:
         # Check if budget already has data to avoid duplicates
         existing_income_sources = IncomeSource.query.filter_by(budget_id=budget.id).count()
@@ -17,9 +17,10 @@ def populate_budget_from_recurring(user, budget):
             print(f"Budget {budget.id} already has data, skipping auto-population to avoid duplicates")
             return
         
-        # Add recurring income sources
+        # Add recurring income sources matching the period type
         recurring_income_sources = RecurringIncomeSource.query.filter_by(
             user_id=user.id, 
+            period_type=period_type,
             is_active=True
         ).all()
         
@@ -33,9 +34,10 @@ def populate_budget_from_recurring(user, budget):
             )
             db.session.add(income_source)
         
-        # Add recurring budget allocations
+        # Add recurring budget allocations matching the period type
         recurring_allocations = RecurringBudgetAllocation.query.filter_by(
-            user_id=user.id, 
+            user_id=user.id,
+            period_type=period_type,
             is_active=True
         ).all()
         

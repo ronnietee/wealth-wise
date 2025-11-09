@@ -652,18 +652,31 @@ function handleAddAccount(e) {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message && data.message.includes('Error')) {
-            throw new Error(data.message);
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
         }
+        return response.json();
+    })
+    .then(data => {
         showNotification('Account added successfully!', 'success');
         closeAddAccountModal();
         loadAccounts();
     })
     .catch(error => {
         console.error('Error adding account:', error);
-        showNotification(error.message || 'Error adding account. Please try again.', 'error');
+        let errorMessage = 'Error adding account. Please try again.';
+        if (error.errors) {
+            // Marshmallow validation errors
+            const errorMessages = [];
+            for (const [field, messages] of Object.entries(error.errors)) {
+                errorMessages.push(`${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`);
+            }
+            errorMessage = errorMessages.join('; ');
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        showNotification(errorMessage, 'error');
     })
     .finally(() => {
         submitBtn.innerHTML = originalText;
