@@ -78,11 +78,6 @@ body {
     padding: 0;
 }
 
-/* Font Loading - Aptos */
-@import url('https://fonts.googleapis.com/css2?family=Aptos:wght@300;400;500;600;700&display=swap');
-
-/* Force Aptos font loading */
-
 /* Landing Page Styles */
 .landing-page {
     background: linear-gradient(135deg,rgb(236, 207, 186) 0%,rgb(243, 233, 225) 50%,rgb(247, 238, 230) 100%);

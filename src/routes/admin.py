@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, jsonify, session, current
 from werkzeug.security import check_password_hash, generate_password_hash
 import jwt
 from datetime import datetime, timedelta
+from ..extensions import csrf
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -67,11 +68,37 @@ def admin_index():
 
 
 @admin_bp.route('/login', methods=['POST'])
+@csrf.exempt
 def admin_login():
     """Admin login endpoint using environment credentials."""
-    data = request.get_json() or {}
-    username = data.get('username', '').strip()
-    password = data.get('password', '')
+    # Handle JSON parsing with better error handling
+    try:
+        # Log request details for debugging
+        current_app.logger.debug(f'Admin login request - Content-Type: {request.content_type}, Method: {request.method}')
+        
+        # Try to get JSON data
+        data = request.get_json(silent=True)
+        
+        if data is None:
+            # If silent=True returned None, try to get raw data
+            current_app.logger.warning('Admin login: get_json returned None, checking raw data')
+            if request.data:
+                try:
+                    import json
+                    data = json.loads(request.data.decode('utf-8'))
+                except Exception as e:
+                    current_app.logger.error(f'Admin login: Failed to parse JSON from raw data: {str(e)}')
+                    return jsonify({'message': 'Invalid JSON in request body'}), 400
+            else:
+                data = {}
+    except Exception as e:
+        current_app.logger.error(f'Error parsing JSON in admin login: {str(e)}')
+        return jsonify({'message': 'Invalid request format. Expected JSON.'}), 400
+    
+    username = data.get('username', '').strip() if data else ''
+    password = data.get('password', '') if data else ''
+    
+    current_app.logger.debug(f'Admin login attempt - Username: {username}, Password provided: {bool(password)}')
     
     if not username or not password:
         return jsonify({'message': 'Username and password required'}), 400
@@ -123,6 +150,7 @@ def admin_login():
 
 
 @admin_bp.route('/logout', methods=['POST'])
+@csrf.exempt
 def admin_logout():
     """Admin logout endpoint."""
     session.pop('admin_logged_in', None)
