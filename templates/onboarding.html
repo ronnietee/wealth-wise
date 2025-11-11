@@ -16,7 +16,7 @@
                 <div class="progress-fill" id="progressFill"></div>
             </div>
             <div class="progress-text">
-                <span id="currentStep">1</span> of <span id="totalSteps">5</span>
+                <span id="currentStep">1</span> of <span id="totalSteps">6</span>
             </div>
         </div>
 
@@ -95,7 +95,7 @@
                     <div class="password-requirements">
                         <h4>Password Requirements:</h4>
                         <ul>
-                            <li id="req-length">At least 8 characters</li>
+                            <li id="req-length">At least 12 characters</li>
                             <li id="req-uppercase">One uppercase letter</li>
                             <li id="req-lowercase">One lowercase letter</li>
                             <li id="req-number">One number</li>
@@ -518,36 +518,110 @@
                 </form>
             </div>
 
-            <!-- Step 5: Trial Information & Payment Setup -->
-            <div class="onboarding-step" id="step5" >
+            <!-- Step 5: Terms & Privacy Policy Acceptance -->
+            <div class="onboarding-step" id="step5">
+                <div class="step-header">
+                    <h2>Terms & Privacy Policy</h2>
+                    <p>Please review and accept our terms to continue</p>
+                </div>
+                <form class="onboarding-form legal-acceptance-form" id="legalAcceptanceForm">
+                    <div class="legal-acceptance-container">
+                        <div class="legal-document-box">
+                            <h3>
+                                <i class="fas fa-file-contract"></i>
+                                Terms and Conditions
+                            </h3>
+                            <div class="legal-content">
+                                <p><strong>You agree to:</strong> Use the Service lawfully, maintain account security, accept liability limitations, and indemnify us against claims.</p>
+                                <p class="legal-link">
+                                    <a href="/legal/terms" target="_blank">
+                                        Read full Terms <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="legal-document-box">
+                            <h3>
+                                <i class="fas fa-shield-alt"></i>
+                                Privacy Policy
+                            </h3>
+                            <div class="legal-content">
+                                <p><strong>We collect information to:</strong> Provide services, process transactions, comply with POPIA/GDPR, and protect against fraud.</p>
+                                <p><strong>Your Rights:</strong> Access, correct, delete, object to processing, and request data portability.</p>
+                                <p class="legal-link">
+                                    <a href="/legal/privacy" target="_blank">
+                                        Read full Privacy Policy <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="acceptance-checkboxes">
+                            <div class="acceptance-checkbox-wrapper">
+                                <label class="acceptance-checkbox">
+                                    <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                                    <div class="checkbox-text">
+                                        <strong>I accept the Terms and Conditions *</strong>
+                                        <span>I have read and agree to be bound by the Terms and Conditions</span>
+                                    </div>
+                                </label>
+                                <div id="acceptTerms-error" class="field-error" style="display: none;"></div>
+                            </div>
+                            
+                            <div class="acceptance-checkbox-wrapper">
+                                <label class="acceptance-checkbox">
+                                    <input type="checkbox" id="acceptPrivacy" name="acceptPrivacy" required>
+                                    <div class="checkbox-text">
+                                        <strong>I accept the Privacy Policy *</strong>
+                                        <span>I have read and understand how my personal information will be collected and used</span>
+                                    </div>
+                                </label>
+                                <div id="acceptPrivacy-error" class="field-error" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="legal-notice">
+                            <p>
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Important:</strong> You must accept both the Terms and Conditions and Privacy Policy to use STEWARD. 
+                                Your acceptance is recorded and timestamped for compliance purposes.
+                            </p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 6: Trial Information & Payment Setup -->
+            <div class="onboarding-step" id="step6" >
                 <div class="step-header">
                     <h2>Almost there! Set up your payment</h2>
                     <p>You'll be redirected to our secure payment partner to complete setup</p>
                 </div>
-                <div class="trial-info-box" style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-                    <div style="display: flex; align-items: start; gap: 15px;">
-                        <div style="font-size: 24px; color: #3b82f6;">ℹ️</div>
-                        <div style="flex: 1;">
-                            <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 18px;">30-Day Free Trial</h3>
-                            <p style="margin: 0 0 8px 0; color: #1e293b; line-height: 1.6;">
+                <div class="trial-info-box">
+                    <div class="trial-info-content">
+                        <div class="trial-info-icon">ℹ️</div>
+                        <div class="trial-info-text">
+                            <h3>30-Day Free Trial</h3>
+                            <p>
                                 By signing up, you're automatically enrolled in a <strong>30-day free trial</strong>. 
                                 Your card will <strong>not be charged</strong> during the trial period.
                             </p>
-                            <p style="margin: 0 0 8px 0; color: #1e293b; line-height: 1.6;">
+                            <p>
                                 After 30 days, your subscription will automatically begin. You can upgrade to a plan anytime via <strong>Settings</strong>, or cancel before the trial ends to avoid charges.
                             </p>
-                            <p style="margin: 0; color: #1e293b; line-height: 1.6;">
+                            <p>
                                 <strong>Next step:</strong> You'll be redirected to our secure payment partner (PayFast) to securely enter your payment information. Your card details never touch our servers - they're handled entirely by PayFast's PCI DSS Level 1 compliant platform.
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="payment-security-note" style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 20px;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                        <i class="fas fa-lock" style="color: #28a745; font-size: 20px;"></i>
-                        <h4 style="margin: 0; color: #1e293b; font-size: 16px;">Secure Payment Processing</h4>
+                <div class="payment-security-note">
+                    <div class="payment-security-header">
+                        <i class="fas fa-lock"></i>
+                        <h4>Secure Payment Processing</h4>
                     </div>
-                    <ul style="margin: 0; padding-left: 20px; color: #6c757d; line-height: 1.8;">
+                    <ul class="payment-security-list">
                         <li>Payment handled by PayFast (PCI DSS Level 1 compliant)</li>
                         <li>Your card details never touch our servers</li>
                         <li>Encrypted HTTPS transmission</li>
@@ -556,8 +630,8 @@
                 </div>
             </div>
 
-            <!-- Step 6: Welcome Message -->
-            <div class="onboarding-step" id="step6" >
+            <!-- Step 7: Welcome Message -->
+            <div class="onboarding-step" id="step7" >
                 <div class="step-header">
                     <h2>Welcome to STEWARD!</h2>
                     <p>You're all set up and ready to take control of your finances</p>
@@ -703,8 +777,8 @@
 
         .form-help {
             display: block;
-            margin-top: 5px;
-            font-size: 0.85rem;
+            margin-top: 4px;
+            font-size: 10px;
             color: #6c757d;
             font-style: italic;
         }
@@ -713,15 +787,15 @@
         .categories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
+            gap: 1rem;
+            margin-top: 0.75rem;
         }
 
         .category-card {
             background: white;
             border: 2px solid #e2e8f0;
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 1rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             position: relative;
@@ -741,7 +815,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 120px;
+            min-height: 100px;
         }
 
         .category-card.add-category-card:hover {
@@ -754,8 +828,8 @@
         .category-main {
             display: flex;
             align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
         }
 
         .category-checkbox {
@@ -802,48 +876,48 @@
         }
 
         .category-icon {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1rem;
             flex-shrink: 0;
         }
 
         .category-details h4 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1.1rem;
+            margin: 0 0 0.2rem 0;
+            font-size: 13px;
             font-weight: 600;
             color: #1e293b;
         }
 
         .category-details p {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 11px;
             color: #64748b;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .subcategories-list {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            margin-left: 2.5rem;
+            gap: 0.4rem;
+            margin-left: 2.2rem;
         }
 
         .subcategory-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem;
+            gap: 0.6rem;
+            padding: 0.4rem;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 0.9rem;
+            font-size: 11px;
             position: relative;
         }
 
@@ -892,15 +966,15 @@
         }
 
         .add-icon {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             background: rgba(139, 69, 19, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
+            margin: 0 auto 0.75rem;
+            font-size: 1.2rem;
             color: #8B4513;
             transition: all 0.3s ease;
         }
@@ -911,8 +985,8 @@
         }
 
         .add-text h4 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.1rem;
+            margin: 0 0 0.4rem 0;
+            font-size: 13px;
             font-weight: 600;
             color: #8B4513;
         }
@@ -923,7 +997,7 @@
 
         .add-text p {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 11px;
             color: #64748b;
         }
 
@@ -960,15 +1034,27 @@
         @media (max-width: 768px) {
             .categories-grid {
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 0.75rem;
             }
             
             .category-card {
-                padding: 1rem;
+                padding: 0.75rem;
             }
             
             .subcategories-list {
                 margin-left: 2rem;
+            }
+            
+            .category-details h4 {
+                font-size: 12px;
+            }
+            
+            .category-details p {
+                font-size: 10px;
+            }
+            
+            .subcategory-item {
+                font-size: 10px;
             }
         }
     </style>

@@ -13,15 +13,29 @@ class Config:
     """Base configuration class."""
     
     # Flask configuration
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
+    # SECRET_KEY must be set in production - raise error if missing
+    _secret_key = os.environ.get('SECRET_KEY')
+    if not _secret_key:
+        import sys
+        if os.environ.get('FLASK_ENV') == 'production' or 'production' in sys.argv:
+            raise ValueError("SECRET_KEY must be set in production environment variables")
+        _secret_key = 'dev-secret-key-only-for-development'
+    SECRET_KEY = _secret_key
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Database configuration
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///wealthwise.db')
     
     # JWT configuration
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-string')
-    JWT_ACCESS_TOKEN_EXPIRES = 86400  # 24 hours
+    _jwt_secret = os.environ.get('JWT_SECRET_KEY')
+    if not _jwt_secret:
+        import sys
+        if os.environ.get('FLASK_ENV') == 'production' or 'production' in sys.argv:
+            raise ValueError("JWT_SECRET_KEY must be set in production environment variables")
+        _jwt_secret = 'dev-jwt-secret-only-for-development'
+    JWT_SECRET_KEY = _jwt_secret
+    JWT_ACCESS_TOKEN_EXPIRES = 3600  # 1 hour (reduced from 24 hours)
     
     # Email configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -51,7 +65,18 @@ class Config:
     
     # Admin credentials (set in environment variables)
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')  # MUST be set in production
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')  # Legacy - use ADMIN_PASSWORD_HASH instead
+    ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', '')  # Hashed admin password (preferred)
+    
+    # Session security
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() in ['true', 'on', '1']
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = 7200  # 2 hours in seconds
+    
+    # CSRF protection
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 3600  # 1 hour
 
 
 class DevelopmentConfig(Config):

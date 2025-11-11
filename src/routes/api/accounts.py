@@ -3,13 +3,18 @@ Accounts API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from marshmallow import ValidationError
 from ...auth import token_required, subscription_required
 from ...services import AccountService
+from ...schemas import AccountSchema, AccountUpdateSchema
+from ...utils.validation import handle_validation_error
+from ...extensions import limiter
 
 accounts_bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 
 @accounts_bp.route('/', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 @subscription_required
 def get_accounts(current_user):
@@ -23,29 +28,20 @@ def get_accounts(current_user):
 @subscription_required
 def create_account(current_user):
     """Create a new account."""
-    data = request.get_json()
-    
-    name = data.get('name', '').strip()
-    account_type = data.get('account_type', '').strip()
-    bank_name = data.get('bank_name', '').strip() or None
-    account_number = data.get('account_number', '').strip() or None
-    current_balance = data.get('current_balance', 0)
-    
-    if not name or not account_type:
-        return jsonify({'message': 'Name and account type are required'}), 400
+    schema = AccountSchema()
     
     try:
-        current_balance = float(current_balance)
-    except (ValueError, TypeError):
-        return jsonify({'message': 'Invalid balance'}), 400
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
     account = AccountService.create_account(
         user_id=current_user.id,
-        name=name,
-        account_type=account_type,
-        bank_name=bank_name,
-        account_number=account_number,
-        current_balance=current_balance
+        name=validated_data['name'],
+        account_type=validated_data['account_type'],
+        bank_name=validated_data.get('bank_name'),
+        account_number=validated_data.get('account_number'),
+        current_balance=validated_data.get('current_balance', 0.0)
     )
     
     return jsonify({
@@ -64,27 +60,17 @@ def create_account(current_user):
 @subscription_required
 def update_account(current_user, account_id):
     """Update an account."""
-    data = request.get_json()
+    schema = AccountUpdateSchema()
     
-    update_data = {}
-    if 'name' in data:
-        update_data['name'] = data['name'].strip()
-    if 'account_type' in data:
-        update_data['account_type'] = data['account_type'].strip()
-    if 'bank_name' in data:
-        update_data['bank_name'] = data['bank_name'].strip() or None
-    if 'account_number' in data:
-        update_data['account_number'] = data['account_number'].strip() or None
-    if 'current_balance' in data:
-        try:
-            update_data['current_balance'] = float(data['current_balance'])
-        except (ValueError, TypeError):
-            return jsonify({'message': 'Invalid balance'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {}, partial=True)
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    if not update_data:
+    if not validated_data:
         return jsonify({'message': 'No valid fields to update'}), 400
     
-    account = AccountService.update_account(account_id, current_user.id, **update_data)
+    account = AccountService.update_account(account_id, current_user.id, **validated_data)
     if not account:
         return jsonify({'message': 'Account not found'}), 404
     

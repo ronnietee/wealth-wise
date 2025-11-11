@@ -15,6 +15,7 @@ class RecurringBudgetAllocation(db.Model):
     allocated_amount = db.Column(db.Float, default=0)
     subcategory_id = db.Column(db.Integer, db.ForeignKey('subcategory.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    period_type = db.Column(db.String(20), nullable=False, default='monthly')  # monthly, quarterly, yearly, custom
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

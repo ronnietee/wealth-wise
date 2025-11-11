@@ -23,12 +23,22 @@ class AuthService:
         return None
     
     @staticmethod
-    def generate_jwt_token(user, app_config):
+    def generate_jwt_token(user, app_config, request=None):
         """Generate JWT token for user."""
+        from flask import request as flask_request
+        if request is None:
+            request = flask_request
+        
         payload = {
             'user_id': user.id,
-            'exp': datetime.utcnow() + timedelta(hours=24)
+            'exp': datetime.utcnow() + timedelta(hours=1),  # Reduced from 24 hours to 1 hour
+            'iat': datetime.utcnow()
         }
+        
+        # Optionally bind token to IP address for additional security
+        if request:
+            payload['ip'] = request.remote_addr
+        
         return jwt.encode(payload, app_config['SECRET_KEY'], algorithm='HS256')
     
     @staticmethod

@@ -59,27 +59,24 @@ A comprehensive, mobile-friendly budgeting application designed specifically for
 
 4. **Set up environment variables**
    
-   Create a `.env` file in the root directory:
-   ```env
-   # Security
-   SECRET_KEY=your-secret-key-change-in-production
-   JWT_SECRET_KEY=your-jwt-secret-key
-   
-   # Database
-   DATABASE_URL=sqlite:///wealthwise.db
-   
-   # Flask Environment
-   FLASK_ENV=development
-   FLASK_DEBUG=True
-   
-   # Email Configuration (optional, for email verification)
-   MAIL_SERVER=smtp.gmail.com
-   MAIL_PORT=587
-   MAIL_USE_TLS=true
-   MAIL_USERNAME=your-email@gmail.com
-   MAIL_PASSWORD=your-app-password
-   MAIL_DEFAULT_SENDER=noreply@steward.com
+   Copy `env.example` to `.env` and update with your values:
+   ```bash
+   cp env.example .env
    ```
+   
+   **Generate admin password hash:**
+   ```bash
+   python generate_admin_password.py
+   ```
+   This will prompt you for a password and generate a secure hash. Copy the output and add it to your `.env` file as `ADMIN_PASSWORD_HASH`.
+   
+   **Required variables:**
+   - `SECRET_KEY` - Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+   - `JWT_SECRET_KEY` - Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+   - `ADMIN_PASSWORD_HASH` - Generate with: `python generate_admin_password.py`
+   - `ADMIN_USERNAME` - Admin username (default: `admin`)
+   
+   See `env.example` for all available configuration options.
 
 5. **Initialize the database**
    ```bash
@@ -212,6 +209,16 @@ wealth-wise/
 ├── instance/                    # Database files
 └── tests/                       # Test files (if any)
 ```
+
+## Documentation
+
+For comprehensive documentation, see the [docs/](docs/) directory:
+
+- **[Security Documentation](docs/SECURITY.md)** - Security implementation, audit, and testing
+- **[Input Validation](docs/VALIDATION.md)** - Marshmallow schema validation guide
+- **[Database Documentation](docs/database/README.md)** - Database structure and optimization
+- **[Billing Documentation](docs/billing/README.md)** - Payment system and admin setup
+- **[Legal Documents](docs/legal/)** - Terms and conditions, privacy policy
 
 ## API Documentation
 

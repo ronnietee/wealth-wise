@@ -448,12 +448,14 @@
                     </div>
                     <div class="form-group">
                         <label for="modalNewPassword">New Password</label>
-                        <input type="password" id="modalNewPassword" name="new_password" required minlength="8">
-                        <small class="form-help">Password must be at least 8 characters long and contain uppercase letters, lowercase letters, numbers, and special characters</small>
+                        <input type="password" id="modalNewPassword" name="new_password" required minlength="12">
+                        <small class="form-help">Password must be at least 12 characters long and contain uppercase letters, lowercase letters, numbers, and special characters</small>
+                        <div class="error-message" id="modalNewPasswordError" style="color: #dc3545; font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     </div>
                     <div class="form-group">
                         <label for="modalConfirmPassword">Confirm New Password</label>
                         <input type="password" id="modalConfirmPassword" name="confirm_password" required>
+                        <div class="error-message" id="modalConfirmPasswordError" style="color: #dc3545; font-size: 0.85rem; margin-top: 5px; display: none;"></div>
                     </div>
                 </form>
             </div>
@@ -658,20 +660,112 @@
         function closePasswordModal() {
             document.getElementById('passwordModal').style.display = 'none';
             document.getElementById('passwordForm').reset();
+            // Clear error messages
+            document.getElementById('modalNewPasswordError').style.display = 'none';
+            document.getElementById('modalConfirmPasswordError').style.display = 'none';
         }
+        
+        // Real-time password validation for modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalNewPassword = document.getElementById('modalNewPassword');
+            const modalConfirmPassword = document.getElementById('modalConfirmPassword');
+            
+            if (modalNewPassword) {
+                modalNewPassword.addEventListener('input', function() {
+                    const password = this.value;
+                    const errorDiv = document.getElementById('modalNewPasswordError');
+                    const validation = validatePasswordDetailed(password);
+                    
+                    if (password.length > 0 && !validation.valid) {
+                        errorDiv.textContent = validation.message;
+                        errorDiv.style.display = 'block';
+                        this.classList.add('error');
+                    } else {
+                        errorDiv.style.display = 'none';
+                        this.classList.remove('error');
+                    }
+                    
+                    // Check password match
+                    if (modalConfirmPassword && modalConfirmPassword.value) {
+                        const confirmErrorDiv = document.getElementById('modalConfirmPasswordError');
+                        if (password !== modalConfirmPassword.value) {
+                            confirmErrorDiv.textContent = 'Passwords do not match';
+                            confirmErrorDiv.style.display = 'block';
+                            modalConfirmPassword.classList.add('error');
+                        } else {
+                            confirmErrorDiv.style.display = 'none';
+                            modalConfirmPassword.classList.remove('error');
+                        }
+                    }
+                });
+            }
+            
+            if (modalConfirmPassword) {
+                modalConfirmPassword.addEventListener('input', function() {
+                    const password = document.getElementById('modalNewPassword').value;
+                    const confirmPassword = this.value;
+                    const errorDiv = document.getElementById('modalConfirmPasswordError');
+                    
+                    if (confirmPassword.length > 0) {
+                        if (password !== confirmPassword) {
+                            errorDiv.textContent = 'Passwords do not match';
+                            errorDiv.style.display = 'block';
+                            this.classList.add('error');
+                        } else {
+                            errorDiv.style.display = 'none';
+                            this.classList.remove('error');
+                        }
+                    } else {
+                        errorDiv.style.display = 'none';
+                        this.classList.remove('error');
+                    }
+                });
+            }
+        });
 
+        function validatePasswordDetailed(password) {
+            if (!password) {
+                return { valid: false, message: 'Password is required' };
+            }
+            if (password.length < 12) {
+                return { valid: false, message: 'Password must be at least 12 characters long' };
+            }
+            if (!/[A-Z]/.test(password)) {
+                return { valid: false, message: 'Password must contain at least one uppercase letter' };
+            }
+            if (!/[a-z]/.test(password)) {
+                return { valid: false, message: 'Password must contain at least one lowercase letter' };
+            }
+            if (!/\d/.test(password)) {
+                return { valid: false, message: 'Password must contain at least one number' };
+            }
+            if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+                return { valid: false, message: 'Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)' };
+            }
+            return { valid: true, message: '' };
+        }
+        
         function savePassword() {
             const currentPassword = document.getElementById('modalCurrentPassword').value;
             const newPassword = document.getElementById('modalNewPassword').value;
             const confirmPassword = document.getElementById('modalConfirmPassword').value;
             
-            if (newPassword !== confirmPassword) {
-                showNotification('New passwords do not match', 'error');
+            if (!currentPassword) {
+                showNotification('Current password is required', 'error');
+                document.getElementById('modalCurrentPassword').focus();
                 return;
             }
             
-            if (newPassword.length < 8) {
-                showNotification('Password must be at least 8 characters long and contain uppercase letters, lowercase letters, numbers, and special characters', 'error');
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                document.getElementById('modalConfirmPassword').focus();
+                return;
+            }
+            
+            const passwordValidation = validatePasswordDetailed(newPassword);
+            if (!passwordValidation.valid) {
+                showNotification(passwordValidation.message, 'error');
+                document.getElementById('modalNewPassword').focus();
                 return;
             }
             
@@ -688,7 +782,14 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || 'Error changing password. Please try again.');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.message) {
                     showNotification(data.message, 'success');
@@ -699,7 +800,7 @@
             })
             .catch(error => {
                 console.error('Error changing password:', error);
-                showNotification('Error changing password. Please try again.', 'error');
+                showNotification(error.message || 'Error changing password. Please try again.', 'error');
             });
         }
 

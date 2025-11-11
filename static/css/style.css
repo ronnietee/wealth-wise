@@ -78,11 +78,6 @@ body {
     padding: 0;
 }
 
-/* Font Loading - Aptos */
-@import url('https://fonts.googleapis.com/css2?family=Aptos:wght@300;400;500;600;700&display=swap');
-
-/* Force Aptos font loading */
-
 /* Landing Page Styles */
 .landing-page {
     background: linear-gradient(135deg,rgb(236, 207, 186) 0%,rgb(243, 233, 225) 50%,rgb(247, 238, 230) 100%);
@@ -4148,7 +4143,7 @@ button,
 }
 
 .form-help {
-    font-size: 0.8rem;
+    font-size: 10px;
     color: #6c757d;
     margin-top: 0.25rem;
 }
@@ -8418,22 +8413,22 @@ button,
 
 .step-header {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     position: relative;
 }
 
 .step-header h2 {
     color: #1e7e34;
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+    margin-bottom: 0.4rem;
     font-weight: 700;
 }
 
 .step-header p {
     color: #718096;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .onboarding-form {
@@ -8441,24 +8436,370 @@ button,
     margin: 0 auto;
 }
 
+/* Legal Acceptance Form - Wider Layout */
+.legal-acceptance-form {
+    max-width: 900px !important;
+    width: 100% !important;
+}
+
+#step5 .onboarding-form {
+    max-width: 900px !important;
+    width: 100% !important;
+}
+
+.legal-acceptance-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block;
+}
+
+.legal-document-box {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    max-height: none;
+    overflow-y: visible;
+    width: 100%;
+}
+
+.legal-document-box h3 {
+    margin-top: 0;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legal-document-box h3 i {
+    color: #8B4513;
+    font-size: 16px;
+}
+
+.legal-content {
+    color: #64748b;
+    line-height: 1.6;
+    font-size: 11px;
+    width: 100%;
+}
+
+.legal-content p {
+    margin-bottom: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.legal-content ul {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.legal-content li {
+    margin-bottom: 2px;
+    font-size: 11px;
+}
+
+.legal-content strong {
+    font-size: 11px;
+}
+
+.legal-link {
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+}
+
+.legal-link a {
+    color: #8B4513;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.legal-link a:hover {
+    color: #A0522D;
+}
+
+.legal-link i {
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.acceptance-checkboxes {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.acceptance-checkbox-wrapper {
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.acceptance-checkbox-wrapper:last-of-type {
+    margin-bottom: 0;
+}
+
+.acceptance-checkbox {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 0;
+    cursor: pointer;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+#acceptTerms-error,
+#acceptPrivacy-error {
+    display: none;
+    color: #e53e3e;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    margin-left: 38px;
+    font-weight: 600;
+    padding: 6px 10px;
+    background: rgba(229, 62, 62, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #e53e3e;
+}
+
+.acceptance-checkbox:hover {
+    background-color: #f8f9fa;
+}
+
+.acceptance-checkbox input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    flex-grow: 0;
+    accent-color: #8B4513;
+}
+
+.checkbox-text {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    display: block;
+    width: auto;
+    max-width: none !important;
+}
+
+.checkbox-text strong {
+    color: #1e293b;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 16px;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.checkbox-text span {
+    color: #64748b;
+    font-size: 14px;
+    display: block;
+    line-height: 1.6;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.legal-notice {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Step 6: Trial Information & Payment Setup Styles */
+.trial-info-box {
+    background: #f0f9ff;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.trial-info-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.trial-info-icon {
+    font-size: 18px;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.trial-info-text {
+    flex: 1;
+}
+
+.trial-info-text h3 {
+    margin: 0 0 8px 0;
+    color: #1e40af;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.trial-info-text p {
+    margin: 0 0 6px 0;
+    color: #1e293b;
+    line-height: 1.5;
+    font-size: 11px;
+}
+
+.trial-info-text p:last-child {
+    margin-bottom: 0;
+}
+
+.trial-info-text strong {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.payment-security-note {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 16px;
+}
+
+.payment-security-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.payment-security-header i {
+    color: #28a745;
+    font-size: 16px;
+}
+
+.payment-security-header h4 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.payment-security-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #6c757d;
+    line-height: 1.6;
+    font-size: 11px;
+}
+
+.payment-security-list li {
+    margin-bottom: 4px;
+}
+
+.payment-security-list li:last-child {
+    margin-bottom: 0;
+}
+
+.legal-notice p {
+    margin: 0;
+    color: #856404;
+    font-size: 14px;
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.legal-notice i {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Responsive adjustments for legal acceptance */
+@media (max-width: 768px) {
+    .legal-acceptance-form {
+        max-width: 100% !important;
+    }
+    
+    .legal-document-box {
+        padding: 10px 12px;
+        max-height: none;
+    }
+    
+    .acceptance-checkboxes {
+        padding: 12px;
+    }
+    
+    #acceptTerms-error,
+    #acceptPrivacy-error {
+        margin-left: 32px;
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+    
+    .legal-document-box h3 {
+        font-size: 13px;
+    }
+    
+    .legal-content {
+        font-size: 10px;
+    }
+    
+    .legal-content p,
+    .legal-content li,
+    .legal-content strong {
+        font-size: 10px;
+    }
+    
+    .acceptance-checkbox {
+        gap: 12px;
+        padding: 10px;
+    }
+    
+    .acceptance-checkbox input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .checkbox-text strong {
+        font-size: 15px;
+    }
+    
+    .checkbox-text span {
+        font-size: 13px;
+    }
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     position: relative;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     color: #2d3748;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 11px;
     transition: color 0.3s ease;
 }
 
@@ -8470,10 +8811,10 @@ button,
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.85rem;
     border: 2px solid #e2e8f0;
     border-radius: 10px;
-    font-size: 0.95rem;
+    font-size: 11px;
     font-weight: 500;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
@@ -8501,11 +8842,19 @@ button,
 .form-group select::placeholder {
     color: var(--text-secondary);
     font-weight: 400;
+    font-size: 11px;
+}
+
+/* Onboarding form placeholders - italic and light grey */
+.onboarding-form .form-group input::placeholder,
+.onboarding-form .form-group select::placeholder {
+    font-style: italic;
+    color: #999;
 }
 
 .password-strength {
     margin-top: 0.5rem;
-    padding: 0.75rem;
+    padding: 0.6rem;
     background: rgba(40, 167, 69, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(40, 167, 69, 0.1);
@@ -8547,7 +8896,7 @@ button,
 }
 
 .strength-text {
-    font-size: 0.9rem;
+    font-size: 11px;
     color: #4a5568;
     font-weight: 600;
     text-align: center;
@@ -8555,16 +8904,16 @@ button,
 
 .password-requirements {
     background: rgba(40, 167, 69, 0.05);
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 10px;
-    margin-top: 0.75rem;
+    margin-top: 0.6rem;
     border: 1px solid rgba(40, 167, 69, 0.1);
 }
 
 .password-requirements h4 {
-    margin: 0 0 0.75rem 0;
+    margin: 0 0 0.5rem 0;
     color: #2d3748;
-    font-size: 1rem;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -8575,9 +8924,9 @@ button,
 }
 
 .password-requirements li {
-    font-size: 0.9rem;
+    font-size: 11px;
     color: #718096;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -8604,14 +8953,14 @@ button,
 .radio-group {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.6rem;
 }
 
 .radio-option {
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.85rem;
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -8681,6 +9030,7 @@ button,
     font-weight: 500;
     color: #2d3748;
     transition: color 0.3s ease;
+    font-size: 11px;
 }
 
 .radio-option input[type="radio"]:checked ~ span {
@@ -8690,8 +9040,8 @@ button,
 
 .category-subtitle {
     color: #6c757d;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
+    font-size: 11px;
+    margin-bottom: 0.75rem;
 }
 
 .category-grid {
@@ -8706,7 +9056,7 @@ button,
     align-items: center;
     text-align: center;
     cursor: pointer;
-    padding: 1rem;
+    padding: 0.75rem;
     border: 2px solid #e9ecef;
     border-radius: 8px;
     transition: all 0.3s ease;
@@ -8748,9 +9098,9 @@ button,
 }
 
 .category-option i {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: #6c757d;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     transition: color 0.3s ease;
 }
 
@@ -8759,7 +9109,7 @@ button,
 }
 
 .category-option span {
-    font-size: 0.9rem;
+    font-size: 11px;
     color: #2c3e50;
     font-weight: 500;
 }
@@ -8771,47 +9121,49 @@ button,
 }
 
 .welcome-icon {
-    font-size: 4rem;
+    font-size: 3rem;
     color: #28a745;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .welcome-message h3 {
     color: #2c3e50;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
 }
 
 .welcome-message p {
     color: #6c757d;
-    font-size: 1rem;
-    margin-bottom: 2rem;
+    font-size: 11px;
+    margin-bottom: 1.5rem;
     line-height: 1.5;
 }
 
 .welcome-features {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .feature-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
+    gap: 0.6rem;
+    padding: 0.6rem;
     background: #f8f9fa;
     border-radius: 8px;
 }
 
 .feature-item i {
     color: var(--sidebar-text);
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .feature-item span {
     color: #2c3e50;
     font-weight: 500;
+    font-size: 11px;
 }
 
 .welcome-actions {
@@ -8820,8 +9172,8 @@ button,
 }
 
 .welcome-actions .btn-primary {
-    padding: 1rem 2rem;
-    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -8835,9 +9187,10 @@ button,
     padding: 1rem 0;
 }
 
-.btn-primary,
-.btn-secondary {
-    padding: 0.75rem 2rem;
+/* Onboarding navigation buttons - match modal button font size */
+.onboarding-navigation .btn-primary,
+.onboarding-navigation .btn-secondary {
+    padding: 0.6rem 1.5rem;
     border: none;
     border-radius: 10px;
     font-size: 0.9rem;
@@ -8850,6 +9203,8 @@ button,
     text-transform: capitalize;
     letter-spacing: 0.5px;
 }
+
+/* Removed general button font-size override - using base .btn font-size: 0.9rem */
 
 .btn-primary {
     background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
@@ -9006,11 +9361,11 @@ button,
     }
     
     .step-header h2 {
-        font-size: 1.6rem;
+        font-size: 1.2rem;
     }
     
     .step-header p {
-        font-size: 0.95rem;
+        font-size: 0.8rem;
     }
     
     .form-row {
@@ -9038,11 +9393,11 @@ button,
         padding: 1rem 0;
     }
     
-    .btn-primary,
-    .btn-secondary {
+    .onboarding-navigation .btn-primary,
+    .onboarding-navigation .btn-secondary {
         width: 100%;
-        padding: 0.75rem 1.5rem;
-        font-size: 0.95rem;
+        padding: 0.6rem 1.25rem;
+        font-size: 0.9rem;
     }
     
     .progress-container {
@@ -9072,11 +9427,11 @@ button,
     }
     
     .step-header h2 {
-        font-size: 1.4rem;
+        font-size: 1.1rem;
     }
     
     .step-header p {
-        font-size: 0.9rem;
+        font-size: 0.75rem;
     }
     
     .progress-container {
@@ -9084,10 +9439,10 @@ button,
         margin-bottom: 1rem;
     }
     
-    .btn-primary,
-    .btn-secondary {
-        padding: 0.625rem 1.25rem;
-        font-size: 0.9rem;
+    .onboarding-navigation .btn-primary,
+    .onboarding-navigation .btn-secondary {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
     }
     
     .form-group {

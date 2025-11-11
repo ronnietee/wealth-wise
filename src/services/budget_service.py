@@ -12,6 +12,41 @@ class BudgetService:
     """Service for handling budget operations."""
     
     @staticmethod
+    def _check_period_overlap(user_id, period_type, start_date, end_date, exclude_period_id=None):
+        """
+        Check if a budget period overlaps with existing periods of the same type.
+        
+        Args:
+            user_id: User ID
+            period_type: Type of budget period (monthly, quarterly, yearly, custom)
+            start_date: Start date of the period
+            end_date: End date of the period
+            exclude_period_id: Optional period ID to exclude from the check (for updates)
+        
+        Returns:
+            BudgetPeriod object if overlap found, None otherwise
+        """
+        # Query for periods of the same type for this user
+        query = BudgetPeriod.query.filter_by(
+            user_id=user_id,
+            period_type=period_type
+        )
+        
+        # Exclude the current period if updating
+        if exclude_period_id:
+            query = query.filter(BudgetPeriod.id != exclude_period_id)
+        
+        existing_periods = query.all()
+        
+        # Check for overlap: two periods overlap if (start1 <= end2) AND (end1 >= start2)
+        for existing_period in existing_periods:
+            if (start_date <= existing_period.end_date and 
+                end_date >= existing_period.start_date):
+                return existing_period
+        
+        return None
+    
+    @staticmethod
     def get_budget_periods(user_id):
         """Get all budget periods for a user."""
         periods = BudgetPeriod.query.filter_by(user_id=user_id).order_by(
@@ -35,6 +70,18 @@ class BudgetService:
     @staticmethod
     def create_budget_period(user_id, name, period_type, start_date, end_date):
         """Create a new budget period."""
+        # Check for overlapping periods of the same type
+        overlapping_period = BudgetService._check_period_overlap(
+            user_id, period_type, start_date, end_date
+        )
+        if overlapping_period:
+            raise ValueError(
+                f"A {period_type} budget period already exists that overlaps with "
+                f"the requested period ({start_date} to {end_date}). "
+                f"Existing period: {overlapping_period.name} "
+                f"({overlapping_period.start_date} to {overlapping_period.end_date})"
+            )
+        
         # Deactivate any existing active periods
         BudgetPeriod.query.filter_by(user_id=user_id, is_active=True).update({'is_active': False})
         
@@ -58,10 +105,10 @@ class BudgetService:
         db.session.add(budget)
         db.session.commit()
         
-        # Populate budget from recurring sources
+        # Populate budget from recurring sources matching the period type
         from ..models import User
         user = User.query.get(user_id)
-        populate_budget_from_recurring(user, budget)
+        populate_budget_from_recurring(user, budget, period_type)
         
         return period
     
@@ -81,16 +128,39 @@ class BudgetService:
         return period
     
     @staticmethod
-    def update_budget_period(period_id, user_id, name, period_type, start_date, end_date):
+    def update_budget_period(period_id, user_id, name=None, period_type=None, start_date=None, end_date=None):
         """Update a budget period."""
         period = BudgetPeriod.query.filter_by(id=period_id, user_id=user_id).first()
         if not period:
             return None
         
-        period.name = name
-        period.period_type = period_type
-        period.start_date = start_date
-        period.end_date = end_date
+        # Use existing values if not provided
+        final_period_type = period_type if period_type is not None else period.period_type
+        final_start_date = start_date if start_date is not None else period.start_date
+        final_end_date = end_date if end_date is not None else period.end_date
+        
+        # Check for overlapping periods of the same type (excluding current period)
+        overlapping_period = BudgetService._check_period_overlap(
+            user_id, final_period_type, final_start_date, final_end_date, 
+            exclude_period_id=period_id
+        )
+        if overlapping_period:
+            raise ValueError(
+                f"A {final_period_type} budget period already exists that overlaps with "
+                f"the requested period ({final_start_date} to {final_end_date}). "
+                f"Existing period: {overlapping_period.name} "
+                f"({overlapping_period.start_date} to {overlapping_period.end_date})"
+            )
+        
+        # Update fields
+        if name is not None:
+            period.name = name
+        if period_type is not None:
+            period.period_type = period_type
+        if start_date is not None:
+            period.start_date = start_date
+        if end_date is not None:
+            period.end_date = end_date
         
         db.session.commit()
         return period
@@ -134,9 +204,20 @@ class BudgetService:
                 try:
                     # Check if subcategory and category exist
                     if allocation.subcategory and allocation.subcategory.category:
+                        # Get period_type from recurring allocation if it exists
+                        recurring_period_type = None
+                        if allocation.recurring_allocation_id:
+                            from ..models import RecurringBudgetAllocation
+                            recurring = RecurringBudgetAllocation.query.get(allocation.recurring_allocation_id)
+                            if recurring:
+                                recurring_period_type = recurring.period_type
+                        
                         allocation_data.append({
                             'id': allocation.id,
                             'allocated_amount': allocation.allocated_amount,
+                            'is_recurring_allocation': allocation.is_recurring_allocation,
+                            'recurring_allocation_id': allocation.recurring_allocation_id,
+                            'recurring_period_type': recurring_period_type,
                             'subcategory': {
                                 'id': allocation.subcategory.id,
                                 'name': allocation.subcategory.name,
@@ -163,6 +244,7 @@ class BudgetService:
                 'period': {
                     'id': active_period.id,
                     'name': active_period.name,
+                    'period_type': active_period.period_type,
                     'start_date': active_period.start_date.isoformat(),
                     'end_date': active_period.end_date.isoformat()
                 }
@@ -262,7 +344,7 @@ class BudgetService:
     
     @staticmethod
     def populate_from_recurring(user_id):
-        """Populate current budget from recurring sources."""
+        """Populate current budget from recurring sources matching the period type."""
         active_period = BudgetPeriod.query.filter_by(user_id=user_id, is_active=True).first()
         if not active_period:
             return False
@@ -273,5 +355,5 @@ class BudgetService:
         
         from ..models import User
         user = User.query.get(user_id)
-        populate_budget_from_recurring(user, budget)
+        populate_budget_from_recurring(user, budget, active_period.period_type)
         return True
