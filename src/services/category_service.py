@@ -188,7 +188,7 @@ class CategoryService:
         
         # Define the category mapping (same as in original app)
         category_mapping = {
-            'faithful-stewardship': {
+            'giving': {
                 'name': 'Giving',
                 'subcategories': {
                     'tithe': 'Tithe',

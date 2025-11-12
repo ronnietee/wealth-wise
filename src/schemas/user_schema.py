@@ -154,7 +154,7 @@ class OnboardingSchema(Schema):
         }
     )
     categories = fields.List(
-        fields.Str(), # Categories are string keys like 'faithful-stewardship', not integers
+        fields.Str(), # Categories are string keys like 'giving', not integers
         allow_none=True,
         load_default=[],
         error_messages={

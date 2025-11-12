@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="STEWARD - Christian Family Budgeting Tool">
+    <meta name="description" content="STEWARD - Financial Control Assistant">
     <meta name="csrf-token" content="dummy_token">
-    <title>STEWARD - Christian Family Budgeting</title>
+    <title>STEWARD - Financial Control Assistant</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +42,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1 class="hero-title">STEWARD</h1>
-            <p class="hero-subtitle">You can't get blindsided anymore. Steward gives you full control to plan where your money goes, track expenditure and account for the last cent.</p>
+            <p class="hero-subtitle">You've never experienced so much financial control with so little effort</p>
             <div class="hero-actions">
                 <button class="btn-modern" onclick="showHowItWorks()">
                     <i class="fas fa-play-circle"></i>
@@ -52,52 +52,175 @@
         </div>
     </header>
 
+    <!-- Quotes Slideshow Section -->
+    <section class="quotes-section">
+        <div class="container">
+            <h2 class="quotes-heading">Here's why you need this</h2>
+            <div class="quotes-slideshow" id="quotesSlideshow">
+                <div class="quote-slide active">
+                    <div class="quote-content">
+                        <p class="quote-text">"You've probably had that moment where you went blank on where you spent the money, or you wished you had a better view of how your money is spent. You know a budget is probably a good idea but you just don't get around to it, or you think you won't like what you see there, or it feels like a little too serious, I mean YOLO!"</p>
+                    </div>
+                </div>
+                <div class="quote-slide">
+                    <div class="quote-content">
+                        <p class="quote-text">"Simple principle, plan how to spend what you have including setting aside money for the fun stuff and you can enjoy it with a free mind."</p>
+                    </div>
+                </div>
+                <div class="quote-slide">
+                    <div class="quote-content">
+                        <p class="quote-text">"The first step in being a faithful steward over the resources entrusted to you is being able to account for them. Know where what is."</p>
+                    </div>
+                </div>
+                <div class="quote-slide">
+                    <div class="quote-content">
+                        <p class="quote-text">"You can't get blindsided anymore. STEWARD gives you full control to plan where your money goes, track expenditure and account for the last cent."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="quotes-indicators">
+                <span class="indicator active" onclick="currentSlide(1)"></span>
+                <span class="indicator" onclick="currentSlide(2)"></span>
+                <span class="indicator" onclick="currentSlide(3)"></span>
+                <span class="indicator" onclick="currentSlide(4)"></span>
+            </div>
+        </div>
+    </section>
+
     <section class="features">
         <div class="container">
             <h2 class="section-title">Why Choose STEWARD?</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-church"></i>
+                        <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3>Faith-Based Categories</h3>
-                    <p>Pre-configured with Christian values including tithe, offering, and social responsibility categories that align with biblical principles of stewardship.</p>
+                    <h3>Bank-Level Security</h3>
+                    <p>Your financial data is protected with end-to-end encryption, secure password hashing, and industry-standard security protocols. We never share your data with third parties.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Complete Privacy</h3>
+                    <p>Your information stays private and secure. We use advanced encryption to protect your data both in transit and at rest, ensuring your financial details remain confidential.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>Smart Budget Management</h3>
+                    <p>Create flexible budgets for monthly, quarterly, or custom periods. Set recurring income and allocations to save time. Track spending with real-time balance updates and visual progress indicators.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Recurring Income & Allocations</h3>
+                    <p>Set up recurring income sources and budget allocations that automatically populate in new budget periods. Spend less time setting up and more time managing your finances.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>Comprehensive Transaction Tracking</h3>
+                    <p>Record income and expenses with detailed categorization. Track every transaction, add descriptions and comments, and maintain a complete financial history.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h3>Multi-Account Management</h3>
+                    <p>Link and manage multiple bank accounts. Track account balances, monitor budget alignment, and get a complete view of your financial picture.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <h3>Mobile Friendly</h3>
-                    <p>Access your budget anywhere, anytime with our responsive design that works seamlessly on all devices - from phones to tablets.</p>
+                    <h3>Mobile Responsive</h3>
+                    <p>Access your budget anywhere, anytime with our fully responsive design that works seamlessly on all devices - from phones to tablets to desktops.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
+                        <i class="fas fa-download"></i>
                     </div>
-                    <h3>Smart Tracking</h3>
-                    <p>Track your spending against allocated budgets and see real-time balance updates with intuitive visual indicators and progress tracking.</p>
+                    <h3>Data Export</h3>
+                    <p>Export your financial data to Excel for record keeping, tax preparation, or personal analysis. Maintain full control over your financial information.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-list"></i>
                     </div>
-                    <h3>Family Focused</h3>
-                    <p>Designed specifically for Christian families to manage their finances together with shared goals and transparent budgeting.</p>
+                    <h3>Flexible Categories</h3>
+                    <p>Pre-configured categories for giving, savings, and essential expenses. Customize to match your financial goals and priorities with unlimited categories and subcategories.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section">
+        <div class="container">
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <div class="pricing-highlight">
+                <div class="trial-badge">
+                    <i class="fas fa-gift"></i>
+                    <span>Try Free for 30 Days</span>
+                </div>
+                <p class="pricing-subtitle">Start your free trial today. No credit card required. Cancel anytime.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Monthly Plan</h3>
+                        <div class="pricing-amount">
+                            <span class="currency">R</span>
+                            <span class="price">__</span>
+                            <span class="period">/month</span>
+                        </div>
                     </div>
-                    <h3>Secure & Private</h3>
-                    <p>Your financial data is protected with enterprise-grade security. Your information stays private and secure in our encrypted system.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-heart"></i>
+                    <div class="pricing-features">
+                        <ul>
+                            <li><i class="fas fa-check"></i> Full access to all features</li>
+                            <li><i class="fas fa-check"></i> Unlimited budgets & transactions</li>
+                            <li><i class="fas fa-check"></i> Recurring income & allocations</li>
+                            <li><i class="fas fa-check"></i> Multi-account management</li>
+                            <li><i class="fas fa-check"></i> Data export to Excel</li>
+                            <li><i class="fas fa-check"></i> Priority support</li>
+                        </ul>
                     </div>
-                    <h3>Built with Love</h3>
-                    <p>Created by Christians for Christians, with prayer and faith at the heart of every feature to help families honor God with their finances.</p>
+                    <button class="btn-pricing" onclick="window.location.href='/onboarding'">
+                        Start Free Trial
+                    </button>
                 </div>
+                <div class="pricing-card featured">
+                    <div class="popular-badge">Most Popular</div>
+                    <div class="pricing-header">
+                        <h3>Yearly Plan</h3>
+                        <div class="pricing-amount">
+                            <span class="currency">R</span>
+                            <span class="price">___</span>
+                            <span class="period">/year</span>
+                        </div>
+                        <div class="savings-badge">
+                            <i class="fas fa-tag"></i> Save R__ per year
+                        </div>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li><i class="fas fa-check"></i> Everything in Monthly</li>
+                            <li><i class="fas fa-check"></i> Best value - save 5%</li>
+                            <li><i class="fas fa-check"></i> Annual commitment discount</li>
+                            <li><i class="fas fa-check"></i> Priority feature requests</li>
+                        </ul>
+                    </div>
+                    <button class="btn-pricing featured" onclick="window.location.href='/onboarding'">
+                        Start Free Trial
+                    </button>
+                </div>
+            </div>
+            <div class="pricing-note">
+                <p><i class="fas fa-info-circle"></i> Both plans include a 30-day free trial.</p>
             </div>
         </div>
     </section>
@@ -252,29 +375,466 @@
 
     <footer class="footer">
         <div class="footer-content">
-            <p class="footer-subtitle">"The plans of the diligent lead to profit as surely as haste leads to poverty." - Proverbs 21:5</p>
-            <div class="footer-links">
-                <a href="/contact" class="footer-link">
-                    <i class="fas fa-envelope"></i> Contact Us
-                </a>
+            <div class="footer-main">
+                <div class="footer-section">
+                    <h4>STEWARD</h4>
+                    <p>Your Financial Control Assistant</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links-list">
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/help">Help & Support</a></li>
+                        <li><a href="/legal/terms">Terms & Conditions</a></li>
+                        <li><a href="/legal/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect With Us</h4>
+                    <div class="social-media-links">
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-            <p>&copy; 2024 STEWARD. Built with faith and love for Christian families.</p>
+            <div class="footer-bottom">
+                <p>&copy; 2024 STEWARD. Your Financial Control Assistant. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
-    <script>
-        // Simple Aptos font loading
-        document.addEventListener('DOMContentLoaded', function() {
-            // Force font application
-            const subtitle = document.querySelector('.hero-subtitle');
-            if (subtitle) {
-                subtitle.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-                subtitle.style.fontWeight = '400';
+    <style>
+        /* Quotes Slideshow Styles */
+        .quotes-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 80px 20px;
+            margin: 60px 0;
+        }
+
+        .quotes-heading {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 50px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .quotes-slideshow {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 250px;
+        }
+
+        .quote-slide {
+            display: none;
+            animation: fadeIn 1s;
+        }
+
+        .quote-slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quote-content {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .quote-text {
+            font-size: 1.4rem;
+            line-height: 1.8;
+            color: #333;
+            font-style: italic;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        @media (min-width: 768px) {
+            .quote-text {
+                font-size: 1.6rem;
             }
-            
-            // Load saved credentials
-            loadSavedCredentials();
-        });
+        }
+
+        .quotes-indicators {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .indicator.active,
+        .indicator:hover {
+            background: #8B4513;
+            transform: scale(1.2);
+        }
+
+        /* Enhanced Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #8B4513;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Pricing Section Styles */
+        .pricing-section {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            padding: 80px 20px;
+            color: white;
+        }
+
+        .pricing-section .section-title {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .pricing-highlight {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .trial-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .pricing-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            color: #333;
+            border-radius: 15px;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-card.featured {
+            border: 3px solid #ffd700;
+            transform: scale(1.05);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: #333;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .pricing-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .pricing-amount {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .currency {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .price {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #8B4513;
+        }
+
+        .period {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .savings-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #d4edda;
+            color: #155724;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .pricing-features ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 30px 0;
+        }
+
+        .pricing-features li {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features li i {
+            color: #28a745;
+            font-size: 1.1rem;
+        }
+
+        .btn-pricing {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-pricing:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
+        }
+
+        .btn-pricing.featured {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+        }
+
+        .pricing-note {
+            text-align: center;
+            margin-top: 40px;
+            opacity: 0.9;
+        }
+
+        .pricing-note i {
+            margin-right: 8px;
+        }
+
+        /* Footer Styles */
+        .footer-main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .footer-section p {
+            color: rgba(255,255,255,0.8);
+            margin: 0;
+        }
+
+        .footer-links-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links-list li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links-list a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links-list a:hover {
+            color: white;
+        }
+
+        .social-media-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .social-media-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.3rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .social-media-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .footer-bottom p {
+            color: rgba(255,255,255,0.7);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .quotes-heading {
+                font-size: 1.8rem;
+                margin-bottom: 30px;
+            }
+
+            .quote-text {
+                font-size: 1.2rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // Quotes Slideshow Functionality
+        let currentQuoteIndex = 0;
+        const quotes = document.querySelectorAll('.quote-slide');
+        const indicators = document.querySelectorAll('.indicator');
+
+        function showQuote(index) {
+            quotes.forEach((quote, i) => {
+                quote.classList.toggle('active', i === index);
+            });
+            indicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+        }
+
+        function currentSlide(index) {
+            currentQuoteIndex = index - 1;
+            showQuote(currentQuoteIndex);
+        }
+
+        function nextQuote() {
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+            showQuote(currentQuoteIndex);
+        }
+
+        // Auto-advance quotes every 10 seconds (slower for better readability)
+        setInterval(nextQuote, 10000);
 
         // Remember Me functionality (Production Ready)
         function loadSavedCredentials() {
@@ -283,14 +843,16 @@
             
             // Only load username for security (never store passwords in localStorage)
             if (savedUsername && rememberMe) {
-                document.getElementById('loginUsername').value = savedUsername;
-                document.getElementById('rememberMe').checked = true;
+                const usernameInput = document.getElementById('loginUsername');
+                const rememberCheckbox = document.getElementById('rememberMe');
+                if (usernameInput) usernameInput.value = savedUsername;
+                if (rememberCheckbox) rememberCheckbox.checked = true;
             }
         }
 
         function saveCredentials() {
-            const rememberMe = document.getElementById('rememberMe').checked;
-            const username = document.getElementById('loginUsername').value;
+            const rememberMe = document.getElementById('rememberMe')?.checked;
+            const username = document.getElementById('loginUsername')?.value;
             
             if (rememberMe && username) {
                 // Only save username, never save passwords in localStorage
@@ -302,16 +864,23 @@
             }
         }
 
-        // Add event listener to login form
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Force font application
+            const subtitle = document.querySelector('.hero-subtitle');
+            if (subtitle) {
+                subtitle.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                subtitle.style.fontWeight = '400';
+            }
+            
+            // Load saved credentials
+            loadSavedCredentials();
+            
             // Check if we should show the login modal
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('showLogin') === 'true') {
                 showLoginModal();
             }
-            
-            // Login form handler is now in static/js/auth.js
-            // This ensures we use JWT-based authentication consistently
         });
 
         // Get CSRF token

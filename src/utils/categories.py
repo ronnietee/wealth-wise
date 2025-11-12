@@ -10,7 +10,7 @@ def create_default_categories(user_id):
     """Create default categories and subcategories for a new user."""
     default_categories = [
         {
-            'name': 'Church and Family',
+            'name': 'Giving',
             'subcategories': ['Tithe', 'Offering', 'Social Responsibility']
         },
         {

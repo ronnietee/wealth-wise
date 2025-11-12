@@ -1,10 +1,10 @@
-# STEWARD - Christian Family Budgeting Tool
+# STEWARD - Financial Control Assistant
 
-A comprehensive, mobile-friendly budgeting application designed specifically for Christian families to steward their finances with wisdom and faith.
+A comprehensive, mobile-friendly budgeting application designed to help you take full control of your finances with smart tracking and planning.
 
 ## Features
 
-- **Faith-Based Categories**: Pre-configured with Christian values including tithe, offering, and social responsibility
+- **Flexible Categories**: Pre-configured categories for giving, savings, and essential expenses
 - **Budget Periods**: Create and manage monthly or custom budget periods
 - **Recurring Income & Allocations**: Set up recurring income sources and budget allocations that auto-populate
 - **Transaction Tracking**: Record income and expenses with detailed categorization
@@ -382,7 +382,7 @@ For support or questions:
 
 ## Inspiration
 
-Built with faith and love for Christian families, inspired by the principles of faithful stewardship found in Matthew 25:14-30 and Proverbs 21:5.
+Built to empower individuals and families to take control of their financial future through smart budgeting and expense tracking.
 
 ---
 
