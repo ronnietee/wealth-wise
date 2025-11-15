@@ -25,6 +25,13 @@
         .hero-title {
             font-family: 'Copperplate', 'Copperplate Gothic', 'Copperplate Gothic Light', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         }
+
+        @media (max-width: 768px) {
+            .hero-subtitle {
+                margin-top: -0.8rem !important;
+                margin-bottom: 4.5rem !important;
+            }
+        }
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -484,6 +491,12 @@
             margin-top: 20px;
         }
 
+        @media (min-width: 769px) {
+            .image-indicators {
+                display: none;
+            }
+        }
+
         .image-indicator {
             display: inline-block;
             width: 12px;
@@ -801,9 +814,13 @@
         }
 
         @media (max-width: 768px) {
+            .quotes-section {
+                padding: 40px 20px 0 20px;
+            }
+
             .two-column-layout {
                 grid-template-columns: 1fr;
-                gap: 30px;
+                gap: 20px;
             }
 
             .image-slideshow {
@@ -811,12 +828,26 @@
             }
 
             .quotes-heading {
-                font-size: 1.8rem;
-                margin-bottom: 30px;
+                font-size: 1rem;
+                margin-bottom: 20px;
+            }
+
+            .quote-slide.active {
+                position: relative;
+            }
+
+            .quote-content {
+                padding: 10px 15px 20px 15px;
             }
 
             .quote-text {
                 font-size: 1.2rem;
+                margin-top: -10px;
+            }
+
+
+            .image-indicators {
+                display: none;
             }
         }
     </style>
