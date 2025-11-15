@@ -19,6 +19,7 @@
         .hero-subtitle {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
             font-weight: 400 !important;
+            margin-top: -0.5rem !important;
         }
         
         .hero-title {
@@ -66,10 +67,14 @@
                         <div class="image-slide">
                             <img src="{{ url_for('static', filename='images/PC.png') }}" alt="PC View" class="slideshow-image">
                         </div>
+                        <div class="image-slide">
+                            <img src="{{ url_for('static', filename='images/PCMOBILE.png') }}" alt="PC and Mobile View" class="slideshow-image">
+                        </div>
                     </div>
                     <div class="image-indicators">
                         <span class="image-indicator active" onclick="currentImageSlide(1)"></span>
                         <span class="image-indicator" onclick="currentImageSlide(2)"></span>
+                        <span class="image-indicator" onclick="currentImageSlide(3)"></span>
                     </div>
                 </div>
                 <!-- Right Column: Quotes Slideshow -->
@@ -77,7 +82,12 @@
                     <div class="quotes-slideshow" id="quotesSlideshow">
                         <div class="quote-slide active">
                             <div class="quote-content">
-                                <p class="quote-text">"You've probably had that moment where you went blank on where you spent the money, or you wished you had a better view of how your money is spent. You know a budget is probably a good idea but you just don't get around to it, or you think you won't like what you see there, or it feels like a little too serious, I mean YOLO!"</p>
+                                <p class="quote-text">"You've probably had that moment where you went blank on where you spent the money, or you wished you had a better view of how your money is spent."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"You know a budget is probably a good idea but you just don't get around to it, or it feels like a little too serious and a little too much effort. STEWARD hands you all that control with very little effort required from you."</p>
                             </div>
                         </div>
                         <div class="quote-slide">
@@ -101,6 +111,7 @@
                         <span class="indicator" onclick="currentSlide(2)"></span>
                         <span class="indicator" onclick="currentSlide(3)"></span>
                         <span class="indicator" onclick="currentSlide(4)"></span>
+                        <span class="indicator" onclick="currentSlide(5)"></span>
                     </div>
                 </div>
             </div>
@@ -174,73 +185,6 @@
                     <h3>Flexible Categories</h3>
                     <p>Pre-configured categories for giving, savings, and essential expenses. Customize to match your financial goals and priorities with unlimited categories and subcategories.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section class="pricing-section">
-        <div class="container">
-            <h2 class="section-title">Simple, Transparent Pricing</h2>
-            <div class="pricing-highlight">
-                <div class="trial-badge">
-                    <i class="fas fa-gift"></i>
-                    <span>Try Free for 30 Days</span>
-                </div>
-                <p class="pricing-subtitle">Start your free trial today. No credit card required. Cancel anytime.</p>
-            </div>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Monthly Plan</h3>
-                        <div class="pricing-amount">
-                            <span class="currency">R</span>
-                            <span class="price">__</span>
-                            <span class="period">/month</span>
-                        </div>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li><i class="fas fa-check"></i> Full access to all features</li>
-                            <li><i class="fas fa-check"></i> Unlimited budgets & transactions</li>
-                            <li><i class="fas fa-check"></i> Recurring income & allocations</li>
-                            <li><i class="fas fa-check"></i> Multi-account management</li>
-                            <li><i class="fas fa-check"></i> Data export to Excel</li>
-                            <li><i class="fas fa-check"></i> Priority support</li>
-                        </ul>
-                    </div>
-                    <button class="btn-pricing" onclick="window.location.href='/onboarding'">
-                        Start Free Trial
-                    </button>
-                </div>
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Most Popular</div>
-                    <div class="pricing-header">
-                        <h3>Yearly Plan</h3>
-                        <div class="pricing-amount">
-                            <span class="currency">R</span>
-                            <span class="price">___</span>
-                            <span class="period">/year</span>
-                        </div>
-                        <div class="savings-badge">
-                            <i class="fas fa-tag"></i> Save R__ per year
-                        </div>
-                    </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li><i class="fas fa-check"></i> Everything in Monthly</li>
-                            <li><i class="fas fa-check"></i> Best value - save 5%</li>
-                            <li><i class="fas fa-check"></i> Annual commitment discount</li>
-                            <li><i class="fas fa-check"></i> Priority feature requests</li>
-                        </ul>
-                    </div>
-                    <button class="btn-pricing featured" onclick="window.location.href='/onboarding'">
-                        Start Free Trial
-                    </button>
-                </div>
-            </div>
-            <div class="pricing-note">
-                <p><i class="fas fa-info-circle"></i> Both plans include a 30-day free trial.</p>
             </div>
         </div>
     </section>
@@ -764,186 +708,12 @@
             z-index: 1;
         }
 
-        /* Pricing Section Styles */
-        .pricing-section {
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            padding: 80px 20px;
-            color: white;
-        }
-
-        .pricing-section .section-title {
-            color: white;
-            margin-bottom: 20px;
-        }
-
-        .pricing-highlight {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .trial-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255,255,255,0.2);
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .pricing-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin: 0;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .pricing-card {
-            background: white;
-            color: #333;
-            border-radius: 15px;
-            padding: 40px;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s;
-        }
-
-        .pricing-card:hover {
-            transform: translateY(-10px);
-        }
-
-        .pricing-card.featured {
-            border: 3px solid #ffd700;
-            transform: scale(1.05);
-        }
-
-        .popular-badge {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ffd700;
-            color: #333;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .pricing-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .pricing-header h3 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .pricing-amount {
-            display: flex;
-            align-items: baseline;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .currency {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .price {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #8B4513;
-        }
-
-        .period {
-            font-size: 1.2rem;
-            color: #666;
-        }
-
-        .savings-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #d4edda;
-            color: #155724;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .pricing-features ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 30px 0;
-        }
-
-        .pricing-features li {
-            padding: 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .pricing-features li:last-child {
-            border-bottom: none;
-        }
-
-        .pricing-features li i {
-            color: #28a745;
-            font-size: 1.1rem;
-        }
-
-        .btn-pricing {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-pricing:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
-        }
-
-        .btn-pricing.featured {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #333;
-        }
-
-        .pricing-note {
-            text-align: center;
-            margin-top: 40px;
-            opacity: 0.9;
-        }
-
-        .pricing-note i {
-            margin-right: 8px;
-        }
-
         /* Footer Styles */
+        .footer {
+            background: #1a1a1a !important;
+            color: #f8f9fa;
+        }
+
         .footer-main {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -953,13 +723,22 @@
 
         .footer-section h4 {
             color: white;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .footer-section:last-child {
+            text-align: right;
+        }
+
+        .footer-section:last-child h4 {
+            text-align: right;
         }
 
         .footer-section p {
             color: rgba(255,255,255,0.8);
             margin: 0;
+            font-size: 0.85rem;
         }
 
         .footer-links-list {
@@ -969,13 +748,14 @@
         }
 
         .footer-links-list li {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .footer-links-list a {
             color: rgba(255,255,255,0.8);
             text-decoration: none;
             transition: color 0.3s;
+            font-size: 0.85rem;
         }
 
         .footer-links-list a:hover {
@@ -984,38 +764,40 @@
 
         .social-media-links {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .social-media-links a {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 45px;
-            height: 45px;
+            width: 28px;
+            height: 28px;
             background: rgba(255,255,255,0.1);
             border-radius: 50%;
             color: white;
-            font-size: 1.3rem;
+            font-size: 0.85rem;
             transition: all 0.3s;
             text-decoration: none;
         }
 
         .social-media-links a:hover {
             background: rgba(255,255,255,0.2);
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
         .footer-bottom {
             text-align: center;
-            padding-top: 30px;
+            padding-top: 20px;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .footer-bottom p {
             color: rgba(255,255,255,0.7);
             margin: 0;
+            font-size: 0.8rem;
         }
 
         @media (max-width: 768px) {
@@ -1035,14 +817,6 @@
 
             .quote-text {
                 font-size: 1.2rem;
-            }
-
-            .pricing-card.featured {
-                transform: scale(1);
-            }
-
-            .pricing-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
