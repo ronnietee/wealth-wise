@@ -56,40 +56,60 @@
     <section class="quotes-section">
         <div class="container">
             <h2 class="quotes-heading">Here's why you need this</h2>
-            <div class="quotes-slideshow" id="quotesSlideshow">
-                <div class="quote-slide active">
-                    <div class="quote-content">
-                        <p class="quote-text">"You've probably had that moment where you went blank on where you spent the money, or you wished you had a better view of how your money is spent. You know a budget is probably a good idea but you just don't get around to it, or you think you won't like what you see there, or it feels like a little too serious, I mean YOLO!"</p>
+            <div class="two-column-layout">
+                <!-- Left Column: Image Slideshow -->
+                <div class="image-slideshow-container">
+                    <div class="image-slideshow" id="imageSlideshow">
+                        <div class="image-slide active">
+                            <img src="{{ url_for('static', filename='images/MOBILE.png') }}" alt="Mobile View" class="slideshow-image">
+                        </div>
+                        <div class="image-slide">
+                            <img src="{{ url_for('static', filename='images/PC.png') }}" alt="PC View" class="slideshow-image">
+                        </div>
+                    </div>
+                    <div class="image-indicators">
+                        <span class="image-indicator active" onclick="currentImageSlide(1)"></span>
+                        <span class="image-indicator" onclick="currentImageSlide(2)"></span>
                     </div>
                 </div>
-                <div class="quote-slide">
-                    <div class="quote-content">
-                        <p class="quote-text">"Simple principle, plan how to spend what you have including setting aside money for the fun stuff and you can enjoy it with a free mind."</p>
+                <!-- Right Column: Quotes Slideshow -->
+                <div class="quotes-slideshow-container">
+                    <div class="quotes-slideshow" id="quotesSlideshow">
+                        <div class="quote-slide active">
+                            <div class="quote-content">
+                                <p class="quote-text">"You've probably had that moment where you went blank on where you spent the money, or you wished you had a better view of how your money is spent. You know a budget is probably a good idea but you just don't get around to it, or you think you won't like what you see there, or it feels like a little too serious, I mean YOLO!"</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"Simple principle, plan how to spend what you have including setting aside money for the fun stuff and you can enjoy it with a free mind."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"The first step in being a faithful steward over the resources entrusted to you is being able to account for them. Know where what is."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"You can't get blindsided anymore. STEWARD gives you full control to plan where your money goes, track expenditure and account for the last cent."</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="quotes-indicators">
+                        <span class="indicator active" onclick="currentSlide(1)"></span>
+                        <span class="indicator" onclick="currentSlide(2)"></span>
+                        <span class="indicator" onclick="currentSlide(3)"></span>
+                        <span class="indicator" onclick="currentSlide(4)"></span>
                     </div>
                 </div>
-                <div class="quote-slide">
-                    <div class="quote-content">
-                        <p class="quote-text">"The first step in being a faithful steward over the resources entrusted to you is being able to account for them. Know where what is."</p>
-                    </div>
-                </div>
-                <div class="quote-slide">
-                    <div class="quote-content">
-                        <p class="quote-text">"You can't get blindsided anymore. STEWARD gives you full control to plan where your money goes, track expenditure and account for the last cent."</p>
-                    </div>
-                </div>
-            </div>
-            <div class="quotes-indicators">
-                <span class="indicator active" onclick="currentSlide(1)"></span>
-                <span class="indicator" onclick="currentSlide(2)"></span>
-                <span class="indicator" onclick="currentSlide(3)"></span>
-                <span class="indicator" onclick="currentSlide(4)"></span>
             </div>
         </div>
     </section>
 
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Why Choose STEWARD?</h2>
+            <h2 class="section-title">Why Choose Steward?</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -420,34 +440,152 @@
         /* Quotes Slideshow Styles */
         .quotes-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 80px 20px;
-            margin: 0 0 60px 0;
-            margin-top: 0;
+            padding: 80px 20px 0 20px;
+            margin: 0;
+        }
+
+        .quotes-section .container {
+            max-width: 1400px;
+            padding: 0 20px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
         }
 
         .quotes-heading {
             text-align: center;
-            font-size: 2.5rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: rgb(1, 35, 15);
+            margin-bottom: 40px;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Two Column Layout */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Image Slideshow Styles */
+        .image-slideshow-container {
+            width: 100%;
+            position: relative;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-slideshow {
+            width: 100%;
+            position: relative;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            text-align: center;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slideshow-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            object-fit: contain;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-indicators {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .image-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-indicator.active,
+        .image-indicator:hover {
+            background: #8B4513;
+            transform: scale(1.2);
+        }
+
+        /* Quotes Slideshow Container */
+        .quotes-slideshow-container {
+            width: 100%;
         }
 
         .quotes-slideshow {
-            max-width: 1000px;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
             position: relative;
             min-height: 250px;
+            overflow: hidden;
         }
 
         .quote-slide {
-            display: none;
-            animation: fadeIn 1s;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            pointer-events: none;
         }
 
         .quote-slide.active {
-            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
 
         @keyframes fadeIn {
@@ -457,12 +595,17 @@
 
         .quote-content {
             text-align: center;
-            padding: 40px;
+            padding: 40px 20px;
+            max-width: 100%;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
         }
 
         .quote-text {
-            font-size: 1.4rem;
-            line-height: 1.8;
+            font-size: 1.1rem;
+            line-height: 1.7;
             color: #333;
             font-style: italic;
             margin: 0;
@@ -471,7 +614,7 @@
 
         @media (min-width: 768px) {
             .quote-text {
-                font-size: 1.6rem;
+                font-size: 1.3rem;
             }
         }
 
@@ -498,6 +641,42 @@
         }
 
         /* Enhanced Features Section */
+        .features {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 80px 20px;
+            margin: 0;
+        }
+
+        .features .container {
+            max-width: 1400px;
+            padding: 0 20px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .features .section-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: rgb(1, 35, 15);
+            margin-bottom: 40px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: rgb(1, 35, 15);
+            background-clip: unset;
+            position: relative;
+        }
+
+        .features .section-title::after {
+            display: none;
+        }
+
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -509,30 +688,80 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.15),
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                0 2px 5px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform: translateZ(0);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            will-change: transform, box-shadow;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+            pointer-events: none;
+            opacity: 0.5;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            transform: perspective(1000px) rotateX(0deg) translateY(-10px) translateZ(20px);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                0 10px 20px rgba(0, 0, 0, 0.15),
+                0 5px 10px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
 
         .feature-icon {
-            font-size: 2.5rem;
-            color: #8B4513;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, rgb(1, 35, 15) 0%, rgb(1, 50, 25) 100%) !important;
+            width: 80px !important;
+            height: 80px !important;
+            border-radius: 50% !important;
+            margin: 0 auto 1.5rem !important;
+        }
+
+        .feature-icon i {
+            color: white !important;
         }
 
         .feature-card h3 {
             color: #333;
             margin-bottom: 15px;
             font-size: 1.3rem;
+            position: relative;
+            z-index: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         .feature-card p {
             color: #666;
             line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .feature-icon {
+            position: relative;
+            z-index: 1;
         }
 
         /* Pricing Section Styles */
@@ -790,6 +1019,15 @@
         }
 
         @media (max-width: 768px) {
+            .two-column-layout {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .image-slideshow {
+                height: 250px;
+            }
+
             .quotes-heading {
                 font-size: 1.8rem;
                 margin-bottom: 30px;
@@ -810,18 +1048,59 @@
     </style>
 
     <script>
+        // Image Slideshow Functionality
+        let currentImageIndex = 0;
+        const imageSlides = document.querySelectorAll('.image-slide');
+        const imageIndicators = document.querySelectorAll('.image-indicator');
+
+        function showImageSlide(index) {
+            imageSlides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            imageIndicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+        }
+
+        function currentImageSlide(index) {
+            currentImageIndex = index - 1;
+            showImageSlide(currentImageIndex);
+        }
+
+        function nextImageSlide() {
+            currentImageIndex = (currentImageIndex + 1) % imageSlides.length;
+            showImageSlide(currentImageIndex);
+        }
+
+        // Initialize first slide on page load
+        if (imageSlides.length > 0) {
+            showImageSlide(0);
+        }
+
         // Quotes Slideshow Functionality
         let currentQuoteIndex = 0;
         const quotes = document.querySelectorAll('.quote-slide');
         const indicators = document.querySelectorAll('.indicator');
 
-        function showQuote(index) {
+        function showQuote(index, skipImageCheck = false) {
             quotes.forEach((quote, i) => {
-                quote.classList.toggle('active', i === index);
+                if (i === index) {
+                    quote.classList.add('active');
+                } else {
+                    quote.classList.remove('active');
+                }
             });
             indicators.forEach((indicator, i) => {
                 indicator.classList.toggle('active', i === index);
             });
+            // Change image whenever text slide changes (skip on initial load)
+            if (!skipImageCheck) {
+                nextImageSlide();
+            }
         }
 
         function currentSlide(index) {
@@ -832,6 +1111,11 @@
         function nextQuote() {
             currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
             showQuote(currentQuoteIndex);
+        }
+
+        // Initialize first quote on page load (skip image check on initial load)
+        if (quotes.length > 0) {
+            showQuote(0, true);
         }
 
         // Auto-advance quotes every 10 seconds (slower for better readability)
