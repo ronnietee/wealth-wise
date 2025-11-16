@@ -61,6 +61,8 @@ class Config:
     PAYFAST_MERCHANT_KEY = os.environ.get('PAYFAST_MERCHANT_KEY', '')
     PAYFAST_PASSPHRASE = os.environ.get('PAYFAST_PASSPHRASE', '')  # recommended in production
     PAYFAST_TEST_MODE = os.environ.get('PAYFAST_TEST_MODE', 'true').lower() in ['true', 'on', '1']
+    # PayFast URLs - Update these environment variables when domain changes
+    # For production, set these to your actual domain (e.g., https://steward.com)
     PAYFAST_RETURN_URL = os.environ.get('PAYFAST_RETURN_URL', 'http://localhost:5000/payfast/return')
     PAYFAST_CANCEL_URL = os.environ.get('PAYFAST_CANCEL_URL', 'http://localhost:5000/payfast/cancel')
     PAYFAST_NOTIFY_URL = os.environ.get('PAYFAST_NOTIFY_URL', 'http://localhost:5000/api/subscriptions/webhook/payfast')
