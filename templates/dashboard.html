@@ -655,7 +655,7 @@ function handleModalExpenseSubmit(e) {
     submitBtn.disabled = true;
     
     // Make API call
-    authenticatedFetch('/api/transactions/transactions', {
+    authenticatedFetch('/api/transactions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

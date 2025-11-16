@@ -34,8 +34,15 @@ class EmailService:
         </html>
         """
         
+        # Use CONTACT_EMAIL if set, otherwise fall back to MAIL_USERNAME (admin email)
+        recipient_email = app_config.get('CONTACT_EMAIL') or app_config.get('MAIL_USERNAME')
+        
+        if not recipient_email:
+            print("Error: No contact email configured. Set CONTACT_EMAIL or MAIL_USERNAME in .env")
+            return False
+        
         return send_email(
-            to_email=app_config['MAIL_DEFAULT_SENDER'],
+            to_email=recipient_email,
             subject=f"Contact Form: {subject}",
             body=body,
             app_config=app_config

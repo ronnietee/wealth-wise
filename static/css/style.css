@@ -4309,6 +4309,12 @@ button,
     width: 100%;
 }
 
+/* Public pages footer should span full width */
+.public-page .footer {
+    margin-left: 0;
+    width: 100%;
+}
+
 /* Dark Mode Card Enhancements */
 [data-theme="dark"] .overview-card {
     background: #1e1e1e;

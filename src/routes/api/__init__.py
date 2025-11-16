@@ -48,6 +48,12 @@ def submit_contact():
     try:
         # Send email
         from flask import current_app
+        
+        # Check if email is configured
+        if not current_app.config.get('MAIL_SERVER') or not current_app.config.get('MAIL_USERNAME') or not current_app.config.get('MAIL_PASSWORD'):
+            current_app.logger.error("Email configuration is missing. Please check your .env file.")
+            return jsonify({'message': 'Email service is not configured. Please contact the administrator.'}), 500
+        
         success = EmailService.send_contact_email(
             validated_data['name'],
             validated_data['email'],
@@ -59,11 +65,15 @@ def submit_contact():
         if success:
             return jsonify({'message': 'Message sent successfully'}), 200
         else:
-            return jsonify({'message': 'Failed to send message. Please try again later.'}), 500
+            current_app.logger.error("Failed to send contact email - check server logs for details")
+            return jsonify({'message': 'Failed to send message. Please check your email configuration or try again later.'}), 500
             
     except Exception as e:
+        from flask import current_app
         current_app.logger.error(f"Error sending contact email: {str(e)}")
-        return jsonify({'message': 'An error occurred while sending the message'}), 500
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'message': f'An error occurred while sending the message: {str(e)}'}), 500
 
 
 @api_bp.route('/validate-email', methods=['POST'])
