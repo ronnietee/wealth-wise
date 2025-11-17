@@ -189,11 +189,13 @@ def upgrade():
     op.create_table('email_verification',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.Column('token', sa.String(length=255), nullable=False),
+        sa.Column('token', sa.String(length=100), nullable=False),
+        sa.Column('expires_at', sa.DateTime(), nullable=False),
+        sa.Column('verified', sa.Boolean(), nullable=True, server_default='0'),
         sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.Column('expires_at', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('token')
     )
     
     # Create password_reset_token table
