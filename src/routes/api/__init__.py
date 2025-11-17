@@ -172,10 +172,12 @@ def complete_onboarding():
             currency=currency
         )
         
-        # Store legal acceptance (MANDATORY - validated by schema)
+        # Store legal acceptance (MANDATORY - validated by schema to be True)
+        # Schema validation ensures accept_terms and accept_privacy are True
         if user:
-            user.terms_accepted = True
-            user.privacy_policy_accepted = True
+            # Use validated values from schema (already validated to be True)
+            user.terms_accepted = validated_data.get('accept_terms', True)
+            user.privacy_policy_accepted = validated_data.get('accept_privacy', True)
             user.terms_accepted_at = datetime.utcnow()
             user.privacy_policy_accepted_at = datetime.utcnow()
             # Store version identifiers (you can update these when documents change)

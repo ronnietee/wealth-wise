@@ -16,8 +16,8 @@ class Config:
     # SECRET_KEY must be set in production - raise error if missing
     _secret_key = os.environ.get('SECRET_KEY')
     if not _secret_key:
-        import sys
-        if os.environ.get('FLASK_ENV') == 'production' or 'production' in sys.argv:
+        # Only check FLASK_ENV - sys.argv check fails with gunicorn
+        if os.environ.get('FLASK_ENV') == 'production':
             raise ValueError("SECRET_KEY must be set in production environment variables")
         _secret_key = 'dev-secret-key-only-for-development'
     SECRET_KEY = _secret_key
@@ -30,8 +30,8 @@ class Config:
     # JWT configuration
     _jwt_secret = os.environ.get('JWT_SECRET_KEY')
     if not _jwt_secret:
-        import sys
-        if os.environ.get('FLASK_ENV') == 'production' or 'production' in sys.argv:
+        # Only check FLASK_ENV - sys.argv check fails with gunicorn
+        if os.environ.get('FLASK_ENV') == 'production':
             raise ValueError("JWT_SECRET_KEY must be set in production environment variables")
         _jwt_secret = 'dev-jwt-secret-only-for-development'
     JWT_SECRET_KEY = _jwt_secret

@@ -153,6 +153,18 @@ class OnboardingSchema(Schema):
             'invalid': 'Privacy policy acceptance must be true'
         }
     )
+    
+    @validates('accept_terms')
+    def validate_accept_terms(self, value):
+        """Ensure terms acceptance is explicitly True, not just a boolean."""
+        if value is not True:
+            raise validate.ValidationError('You must accept the Terms and Conditions')
+    
+    @validates('accept_privacy')
+    def validate_accept_privacy(self, value):
+        """Ensure privacy policy acceptance is explicitly True, not just a boolean."""
+        if value is not True:
+            raise validate.ValidationError('You must accept the Privacy Policy')
     categories = fields.List(
         fields.Str(), # Categories are string keys like 'giving', not integers
         allow_none=True,
