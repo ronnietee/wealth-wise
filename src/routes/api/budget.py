@@ -3,13 +3,21 @@ Budget API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from marshmallow import ValidationError
 from ...auth import token_required, subscription_required
 from ...services import BudgetService
+from ...schemas import (
+    BudgetPeriodSchema, BudgetPeriodUpdateSchema, BudgetUpdateSchema,
+    BudgetAllocationsUpdateSchema, IncomeSourceSchema, IncomeSourceUpdateSchema
+)
+from ...utils.validation import handle_validation_error
+from ...extensions import limiter
 
 budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
 
 
 @budget_bp.route('/budget-periods', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 @subscription_required
 def get_budget_periods(current_user):
@@ -23,30 +31,27 @@ def get_budget_periods(current_user):
 @subscription_required
 def create_budget_period(current_user):
     """Create a new budget period."""
-    data = request.get_json()
-    
-    name = data.get('name', '').strip()
-    period_type = data.get('period_type', '').strip()
-    start_date = data.get('start_date')
-    end_date = data.get('end_date')
-    
-    if not all([name, period_type, start_date, end_date]):
-        return jsonify({'message': 'All fields are required'}), 400
+    schema = BudgetPeriodSchema()
     
     try:
-        from datetime import datetime
-        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00')).date()
-        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00')).date()
-    except (ValueError, AttributeError):
-        return jsonify({'message': 'Invalid date format'}), 400
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    period = BudgetService.create_budget_period(
-        user_id=current_user.id,
-        name=name,
-        period_type=period_type,
-        start_date=start_date,
-        end_date=end_date
-    )
+    try:
+        period = BudgetService.create_budget_period(
+            user_id=current_user.id,
+            name=validated_data['name'],
+            period_type=validated_data['period_type'],
+            start_date=validated_data['start_date'],
+            end_date=validated_data['end_date']
+        )
+    except ValueError as e:
+        # Handle overlap validation errors
+        return jsonify({
+            'message': str(e),
+            'errors': {'period_overlap': [str(e)]}
+        }), 400
     
     return jsonify({
         'id': period.id,
@@ -75,31 +80,28 @@ def activate_budget_period(current_user, period_id):
 @subscription_required
 def update_budget_period(current_user, period_id):
     """Update a budget period."""
-    data = request.get_json()
-    
-    name = data.get('name', '').strip()
-    period_type = data.get('period_type', '').strip()
-    start_date = data.get('start_date')
-    end_date = data.get('end_date')
-    
-    if not all([name, period_type, start_date, end_date]):
-        return jsonify({'message': 'All fields are required'}), 400
+    schema = BudgetPeriodUpdateSchema()
     
     try:
-        from datetime import datetime
-        start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00')).date()
-        end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00')).date()
-    except (ValueError, AttributeError):
-        return jsonify({'message': 'Invalid date format'}), 400
+        validated_data = schema.load(request.get_json() or {}, partial=True)
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    period = BudgetService.update_budget_period(
-        period_id=period_id,
-        user_id=current_user.id,
-        name=name,
-        period_type=period_type,
-        start_date=start_date,
-        end_date=end_date
-    )
+    if not validated_data:
+        return jsonify({'message': 'No valid fields to update'}), 400
+    
+    try:
+        period = BudgetService.update_budget_period(
+            period_id=period_id,
+            user_id=current_user.id,
+            **validated_data
+        )
+    except ValueError as e:
+        # Handle overlap validation errors
+        return jsonify({
+            'message': str(e),
+            'errors': {'period_overlap': [str(e)]}
+        }), 400
     
     if not period:
         return jsonify({'message': 'Budget period not found'}), 404
@@ -128,6 +130,7 @@ def delete_budget_period(current_user, period_id):
 
 
 @budget_bp.route('/budget', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 @subscription_required
 def get_budget(current_user):
@@ -182,13 +185,22 @@ def update_budget(current_user):
 @subscription_required
 def update_allocations(current_user):
     """Update budget allocations."""
-    data = request.get_json()
-    allocations = data.get('allocations', [])
+    schema = BudgetAllocationsUpdateSchema()
     
-    if not isinstance(allocations, list):
-        return jsonify({'message': 'Allocations must be a list'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    success = BudgetService.update_allocations(current_user.id, allocations)
+    # Extract allocations list from validated data
+    allocations = validated_data['allocations']
+    # Convert to format expected by service (list of dicts with subcategory_id and allocated_amount)
+    allocations_list = [
+        {'subcategory_id': alloc['subcategory_id'], 'allocated_amount': alloc['allocated']}
+        for alloc in allocations
+    ]
+    
+    success = BudgetService.update_allocations(current_user.id, allocations_list)
     if not success:
         return jsonify({'message': 'No active budget found'}), 404
     
@@ -200,20 +212,18 @@ def update_allocations(current_user):
 @subscription_required
 def create_income_source(current_user):
     """Create an income source for the active budget."""
-    data = request.get_json()
-    
-    name = data.get('name', '').strip()
-    amount = data.get('amount')
-    
-    if not name or amount is None:
-        return jsonify({'message': 'Name and amount are required'}), 400
+    schema = IncomeSourceSchema()
     
     try:
-        amount = float(amount)
-    except (ValueError, TypeError):
-        return jsonify({'message': 'Invalid amount'}), 400
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    income_source = BudgetService.create_income_source(current_user.id, name, amount)
+    income_source = BudgetService.create_income_source(
+        current_user.id,
+        validated_data['name'],
+        validated_data['amount']
+    )
     if not income_source:
         return jsonify({'message': 'No active budget found'}), 404
     
@@ -229,19 +239,15 @@ def create_income_source(current_user):
 @subscription_required
 def update_income_source(current_user, source_id):
     """Update an income source."""
-    data = request.get_json()
+    schema = IncomeSourceUpdateSchema()
     
-    name = data.get('name', '').strip()
-    amount = data.get('amount')
+    try:
+        validated_data = schema.load(request.get_json() or {}, partial=True)
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    if not name and amount is None:
+    if not validated_data:
         return jsonify({'message': 'Name or amount is required'}), 400
-    
-    if amount is not None:
-        try:
-            amount = float(amount)
-        except (ValueError, TypeError):
-            return jsonify({'message': 'Invalid amount'}), 400
     
     # Get the income source
     from ...models import IncomeSource, Budget, BudgetPeriod
@@ -257,12 +263,10 @@ def update_income_source(current_user, source_id):
     if not income_source:
         return jsonify({'message': 'Income source not found'}), 404
     
-    old_amount = income_source.amount
-    
-    if name:
-        income_source.name = name
-    if amount is not None:
-        income_source.amount = amount
+    if 'name' in validated_data:
+        income_source.name = validated_data['name']
+    if 'amount' in validated_data:
+        income_source.amount = validated_data['amount']
     
     from ...extensions import db
     db.session.commit()

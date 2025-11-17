@@ -34,7 +34,8 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return jsonify({'message': 'Token is invalid!'}), 401
         except Exception as e:
-            print(f"Token validation error: {e}")
+            from flask import current_app
+            current_app.logger.warning(f"Token validation error: {e}")
             return jsonify({'message': 'Token validation failed!'}), 401
         
         return f(current_user, *args, **kwargs)

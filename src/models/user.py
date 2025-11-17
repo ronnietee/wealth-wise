@@ -41,6 +41,14 @@ class User(db.Model):
     referral_details = db.Column(db.Text, nullable=True, default=None)
     email_verified = db.Column(db.Boolean, default=False)
     
+    # Legal acceptance fields
+    terms_accepted = db.Column(db.Boolean, default=False, nullable=False)
+    privacy_policy_accepted = db.Column(db.Boolean, default=False, nullable=False)
+    terms_accepted_at = db.Column(db.DateTime, nullable=True)
+    privacy_policy_accepted_at = db.Column(db.DateTime, nullable=True)
+    terms_version = db.Column(db.String(50), nullable=True)
+    privacy_policy_version = db.Column(db.String(50), nullable=True)
+    
     # Admin fields
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     

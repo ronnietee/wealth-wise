@@ -164,17 +164,24 @@
         // Admin logout
         async function logoutAdmin() {
             try {
-                await fetch('/admin/logout', {
+                const response = await fetch('/admin/logout', {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + getAdminToken()
                     }
                 });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Logout error:', response.status, errorText);
+                }
             } catch (error) {
                 console.error('Logout error:', error);
+                // Continue with logout even if request fails
             }
             
-            // Clear admin tokens
+            // Clear admin tokens and redirect regardless of API response
             localStorage.removeItem('adminToken');
             window.location.href = '/admin/';
         }

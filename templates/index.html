@@ -3,29 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="STEWARD - Christian Family Budgeting Tool">
+    <meta name="description" content="STEWARD - Financial Control Assistant">
     <meta name="csrf-token" content="dummy_token">
-    <title>STEWARD - Christian Family Budgeting</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>STEWARD - Financial Control Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.gstatic.com/s/aptos/v1/aptos-normal-400.woff2" as="font" type="font/woff2" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Aptos:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Copperplate:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* Direct font loading */
-        @import url('https://fonts.googleapis.com/css2?family=Aptos:wght@300;400;500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Copperplate:wght@300;400;500;600;700&display=swap');
         
         .hero-subtitle {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
             font-weight: 400 !important;
+            margin-top: -0.5rem !important;
         }
         
         .hero-title {
             font-family: 'Copperplate', 'Copperplate Gothic', 'Copperplate Gothic Light', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        }
+
+        @media (max-width: 768px) {
+            .hero-subtitle {
+                margin-top: -0.8rem !important;
+                margin-bottom: 4.5rem !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -45,7 +50,7 @@
     <header class="hero">
         <div class="hero-content">
             <h1 class="hero-title">STEWARD</h1>
-            <p class="hero-subtitle">You can't get blindsided anymore. Steward gives you full control to plan where your money goes, track expenditure and account for the last cent.</p>
+            <p class="hero-subtitle">You've never experienced so much financial control with so little effort</p>
             <div class="hero-actions">
                 <button class="btn-modern" onclick="showHowItWorks()">
                     <i class="fas fa-play-circle"></i>
@@ -55,51 +60,137 @@
         </div>
     </header>
 
+    <!-- Quotes Slideshow Section -->
+    <section class="quotes-section">
+        <div class="container">
+            <h2 class="quotes-heading">Here's why you need this</h2>
+            <div class="two-column-layout">
+                <!-- Left Column: Image Slideshow -->
+                <div class="image-slideshow-container">
+                    <div class="image-slideshow" id="imageSlideshow">
+                        <div class="image-slide active">
+                            <img src="{{ url_for('static', filename='images/MOBILE.png') }}" alt="Mobile View" class="slideshow-image">
+                        </div>
+                        <div class="image-slide">
+                            <img src="{{ url_for('static', filename='images/PC.png') }}" alt="PC View" class="slideshow-image">
+                        </div>
+                        <div class="image-slide">
+                            <img src="{{ url_for('static', filename='images/PCMOBILE.png') }}" alt="PC and Mobile View" class="slideshow-image">
+                        </div>
+                    </div>
+                    <div class="image-indicators">
+                        <span class="image-indicator active" onclick="currentImageSlide(1)"></span>
+                        <span class="image-indicator" onclick="currentImageSlide(2)"></span>
+                        <span class="image-indicator" onclick="currentImageSlide(3)"></span>
+                    </div>
+                </div>
+                <!-- Right Column: Quotes Slideshow -->
+                <div class="quotes-slideshow-container">
+                    <div class="quotes-slideshow" id="quotesSlideshow">
+                        <div class="quote-slide active">
+                            <div class="quote-content">
+                                <p class="quote-text">"You've probably had that moment where you went blank on where you spent the money, or you wished you had a better view of how your money is spent."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"You know a budget is probably a good idea but you just don't get around to it, or it feels like a little too serious and a little too much effort. STEWARD hands you all that control with very little effort required from you."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"Simple principle, plan how to spend what you have including setting aside money for the fun stuff and you can enjoy it with a free mind."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"The first step in being a faithful steward over the resources entrusted to you is being able to account for them. Know where what is."</p>
+                            </div>
+                        </div>
+                        <div class="quote-slide">
+                            <div class="quote-content">
+                                <p class="quote-text">"You can't get blindsided anymore. STEWARD gives you full control to plan where your money goes, track expenditure and account for the last cent."</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="quotes-indicators">
+                        <span class="indicator active" onclick="currentSlide(1)"></span>
+                        <span class="indicator" onclick="currentSlide(2)"></span>
+                        <span class="indicator" onclick="currentSlide(3)"></span>
+                        <span class="indicator" onclick="currentSlide(4)"></span>
+                        <span class="indicator" onclick="currentSlide(5)"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Why Choose STEWARD?</h2>
+            <h2 class="section-title">Why Choose Steward?</h2>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-church"></i>
+                        <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3>Faith-Based Categories</h3>
-                    <p>Pre-configured with Christian values including tithe, offering, and social responsibility categories that align with biblical principles of stewardship.</p>
+                    <h3>Bank-Level Security</h3>
+                    <p>Your financial data is protected with end-to-end encryption, secure password hashing, and industry-standard security protocols. We never share your data with third parties.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Complete Privacy</h3>
+                    <p>Your information stays private and secure. We use advanced encryption to protect your data both in transit and at rest, ensuring your financial details remain confidential.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>Smart Budget Management</h3>
+                    <p>Create flexible budgets for monthly, quarterly, or custom periods. Set recurring income and allocations to save time. Track spending with real-time balance updates and visual progress indicators.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Recurring Income & Allocations</h3>
+                    <p>Set up recurring income sources and budget allocations that automatically populate in new budget periods. Spend less time setting up and more time managing your finances.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>Comprehensive Transaction Tracking</h3>
+                    <p>Record income and expenses with detailed categorization. Track every transaction, add descriptions and comments, and maintain a complete financial history.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h3>Multi-Account Management</h3>
+                    <p>Link and manage multiple bank accounts. Track account balances, monitor budget alignment, and get a complete view of your financial picture.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <h3>Mobile Friendly</h3>
-                    <p>Access your budget anywhere, anytime with our responsive design that works seamlessly on all devices - from phones to tablets.</p>
+                    <h3>Mobile Responsive</h3>
+                    <p>Access your budget anywhere, anytime with our fully responsive design that works seamlessly on all devices - from phones to tablets to desktops.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
+                        <i class="fas fa-download"></i>
                     </div>
-                    <h3>Smart Tracking</h3>
-                    <p>Track your spending against allocated budgets and see real-time balance updates with intuitive visual indicators and progress tracking.</p>
+                    <h3>Data Export</h3>
+                    <p>Export your financial data to Excel for record keeping, tax preparation, or personal analysis. Maintain full control over your financial information.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-list"></i>
                     </div>
-                    <h3>Family Focused</h3>
-                    <p>Designed specifically for Christian families to manage their finances together with shared goals and transparent budgeting.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Secure & Private</h3>
-                    <p>Your financial data is protected with enterprise-grade security. Your information stays private and secure in our encrypted system.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <h3>Built with Love</h3>
-                    <p>Created by Christians for Christians, with prayer and faith at the heart of every feature to help families honor God with their finances.</p>
+                    <h3>Flexible Categories</h3>
+                    <p>Pre-configured categories for giving, savings, and essential expenses. Customize to match your financial goals and priorities with unlimited categories and subcategories.</p>
                 </div>
             </div>
         </div>
@@ -255,29 +346,659 @@
 
     <footer class="footer">
         <div class="footer-content">
-            <p class="footer-subtitle">"The plans of the diligent lead to profit as surely as haste leads to poverty." - Proverbs 21:5</p>
-            <div class="footer-links">
-                <a href="/contact" class="footer-link">
-                    <i class="fas fa-envelope"></i> Contact Us
-                </a>
+            <div class="footer-main">
+                <div class="footer-section">
+                    <h4>STEWARD</h4>
+                    <p>Your Financial Control Assistant</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links-list">
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/help">Help & Support</a></li>
+                        <li><a href="/legal/terms">Terms & Conditions</a></li>
+                        <li><a href="/legal/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect With Us</h4>
+                    <div class="social-media-links">
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X">
+                            <i class="fab fa-x-twitter"></i>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-            <p>&copy; 2024 STEWARD. Built with faith and love for Christian families.</p>
+            <div class="footer-bottom">
+                <p>&copy; 2024 STEWARD. Your Financial Control Assistant. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
-    <script>
-        // Simple Aptos font loading
-        document.addEventListener('DOMContentLoaded', function() {
-            // Force font application
-            const subtitle = document.querySelector('.hero-subtitle');
-            if (subtitle) {
-                subtitle.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-                subtitle.style.fontWeight = '400';
+    <style>
+        /* Quotes Slideshow Styles */
+        .quotes-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 80px 20px 0 20px;
+            margin: 0;
+        }
+
+        .quotes-section .container {
+            max-width: 1400px;
+            padding: 0 20px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        @media (min-width: 769px) {
+            .quotes-section {
+                min-height: 100vh;
+                padding: 80px 20px;
+                display: flex;
+                align-items: center;
             }
-            
-            // Load saved credentials
-            loadSavedCredentials();
-        });
+
+            .quotes-section .container {
+                width: 100%;
+                max-width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                flex: 1;
+                padding: 0 40px;
+            }
+
+            .two-column-layout {
+                flex: 1;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                align-items: stretch;
+                gap: 40px;
+                min-height: 70vh;
+                max-width: 100%;
+                width: 100%;
+                margin: 0;
+            }
+
+            .image-slideshow-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .image-slideshow {
+                height: 100%;
+                flex: 1;
+                min-height: 500px;
+            }
+
+            .quotes-slideshow-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .quotes-slideshow {
+                flex: 1;
+                min-height: 500px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .quote-slide {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+
+            .quote-content {
+                padding: 60px 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+        }
+
+        .quotes-heading {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: rgb(1, 35, 15);
+            margin-bottom: 40px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Two Column Layout */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Image Slideshow Styles */
+        .image-slideshow-container {
+            width: 100%;
+            position: relative;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-slideshow {
+            width: 100%;
+            position: relative;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            text-align: center;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slideshow-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            object-fit: contain;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+        }
+
+        .image-indicators {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 769px) {
+            .image-indicators {
+                display: none;
+            }
+        }
+
+        .image-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-indicator.active,
+        .image-indicator:hover {
+            background: #8B4513;
+            transform: scale(1.2);
+        }
+
+        /* Quotes Slideshow Container */
+        .quotes-slideshow-container {
+            width: 100%;
+        }
+
+        .quotes-slideshow {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            min-height: 250px;
+            overflow: hidden;
+        }
+
+        .quote-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .quote-slide.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quote-content {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 100%;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .quote-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #333;
+            font-style: italic;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        @media (min-width: 768px) {
+            .quote-text {
+                font-size: 1.3rem;
+            }
+        }
+
+        .quotes-indicators {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .indicator.active,
+        .indicator:hover {
+            background: #8B4513;
+            transform: scale(1.2);
+        }
+
+        /* Enhanced Features Section */
+        .features {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 80px 20px;
+            margin: 0;
+        }
+
+        .features .container {
+            max-width: 1400px;
+            padding: 0 20px;
+            margin: 0 auto;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .features .section-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: rgb(1, 35, 15);
+            margin-bottom: 40px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: rgb(1, 35, 15);
+            background-clip: unset;
+            position: relative;
+        }
+
+        .features .section-title::after {
+            display: none;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.15),
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                0 2px 5px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform: translateZ(0);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            will-change: transform, box-shadow;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .feature-card:hover {
+            transform: perspective(1000px) rotateX(0deg) translateY(-10px) translateZ(20px);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                0 10px 20px rgba(0, 0, 0, 0.15),
+                0 5px 10px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .feature-icon {
+            background: linear-gradient(135deg, rgb(1, 35, 15) 0%, rgb(1, 50, 25) 100%) !important;
+            width: 80px !important;
+            height: 80px !important;
+            border-radius: 50% !important;
+            margin: 0 auto 1.5rem !important;
+        }
+
+        .feature-icon i {
+            color: white !important;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            position: relative;
+            z-index: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .feature-icon {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background: #1a1a1a !important;
+            color: #f8f9fa;
+        }
+
+        .footer-main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .footer-section:last-child {
+            text-align: right;
+        }
+
+        .footer-section:last-child h4 {
+            text-align: right;
+        }
+
+        .footer-section p {
+            color: rgba(255,255,255,0.8);
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .footer-links-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links-list li {
+            margin-bottom: 8px;
+        }
+
+        .footer-links-list a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .footer-links-list a:hover {
+            color: white;
+        }
+
+        .social-media-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .social-media-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .social-media-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .footer-bottom p {
+            color: rgba(255,255,255,0.7);
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .quotes-section {
+                padding: 40px 20px 0 20px;
+            }
+
+            .two-column-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .image-slideshow {
+                height: 250px;
+            }
+
+            .quotes-heading {
+                font-size: 1rem;
+                margin-bottom: 20px;
+            }
+
+            .quote-slide.active {
+                position: relative;
+            }
+
+            .quote-content {
+                padding: 10px 15px 20px 15px;
+            }
+
+            .quote-text {
+                font-size: 1.2rem;
+                margin-top: -10px;
+            }
+
+
+            .image-indicators {
+                display: none;
+            }
+        }
+    </style>
+
+    <script>
+        // Image Slideshow Functionality
+        let currentImageIndex = 0;
+        const imageSlides = document.querySelectorAll('.image-slide');
+        const imageIndicators = document.querySelectorAll('.image-indicator');
+
+        function showImageSlide(index) {
+            imageSlides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            imageIndicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+        }
+
+        function currentImageSlide(index) {
+            currentImageIndex = index - 1;
+            showImageSlide(currentImageIndex);
+        }
+
+        function nextImageSlide() {
+            currentImageIndex = (currentImageIndex + 1) % imageSlides.length;
+            showImageSlide(currentImageIndex);
+        }
+
+        // Initialize first slide on page load
+        if (imageSlides.length > 0) {
+            showImageSlide(0);
+        }
+
+        // Quotes Slideshow Functionality
+        let currentQuoteIndex = 0;
+        const quotes = document.querySelectorAll('.quote-slide');
+        const indicators = document.querySelectorAll('.indicator');
+
+        function showQuote(index, skipImageCheck = false) {
+            quotes.forEach((quote, i) => {
+                if (i === index) {
+                    quote.classList.add('active');
+                } else {
+                    quote.classList.remove('active');
+                }
+            });
+            indicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+            // Change image whenever text slide changes (skip on initial load)
+            if (!skipImageCheck) {
+                nextImageSlide();
+            }
+        }
+
+        function currentSlide(index) {
+            currentQuoteIndex = index - 1;
+            showQuote(currentQuoteIndex);
+        }
+
+        function nextQuote() {
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+            showQuote(currentQuoteIndex);
+        }
+
+        // Initialize first quote on page load (skip image check on initial load)
+        if (quotes.length > 0) {
+            showQuote(0, true);
+        }
+
+        // Auto-advance quotes every 10 seconds (slower for better readability)
+        setInterval(nextQuote, 10000);
+
 
         // Remember Me functionality (Production Ready)
         function loadSavedCredentials() {
@@ -286,14 +1007,16 @@
             
             // Only load username for security (never store passwords in localStorage)
             if (savedUsername && rememberMe) {
-                document.getElementById('loginUsername').value = savedUsername;
-                document.getElementById('rememberMe').checked = true;
+                const usernameInput = document.getElementById('loginUsername');
+                const rememberCheckbox = document.getElementById('rememberMe');
+                if (usernameInput) usernameInput.value = savedUsername;
+                if (rememberCheckbox) rememberCheckbox.checked = true;
             }
         }
 
         function saveCredentials() {
-            const rememberMe = document.getElementById('rememberMe').checked;
-            const username = document.getElementById('loginUsername').value;
+            const rememberMe = document.getElementById('rememberMe')?.checked;
+            const username = document.getElementById('loginUsername')?.value;
             
             if (rememberMe && username) {
                 // Only save username, never save passwords in localStorage
@@ -305,16 +1028,23 @@
             }
         }
 
-        // Add event listener to login form
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Force font application
+            const subtitle = document.querySelector('.hero-subtitle');
+            if (subtitle) {
+                subtitle.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+                subtitle.style.fontWeight = '400';
+            }
+            
+            // Load saved credentials
+            loadSavedCredentials();
+            
             // Check if we should show the login modal
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('showLogin') === 'true') {
                 showLoginModal();
             }
-            
-            // Login form handler is now in static/js/auth.js
-            // This ensures we use JWT-based authentication consistently
         });
 
         // Get CSRF token
@@ -371,3 +1101,4 @@
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>
 </html>
+

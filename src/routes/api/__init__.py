@@ -2,7 +2,7 @@
 API route blueprints.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from .user import user_bp
 from .categories import categories_bp
 from .transactions import transactions_bp
@@ -12,10 +12,12 @@ from .recurring import recurring_bp
 from .subscriptions import subscriptions_bp
 from ...auth import token_required, get_current_user
 from ...services import EmailService
+from ...extensions import limiter, csrf
+from ...utils.password import validate_password_strength
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-# Register all API blueprints
+# Register all API blueprints first
 api_bp.register_blueprint(user_bp)
 api_bp.register_blueprint(categories_bp)
 api_bp.register_blueprint(transactions_bp)
@@ -24,31 +26,54 @@ api_bp.register_blueprint(accounts_bp)
 api_bp.register_blueprint(recurring_bp)
 api_bp.register_blueprint(subscriptions_bp)
 
+# Exempt all API routes from CSRF protection (they use JWT tokens)
+# Must be done after registering nested blueprints
+csrf.exempt(api_bp)
+
 
 @api_bp.route('/contact', methods=['POST'])
 def submit_contact():
     """Submit contact form."""
+    from marshmallow import ValidationError
+    from ...schemas import ContactFormSchema
+    from ...utils.validation import handle_validation_error
+    
+    schema = ContactFormSchema()
+    
     try:
-        data = request.get_json()
-        name = data.get('name', '').strip()
-        email = data.get('email', '').strip()
-        subject = data.get('subject', '').strip()
-        message = data.get('message', '').strip()
-        
-        if not all([name, email, subject, message]):
-            return jsonify({'message': 'All fields are required'}), 400
-        
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
+    
+    try:
         # Send email
         from flask import current_app
-        success = EmailService.send_contact_email(name, email, subject, message, current_app.config)
+        
+        # Check if email is configured
+        if not current_app.config.get('MAIL_SERVER') or not current_app.config.get('MAIL_USERNAME') or not current_app.config.get('MAIL_PASSWORD'):
+            current_app.logger.error("Email configuration is missing. Please check your .env file.")
+            return jsonify({'message': 'Email service is not configured. Please contact the administrator.'}), 500
+        
+        success = EmailService.send_contact_email(
+            validated_data['name'],
+            validated_data['email'],
+            validated_data['subject'],
+            validated_data['message'],
+            current_app.config
+        )
         
         if success:
             return jsonify({'message': 'Message sent successfully'}), 200
         else:
-            return jsonify({'message': 'Failed to send message. Please try again later.'}), 500
+            current_app.logger.error("Failed to send contact email - check server logs for details")
+            return jsonify({'message': 'Failed to send message. Please check your email configuration or try again later.'}), 500
             
     except Exception as e:
-        return jsonify({'message': 'An error occurred while sending the message'}), 500
+        from flask import current_app
+        current_app.logger.error(f"Error sending contact email: {str(e)}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({'message': f'An error occurred while sending the message: {str(e)}'}), 500
 
 
 @api_bp.route('/validate-email', methods=['POST'])
@@ -61,10 +86,9 @@ def validate_email():
         if not email:
             return jsonify({'message': 'Email is required'}), 400
         
-        from ...models import User
-        user = User.query.filter_by(email=email).first()
-        
-        return jsonify({'available': user is None}), 200
+        # Always return the same response to prevent email enumeration
+        # Don't reveal whether email exists or not
+        return jsonify({'available': True, 'message': 'Email validation complete'}), 200
         
     except Exception as e:
         return jsonify({'message': 'Error validating email'}), 500
@@ -90,43 +114,32 @@ def validate_username():
 
 
 @api_bp.route('/onboarding/complete', methods=['POST'])
+@limiter.limit("3 per hour")
 def complete_onboarding():
     """Complete the onboarding process and create user account."""
+    from marshmallow import ValidationError
+    from ...schemas import OnboardingSchema
+    from ...utils.validation import handle_validation_error
+    
+    schema = OnboardingSchema()
+    
     try:
-        data = request.get_json()
-        
-        # Debug: Log received data
-        print("=== ONBOARDING DATA RECEIVED ===")
-        print("Categories:", data.get('categories', []))
-        print("Subcategories:", data.get('subcategories', []))
-        print("Currency:", data.get('currency'))
-        print("First name:", data.get('firstName'), "or", data.get('first_name'))
-        print("Last name:", data.get('lastName'), "or", data.get('last_name'))
-        print("Username:", data.get('username'))
-        print("Email:", data.get('email'))
-        print("Password present:", bool(data.get('password')))
-        print("Full data keys:", list(data.keys()))
-        print("================================")
-        
-        # Extract form data
-        username = (data.get('username', '') or '').strip()
-        email = (data.get('email', '') or '').strip().lower()
-        password = data.get('password', '') or ''
-        # Handle both frontend (camelCase) and backend (snake_case) field names
-        first_name = (data.get('firstName') or data.get('first_name') or '').strip()
-        last_name = (data.get('lastName') or data.get('last_name') or '').strip()
-        country = (data.get('country', '') or '').strip()
-        preferred_name = (data.get('preferredName') or data.get('preferred_name') or '').strip()
-        referral_source = (data.get('referralSource') or data.get('referral_source') or '').strip()
-        referral_details = (data.get('referralDetailsText') or data.get('referral_details') or '').strip()
-        currency = data.get('currency', 'USD')  # Extract currency from data
-        
-        # Validation (username is optional, will be auto-generated)
-        if not all([email, password, first_name, last_name]):
-            return jsonify({'message': 'Email, password, first name, and last name are required'}), 400
-        
-        if len(password) < 6:
-            return jsonify({'message': 'Password must be at least 6 characters long'}), 400
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
+    
+    try:
+        # Extract validated data
+        username = validated_data.get('username')
+        email = validated_data['email']
+        password = validated_data['password']
+        first_name = validated_data['first_name']
+        last_name = validated_data['last_name']
+        country = validated_data.get('country')
+        preferred_name = validated_data.get('preferred_name')
+        referral_source = validated_data.get('referral_source')
+        referral_details = validated_data.get('referral_details')
+        currency = validated_data.get('currency', 'USD')
         
         # Auto-generate username if not provided
         if not username:
@@ -144,6 +157,7 @@ def complete_onboarding():
         # Create user
         from ...services import UserService, AuthService
         from ...extensions import db
+        from datetime import datetime
         
         user, error = UserService.create_user(
             username=username,
@@ -151,21 +165,32 @@ def complete_onboarding():
             password=password,
             first_name=first_name,
             last_name=last_name,
-            country=country or None,
-            preferred_name=preferred_name or None,
-            referral_source=referral_source or None,
-            referral_details=referral_details or None,
-            currency=currency  # Pass currency to user creation
+            country=country,
+            preferred_name=preferred_name,
+            referral_source=referral_source,
+            referral_details=referral_details,
+            currency=currency
         )
+        
+        # Store legal acceptance (MANDATORY - validated by schema)
+        if user:
+            user.terms_accepted = True
+            user.privacy_policy_accepted = True
+            user.terms_accepted_at = datetime.utcnow()
+            user.privacy_policy_accepted_at = datetime.utcnow()
+            # Store version identifiers (you can update these when documents change)
+            user.terms_version = '1.0'  # Update when Terms change
+            user.privacy_policy_version = '1.0'  # Update when Privacy Policy changes
+            db.session.commit()
         
         if error:
             return jsonify({'message': error}), 400
         
         # Create categories and subcategories based on user selection
-        categories = data.get('categories', [])
-        subcategories = data.get('subcategories', [])
-        custom_category_names = data.get('custom_category_names', {})
-        custom_subcategory_names = data.get('custom_subcategory_names', {})
+        categories = validated_data.get('categories', [])
+        subcategories = validated_data.get('subcategories', [])
+        custom_category_names = validated_data.get('custom_category_names', {})
+        custom_subcategory_names = validated_data.get('custom_subcategory_names', {})
         
         try:
             if categories or subcategories:
@@ -179,10 +204,11 @@ def complete_onboarding():
                 )
         except Exception as category_error:
             # If category creation fails, rollback user creation
-            print(f"Category creation failed: {str(category_error)}")
+            from flask import current_app
+            current_app.logger.error(f"Category creation failed: {str(category_error)}")
             db.session.delete(user)
             db.session.commit()
-            return jsonify({'message': f'Error creating categories: {str(category_error)}'}), 500
+            return jsonify({'message': 'Error creating categories. Please try again.'}), 500
         
         # Start trial subscription (optional, based on config)
         subscription = None
@@ -197,7 +223,7 @@ def complete_onboarding():
                 from ...services.payfast_service import PayFastService
                 
                 SubscriptionService.seed_default_plans(current_app.config.get('DEFAULT_CURRENCY', 'ZAR'))
-                plan_code = (data.get('plan') or 'monthly').lower()
+                plan_code = validated_data.get('plan', 'monthly').lower()
                 subscription = SubscriptionService.start_trial(user, plan_code, current_app.config.get('TRIAL_DAYS', 30))
                 
                 # Send trial started email
@@ -228,7 +254,8 @@ def complete_onboarding():
                 )
                 payfast_payload['test_mode'] = 'true' if current_app.config.get('PAYFAST_TEST_MODE', True) else 'false'
         except Exception as sub_err:
-            print(f"Subscription trial setup failed: {str(sub_err)}")
+            from flask import current_app
+            current_app.logger.error(f"Subscription trial setup failed: {str(sub_err)}")
 
         # Create email verification token
         verification_token = AuthService.create_email_verification_token(user)
@@ -255,13 +282,13 @@ def complete_onboarding():
         return jsonify(response_data), 201
         
     except Exception as e:
-        print(f"Onboarding error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'message': f'Error creating account: {str(e)}'}), 500
+        from flask import current_app
+        current_app.logger.error(f"Onboarding error: {str(e)}", exc_info=True)
+        return jsonify({'message': 'Error creating account. Please try again.'}), 500
 
 
 @api_bp.route('/resend-verification', methods=['POST'])
+@limiter.limit("3 per hour")
 def resend_verification():
     """Resend verification email."""
     try:
@@ -294,6 +321,7 @@ def resend_verification():
 
 
 @api_bp.route('/budget/balance-check', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 def check_budget_balance(current_user):
     """Check if total income is sufficient for total allocated budget."""
@@ -334,6 +362,7 @@ def check_budget_balance(current_user):
 
 
 @api_bp.route('/budget/overspending-check', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 def check_overspending(current_user):
     """Check for subcategories where spending exceeds allocation."""

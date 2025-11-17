@@ -112,6 +112,15 @@
                         <input type="number" id="recurringAllocationAmount" name="allocated_amount" step="0.01" min="0.01" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="recurringAllocationPeriodType">Period Type</label>
+                    <select id="recurringAllocationPeriodType" name="period_type" required>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Add Recurring Allocation</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addRecurringAllocationModal')">Cancel</button>
@@ -244,6 +253,7 @@
 let categories = [];
 let currentBudget = null;
 let overAllocationTimeout = null;
+let saveAllocationsTimeout = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize loading states
@@ -252,6 +262,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load data immediately, currency will be loaded globally
     loadBudgetData();
     loadCategories();
+    
+    // Safety timeout - hide all loading states after 10 seconds even if requests fail
+    setTimeout(function() {
+        LoadingManager.hideMultiple(['budgetSummary', 'categoriesGrid', 'available-stat', 'allocated-stat', 'spent-stat']);
+    }, 10000);
     
     // Also listen for currency loaded event
     window.addEventListener('currencyLoaded', function(event) {
@@ -288,9 +303,33 @@ function loadBudgetData() {
             'Authorization': 'Bearer ' + getToken()
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            // If 404, no active budget - that's okay, just set to null
+            if (response.status === 404) {
+                currentBudget = null;
+                updateBudgetSummary();
+                LoadingManager.hide('budgetSummary');
+                return null; // Return null to prevent further processing
+            }
+            // For other errors, try to parse JSON error, otherwise throw
+            return response.text().then(text => {
+                try {
+                    const err = JSON.parse(text);
+                    return Promise.reject(err);
+                } catch {
+                    return Promise.reject(new Error(`HTTP ${response.status}: ${response.statusText}`));
+                }
+            });
+        }
+        return response.json();
+    })
     .then(data => {
-        currentBudget = data;
+        if (data) {
+            currentBudget = data;
+        } else {
+            currentBudget = null;
+        }
         updateBudgetSummary();
         
         // Hide budget summary loading state
@@ -300,39 +339,63 @@ function loadBudgetData() {
         console.error('Error loading budget:', error);
         // Hide loading state even on error
         LoadingManager.hide('budgetSummary');
+        // Set currentBudget to null so page can still render
+        currentBudget = null;
+        updateBudgetSummary();
     });
 }
 
 function updateBudgetSummary() {
-    if (!currentBudget) return;
-    
     // Calculate total allocated and spent from categories if available
     let totalAllocated = 0;
     let totalSpent = 0;
     
-    if (categories && categories.length > 0) {
+    if (categories && Array.isArray(categories) && categories.length > 0) {
         categories.forEach(category => {
-            category.subcategories.forEach(subcategory => {
-                totalAllocated += subcategory.allocated || 0;
-                totalSpent += subcategory.spent || 0;
-            });
+            if (category.subcategories && Array.isArray(category.subcategories)) {
+                category.subcategories.forEach(subcategory => {
+                    totalAllocated += subcategory.allocated || 0;
+                    totalSpent += Math.abs(subcategory.spent || 0);
+                });
+            }
         });
     }
     
     // Calculate available to allocate from budget data
-    const totalIncome = currentBudget.total_income || 0;
-    const balanceBroughtForward = currentBudget.balance_brought_forward || 0;
+    let totalIncome = 0;
+    let balanceBroughtForward = 0;
+    
+    if (currentBudget) {
+        totalIncome = currentBudget.total_income || 0;
+        balanceBroughtForward = currentBudget.balance_brought_forward || 0;
+    }
+    
     const totalAvailable = totalIncome + balanceBroughtForward;
     const availableToAllocate = totalAvailable - totalAllocated;
     
-    document.getElementById('availableToAllocate').textContent = formatCurrency(availableToAllocate, userCurrency);
-    document.getElementById('totalAllocated').textContent = formatCurrency(totalAllocated, userCurrency);
-    document.getElementById('totalSpent').textContent = formatCurrency(totalSpent, userCurrency);
+    // Update UI elements safely
+    const availableEl = document.getElementById('availableToAllocate');
+    const allocatedEl = document.getElementById('totalAllocated');
+    const spentEl = document.getElementById('totalSpent');
     
-    // Only hide loading states for individual stats if we have both budget and categories data
-    if (currentBudget && categories && categories.length > 0) {
-        LoadingManager.hideMultiple(['available-stat', 'allocated-stat', 'spent-stat']);
+    if (availableEl) {
+        availableEl.textContent = formatCurrency(availableToAllocate, userCurrency);
     }
+    if (allocatedEl) {
+        allocatedEl.textContent = formatCurrency(totalAllocated, userCurrency);
+    }
+    if (spentEl) {
+        spentEl.textContent = formatCurrency(totalSpent, userCurrency);
+    }
+    
+    // Update sticky badge
+    const stickyBadge = document.getElementById('stickyAvailableAmount');
+    if (stickyBadge) {
+        stickyBadge.textContent = formatCurrency(availableToAllocate, userCurrency);
+    }
+    
+    // Always hide loading states - even if no budget, show zeros
+    LoadingManager.hideMultiple(['available-stat', 'allocated-stat', 'spent-stat']);
 }
 
 function toggleBudgetSummary() {
@@ -431,27 +494,39 @@ function loadCategories() {
             'Authorization': 'Bearer ' + getToken()
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
     .then(data => {
-        categories = data;
-        
-        // Ensure all subcategories have proper allocated values
-        categories.forEach(category => {
-            category.subcategories.forEach(sub => {
-                if (sub.allocated === undefined || sub.allocated === null) {
-                    sub.allocated = 0;
-                }
-                if (sub.spent === undefined || sub.spent === null) {
-                    sub.spent = 0;
-                }
-                if (sub.balance === undefined || sub.balance === null) {
-                    sub.balance = sub.allocated - sub.spent;
+        if (data && Array.isArray(data)) {
+            categories = data;
+            
+            // Ensure all subcategories have proper allocated values
+            categories.forEach(category => {
+                if (category.subcategories && Array.isArray(category.subcategories)) {
+                    category.subcategories.forEach(sub => {
+                        if (sub.allocated === undefined || sub.allocated === null) {
+                            sub.allocated = 0;
+                        }
+                        if (sub.spent === undefined || sub.spent === null) {
+                            sub.spent = 0;
+                        }
+                        if (sub.balance === undefined || sub.balance === null) {
+                            sub.balance = sub.allocated - sub.spent;
+                        }
+                    });
                 }
             });
-        });
-        
-        renderCategories();
-        updateBudgetSummary(); // Update summary after loading categories
+            
+            renderCategories();
+            updateBudgetSummary(); // Update summary after loading categories
+        } else {
+            categories = [];
+            renderCategories();
+        }
         
         // Hide categories grid loading state
         LoadingManager.hide('categoriesGrid');
@@ -460,15 +535,92 @@ function loadCategories() {
         console.error('Error loading categories:', error);
         // Hide loading state even on error
         LoadingManager.hide('categoriesGrid');
+        // Set empty categories so page can still render
+        categories = [];
+        renderCategories();
     });
+}
+
+function shouldShowRecurringSymbol(subcategory) {
+    // Only show recurring symbol if:
+    // 1. It's a recurring allocation
+    // 2. The recurring allocation's period_type matches the current budget's period_type
+    if (!subcategory.is_recurring_allocation) {
+        return false;
+    }
+    
+    // If we have a current budget with period info, check if period types match
+    if (currentBudget && currentBudget.period && currentBudget.period.period_type) {
+        const budgetPeriodType = (currentBudget.period.period_type || '').toLowerCase().trim();
+        const recurringPeriodType = (subcategory.recurring_period_type || 'monthly').toLowerCase().trim();
+        
+        // Default to 'monthly' if recurring_period_type is null/undefined (for backward compatibility)
+        // Only show symbol if period types match
+        return recurringPeriodType === budgetPeriodType;
+    }
+    
+    // If no budget info, show symbol (backward compatibility)
+    return true;
 }
 
 function renderCategories() {
     const grid = document.getElementById('categoriesGrid');
+    if (!grid) return;
+    
+    // Preserve current allocation values from DOM before re-rendering
+    const currentAllocations = new Map();
+    document.querySelectorAll('.allocation-amount').forEach(input => {
+        const subcategoryId = parseInt(input.dataset.subcategoryId);
+        const value = parseFloat(input.value) || 0;
+        if (subcategoryId && !isNaN(value)) {
+            currentAllocations.set(subcategoryId, value);
+        }
+    });
+    
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><p>No categories found. Add a category to get started.</p></div>';
+        return;
+    }
+    
+    // Restore allocation values from DOM if they exist
+    // Also merge budget allocation data (including recurring info) with subcategories
+    const budgetAllocationsMap = new Map();
+    if (currentBudget && currentBudget.allocations && Array.isArray(currentBudget.allocations)) {
+        currentBudget.allocations.forEach(alloc => {
+            if (alloc.subcategory && alloc.subcategory.id) {
+                budgetAllocationsMap.set(alloc.subcategory.id, {
+                    allocated_amount: alloc.allocated_amount,
+                    is_recurring_allocation: alloc.is_recurring_allocation || false,
+                    recurring_period_type: alloc.recurring_period_type || null
+                });
+            }
+        });
+    }
+    
+    categories.forEach(category => {
+        category.subcategories.forEach(sub => {
+            if (currentAllocations.has(sub.id)) {
+                sub.allocated = currentAllocations.get(sub.id);
+            }
+            // Merge budget allocation data
+            if (budgetAllocationsMap.has(sub.id)) {
+                const allocData = budgetAllocationsMap.get(sub.id);
+                sub.is_recurring_allocation = allocData.is_recurring_allocation;
+                // Default to 'monthly' if recurring_period_type is null/undefined (for backward compatibility)
+                sub.recurring_period_type = allocData.recurring_period_type || 'monthly';
+            } else {
+                // Ensure these properties exist even if not in budget
+                sub.is_recurring_allocation = false;
+                sub.recurring_period_type = null;
+            }
+        });
+    });
     
     grid.innerHTML = categories.map(category => {
-        const categoryAllocated = category.subcategories.reduce((sum, sub) => sum + sub.allocated, 0);
-        const categorySpent = category.subcategories.reduce((sum, sub) => sum + sub.spent, 0);
+        // Ensure subcategories exists and is an array
+        const subcategories = (category.subcategories && Array.isArray(category.subcategories)) ? category.subcategories : [];
+        const categoryAllocated = subcategories.reduce((sum, sub) => sum + (sub.allocated || 0), 0);
+        const categorySpent = subcategories.reduce((sum, sub) => sum + Math.abs(sub.spent || 0), 0);
         const categoryBalance = categoryAllocated - categorySpent;
         
         return `
@@ -501,12 +653,12 @@ function renderCategories() {
                 </div>
                 
                 <div class="subcategories">
-                    ${category.subcategories.map(sub => `
+                    ${subcategories.map(sub => `
                         <div class="subcategory-row">
                             <div class="subcategory-info">
                                 <span class="subcategory-name">
                                     ${sub.name}
-                                    ${sub.is_recurring_allocation ? '<i class="fas fa-sync-alt" style="color: #28a745; margin-left: 8px;" title="Recurring Allocation"></i>' : ''}
+                                    ${shouldShowRecurringSymbol(sub) ? '<i class="fas fa-sync-alt" style="color: #28a745; margin-left: 8px;" title="Recurring Allocation"></i>' : ''}
                                 </span>
                                 <div class="subcategory-actions">
                                     <button class="btn btn-xs btn-secondary" onclick="showEditSubcategoryModal(${sub.id}, '${sub.name}')" title="Edit">
@@ -626,9 +778,25 @@ function updateAllocation(e) {
         updateStickyBadge();
     }
     
-    // Only save on blur to avoid excessive API calls
+    // Save allocations with debouncing to avoid excessive API calls
+    // Clear any existing timeout
+    if (saveAllocationsTimeout) {
+        clearTimeout(saveAllocationsTimeout);
+    }
+    
+    // Save immediately on blur, or after 1 second of no typing
     if (e.type === 'blur') {
         saveAllocations();
+    } else {
+        // Debounce: save after 1 second of inactivity
+        saveAllocations.silent = true; // Don't show notification on auto-save
+        saveAllocationsTimeout = setTimeout(() => {
+            saveAllocations().catch(() => {
+                // Silently handle errors during auto-save
+            }).finally(() => {
+                saveAllocations.silent = false; // Reset flag
+            });
+        }, 1000);
     }
 }
 
@@ -700,6 +868,25 @@ function updateTotals() {
 }
 
 function saveAllocations() {
+    // First, collect current values from DOM inputs (they may have been changed but not saved to categories array)
+    const currentAllocations = new Map();
+    document.querySelectorAll('.allocation-amount').forEach(input => {
+        const subcategoryId = parseInt(input.dataset.subcategoryId);
+        const value = parseFloat(input.value) || 0;
+        if (subcategoryId && !isNaN(value)) {
+            currentAllocations.set(subcategoryId, value);
+        }
+    });
+    
+    // Update the categories array with current DOM values
+    categories.forEach(category => {
+        category.subcategories.forEach(sub => {
+            if (currentAllocations.has(sub.id)) {
+                sub.allocated = currentAllocations.get(sub.id);
+            }
+        });
+    });
+    
     const allocations = [];
     categories.forEach(category => {
         category.subcategories.forEach(sub => {
@@ -708,14 +895,13 @@ function saveAllocations() {
             if (allocatedAmount > 0) {
                 allocations.push({
                     subcategory_id: sub.id,
-                    allocated_amount: allocatedAmount
+                    allocated: allocatedAmount
                 });
             }
         });
     });
     
-    
-    fetch('/api/budget/allocations', {
+    return fetch('/api/budget/allocations', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -723,22 +909,46 @@ function saveAllocations() {
         },
         body: JSON.stringify({ allocations })
     })
-    .then(response => response.json())
+    .then(response => {
+        // Check if response is ok before parsing JSON
+        if (!response.ok) {
+            return response.text().then(text => {
+                let errorData;
+                try {
+                    errorData = JSON.parse(text);
+                } catch {
+                    errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+                }
+                throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.message && data.message.includes('cannot exceed')) {
             showNotification(data.message, 'error');
+            throw new Error(data.message);
         } else {
-            showNotification('Allocations saved successfully!', 'success');
+            // Only show success notification if not called silently
+            if (!saveAllocations.silent) {
+                showNotification('Allocations saved successfully!', 'success');
+            }
             loadBudgetData(); // Refresh budget data
             // Dispatch event to refresh dashboard
             window.dispatchEvent(new CustomEvent('budgetDataChanged', {
                 detail: { type: 'allocations_updated' }
             }));
+            return data;
         }
     })
     .catch(error => {
         console.error('Error saving allocations:', error);
-        showNotification('Error saving allocations. Please try again.', 'error');
+        console.error('Error details:', error.message, error.stack);
+        if (!saveAllocations.silent) {
+            const errorMessage = error.message || 'Error saving allocations. Please try again.';
+            showNotification(errorMessage, 'error');
+        }
+        throw error;
     });
 }
 
@@ -791,20 +1001,43 @@ function deleteCategory(categoryId) {
 
 function deleteSubcategory(subcategoryId) {
     if (confirm('Are you sure you want to delete this subcategory?')) {
-        fetch(`/api/categories/subcategories/${subcategoryId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': 'Bearer ' + getToken()
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            showNotification('Subcategory deleted successfully!', 'success');
-            loadCategories();
-        })
-        .catch(error => {
-            console.error('Error deleting subcategory:', error);
-            showNotification('Error deleting subcategory. Please try again.', 'error');
+        // Save current allocations before reloading (silently)
+        saveAllocations.silent = true;
+        saveAllocations().then(() => {
+            saveAllocations.silent = false; // Reset flag
+            fetch(`/api/categories/subcategories/${subcategoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Subcategory deleted successfully!', 'success');
+                loadCategories();
+            })
+            .catch(error => {
+                console.error('Error deleting subcategory:', error);
+                showNotification('Error deleting subcategory. Please try again.', 'error');
+            });
+        }).catch(() => {
+            saveAllocations.silent = false; // Reset flag
+            // If save fails, still proceed with deletion but warn user
+            fetch(`/api/categories/subcategories/${subcategoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Subcategory deleted. Note: Some allocation changes may have been lost.', 'warning');
+                loadCategories();
+            })
+            .catch(error => {
+                console.error('Error deleting subcategory:', error);
+                showNotification('Error deleting subcategory. Please try again.', 'error');
+            });
         });
     }
 }
@@ -847,27 +1080,57 @@ function handleAddSubcategory(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     
-    fetch('/api/categories/subcategories', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + getToken()
-        },
-        body: JSON.stringify({
-            name: formData.get('name'),
-            category_id: parseInt(formData.get('category_id'))
+    // Save current allocations before reloading (silently)
+    saveAllocations.silent = true;
+    saveAllocations().then(() => {
+        saveAllocations.silent = false; // Reset flag
+        fetch('/api/categories/subcategories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify({
+                name: formData.get('name'),
+                category_id: parseInt(formData.get('category_id'))
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        showNotification('Subcategory added successfully!', 'success');
-        closeModal('addSubcategoryModal');
-        e.target.reset();
-        loadCategories();
-    })
-    .catch(error => {
-        console.error('Error adding subcategory:', error);
-        showNotification('Error adding subcategory. Please try again.', 'error');
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Subcategory added successfully!', 'success');
+            closeModal('addSubcategoryModal');
+            e.target.reset();
+            loadCategories();
+        })
+        .catch(error => {
+            console.error('Error adding subcategory:', error);
+            showNotification('Error adding subcategory. Please try again.', 'error');
+        });
+    }).catch(() => {
+        saveAllocations.silent = false; // Reset flag
+        // If save fails, still proceed with adding but warn user
+        fetch('/api/categories/subcategories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify({
+                name: formData.get('name'),
+                category_id: parseInt(formData.get('category_id'))
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Subcategory added. Note: Some allocation changes may have been lost.', 'warning');
+            closeModal('addSubcategoryModal');
+            e.target.reset();
+            loadCategories();
+        })
+        .catch(error => {
+            console.error('Error adding subcategory:', error);
+            showNotification('Error adding subcategory. Please try again.', 'error');
+        });
     });
 }
 
@@ -1000,9 +1263,10 @@ function showAddRecurringAllocationModal() {
     populateSubcategoryDropdown();
 }
 
-function showEditRecurringAllocationModal(allocationId, allocatedAmount) {
+function showEditRecurringAllocationModal(allocationId, allocatedAmount, periodType) {
     document.getElementById('editRecurringAllocationId').value = allocationId;
     document.getElementById('editRecurringAllocationAmount').value = allocatedAmount;
+    document.getElementById('editRecurringAllocationPeriodType').value = periodType || 'monthly';
     document.getElementById('editRecurringAllocationModal').style.display = 'block';
 }
 
@@ -1052,15 +1316,27 @@ function renderRecurringAllocations(allocations) {
         return;
     }
     
+    const periodTypeLabels = {
+        'monthly': 'Monthly',
+        'quarterly': 'Quarterly',
+        'yearly': 'Yearly',
+        'custom': 'Custom'
+    };
+    
     container.innerHTML = allocations.map(allocation => `
         <div class="recurring-allocation-item">
             <div class="allocation-info">
                 <div class="allocation-category">${allocation.category_name}</div>
                 <div class="allocation-subcategory">${allocation.subcategory_name}</div>
                 <div class="allocation-amount">${formatCurrency(allocation.allocated_amount, userCurrency)}</div>
+                <div class="allocation-period-type">
+                    <span class="period-type-badge period-type-${allocation.period_type}">
+                        ${periodTypeLabels[allocation.period_type] || allocation.period_type}
+                    </span>
+                </div>
             </div>
             <div class="allocation-actions">
-                <button class="btn btn-secondary" onclick="showEditRecurringAllocationModal(${allocation.id}, ${allocation.allocated_amount})" title="Edit">
+                <button class="btn btn-secondary" onclick="showEditRecurringAllocationModal(${allocation.id}, ${allocation.allocated_amount}, '${allocation.period_type}')" title="Edit">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-danger" onclick="deleteRecurringAllocation(${allocation.id})" title="Delete">
@@ -1091,7 +1367,8 @@ function handleAddRecurringAllocation(e) {
     const formData = new FormData(e.target);
     const data = {
         subcategory_id: parseInt(formData.get('subcategory_id')),
-        allocated_amount: parseFloat(formData.get('allocated_amount'))
+        allocated_amount: parseFloat(formData.get('allocated_amount')),
+        period_type: formData.get('period_type') || 'monthly'
     };
     
     fetch('/api/recurring-allocations', {
@@ -1121,7 +1398,8 @@ function handleEditRecurringAllocation(e) {
     const formData = new FormData(e.target);
     const allocationId = formData.get('allocation_id');
     const data = {
-        allocated_amount: parseFloat(formData.get('allocated_amount'))
+        allocated_amount: parseFloat(formData.get('allocated_amount')),
+        period_type: formData.get('period_type') || 'monthly'
     };
     
     fetch(`/api/recurring-allocations/${allocationId}`, {

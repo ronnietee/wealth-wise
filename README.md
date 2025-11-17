@@ -1,10 +1,10 @@
-# STEWARD - Christian Family Budgeting Tool
+# STEWARD - Financial Control Assistant
 
-A comprehensive, mobile-friendly budgeting application designed specifically for Christian families to steward their finances with wisdom and faith.
+A comprehensive, mobile-friendly budgeting application designed to help you take full control of your finances with smart tracking and planning.
 
 ## Features
 
-- **Faith-Based Categories**: Pre-configured with Christian values including tithe, offering, and social responsibility
+- **Flexible Categories**: Pre-configured categories for giving, savings, and essential expenses
 - **Budget Periods**: Create and manage monthly or custom budget periods
 - **Recurring Income & Allocations**: Set up recurring income sources and budget allocations that auto-populate
 - **Transaction Tracking**: Record income and expenses with detailed categorization
@@ -59,27 +59,24 @@ A comprehensive, mobile-friendly budgeting application designed specifically for
 
 4. **Set up environment variables**
    
-   Create a `.env` file in the root directory:
-   ```env
-   # Security
-   SECRET_KEY=your-secret-key-change-in-production
-   JWT_SECRET_KEY=your-jwt-secret-key
-   
-   # Database
-   DATABASE_URL=sqlite:///wealthwise.db
-   
-   # Flask Environment
-   FLASK_ENV=development
-   FLASK_DEBUG=True
-   
-   # Email Configuration (optional, for email verification)
-   MAIL_SERVER=smtp.gmail.com
-   MAIL_PORT=587
-   MAIL_USE_TLS=true
-   MAIL_USERNAME=your-email@gmail.com
-   MAIL_PASSWORD=your-app-password
-   MAIL_DEFAULT_SENDER=noreply@steward.com
+   Copy `env.example` to `.env` and update with your values:
+   ```bash
+   cp env.example .env
    ```
+   
+   **Generate admin password hash:**
+   ```bash
+   python generate_admin_password.py
+   ```
+   This will prompt you for a password and generate a secure hash. Copy the output and add it to your `.env` file as `ADMIN_PASSWORD_HASH`.
+   
+   **Required variables:**
+   - `SECRET_KEY` - Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+   - `JWT_SECRET_KEY` - Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+   - `ADMIN_PASSWORD_HASH` - Generate with: `python generate_admin_password.py`
+   - `ADMIN_USERNAME` - Admin username (default: `admin`)
+   
+   See `env.example` for all available configuration options.
 
 5. **Initialize the database**
    ```bash
@@ -212,6 +209,16 @@ wealth-wise/
 ├── instance/                    # Database files
 └── tests/                       # Test files (if any)
 ```
+
+## Documentation
+
+For comprehensive documentation, see the [docs/](docs/) directory:
+
+- **[Security Documentation](docs/SECURITY.md)** - Security implementation, audit, and testing
+- **[Input Validation](docs/VALIDATION.md)** - Marshmallow schema validation guide
+- **[Database Documentation](docs/database/README.md)** - Database structure and optimization
+- **[Billing Documentation](docs/billing/README.md)** - Payment system and admin setup
+- **[Legal Documents](docs/legal/)** - Terms and conditions, privacy policy
 
 ## API Documentation
 
@@ -375,7 +382,7 @@ For support or questions:
 
 ## Inspiration
 
-Built with faith and love for Christian families, inspired by the principles of faithful stewardship found in Matthew 25:14-30 and Proverbs 21:5.
+Built to empower individuals and families to take control of their financial future through smart budgeting and expense tracking.
 
 ---
 

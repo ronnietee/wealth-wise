@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}STEWARD - Legal Documents{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <style>
+        .legal-document {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+            line-height: 1.6;
+            color: #333;
+            font-size: 11px;
+        }
+        .legal-document h1 {
+            color: #8B4513;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #8B4513;
+            padding-bottom: 15px;
+        }
+        .legal-document h2 {
+            color: #1e293b;
+            font-size: 1.2rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .legal-document h3 {
+            color: #334155;
+            font-size: 1rem;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+        .legal-document p {
+            margin-bottom: 15px;
+            text-align: justify;
+            font-size: 11px;
+        }
+        .legal-document ul, .legal-document ol {
+            margin-bottom: 15px;
+            padding-left: 30px;
+        }
+        .legal-document li {
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        .legal-document strong {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .legal-document .last-updated {
+            color: #64748b;
+            font-style: italic;
+            margin-bottom: 30px;
+        }
+        .legal-document .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #8B4513;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .legal-document .back-link:hover {
+            text-decoration: underline;
+        }
+        .legal-document .section {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/" class="nav-logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="STEWARD Logo" class="logo-img">
+                    <span class="logo-text">STEWARD</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="legal-document">
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 STEWARD. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+

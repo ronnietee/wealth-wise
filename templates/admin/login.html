@@ -49,7 +49,17 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
             body: JSON.stringify({ username, password })
         });
         
-        const data = await response.json();
+        let data;
+        const responseText = await response.text();
+        try {
+            data = JSON.parse(responseText);
+        } catch (jsonError) {
+            // If response is not JSON, show the text response
+            console.error('Admin login error - Non-JSON response:', responseText);
+            errorDiv.textContent = `Server error: ${response.status} ${response.statusText}. ${responseText.substring(0, 100)}`;
+            errorDiv.style.display = 'block';
+            return;
+        }
         
         if (response.ok) {
             // Store token for API calls
@@ -59,11 +69,12 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
             // Redirect to dashboard
             window.location.href = '/admin/dashboard';
         } else {
-            errorDiv.textContent = data.message || 'Login failed';
+            errorDiv.textContent = data.message || `Login failed: ${response.status} ${response.statusText}`;
             errorDiv.style.display = 'block';
         }
     } catch (error) {
-        errorDiv.textContent = 'An error occurred. Please try again.';
+        console.error('Admin login error:', error);
+        errorDiv.textContent = `An error occurred: ${error.message || 'Please try again.'}`;
         errorDiv.style.display = 'block';
     }
 });

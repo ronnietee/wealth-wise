@@ -4,6 +4,7 @@ Main routes for static pages.
 
 from flask import Blueprint, render_template, send_file, request, jsonify
 from ..auth import get_current_user
+import os
 
 main_bp = Blueprint('main', __name__)
 
@@ -134,3 +135,15 @@ def payfast_cancel():
     # Otherwise redirect to settings
     flash('Payment was cancelled. You can try again from your subscription settings.', 'warning')
     return redirect(url_for('main.settings'))
+
+
+@main_bp.route('/legal/terms')
+def terms_and_conditions():
+    """Terms and Conditions page."""
+    return render_template('legal/terms.html')
+
+
+@main_bp.route('/legal/privacy')
+def privacy_policy():
+    """Privacy Policy page."""
+    return render_template('legal/privacy.html')

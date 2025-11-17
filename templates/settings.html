@@ -171,8 +171,7 @@
             <div class="settings-card-body">
                 <div class="about-content">
                     <p><strong>Version:</strong> 1.0.0</p>
-                    <p><strong>Built with:</strong> Faith and love for Christian families</p>
-                    <p class="verse">"The plans of the diligent lead to profit as surely as haste leads to poverty." - Proverbs 21:5</p>
+                    <p><strong>Built with:</strong> Care and attention to detail</p>
                 </div>
             </div>
         </div>
@@ -200,7 +199,7 @@
                 </div>
                 <div class="form-group">
                     <label for="newPassword">New Password</label>
-                    <input type="password" id="newPassword" required placeholder="Enter new password (8+ chars, mixed case, numbers, symbols)">
+                    <input type="password" id="newPassword" required placeholder="Enter new password (12+ chars, mixed case, numbers, symbols)">
                     <div class="password-requirements" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #8B4513; border-radius: 10px; padding: 15px; margin-top: 10px; font-size: 0.9rem; box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);">
                         <div style="font-weight: 700; margin-bottom: 12px; color: #8B4513; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-shield-alt" style="color: #8B4513;"></i>
@@ -209,7 +208,7 @@
                         <ul style="margin: 0; padding-left: 0; color: #495057; font-size: 0.85rem; line-height: 1.6; list-style: none;">
                             <li id="req-length" style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-times-circle" style="color: #dc3545;"></i>
-                                <strong>At least 8 characters long</strong>
+                                <strong>At least 12 characters long</strong>
                             </li>
                             <li id="req-uppercase" style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-times-circle" style="color: #dc3545;"></i>
@@ -567,8 +566,11 @@ function updatePassword() {
         return;
     }
     
-    if (!validatePassword(newPassword)) {
-        showNotification('Password must be at least 8 characters long and contain uppercase letters, lowercase letters, numbers, and special characters.', 'error');
+    // Detailed password validation
+    const passwordValidation = validatePasswordDetailed(newPassword);
+    if (!passwordValidation.valid) {
+        showNotification(passwordValidation.message, 'error');
+        document.getElementById('newPassword').focus();
         return;
     }
     
@@ -590,22 +592,20 @@ function updatePassword() {
         })
     })
     .then(response => {
-        return response.json().then(data => ({
-            ok: response.ok,
-            data: data
-        }));
-    })
-    .then(result => {
-        if (result.ok) {
-            showNotification('Password updated successfully!', 'success');
-            closePasswordModal();
-            // Clear form
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-        } else {
-            showNotification(result.data.message || 'Failed to update password', 'error');
+        if (!response.ok) {
+            return response.json().then(errorData => {
+                throw new Error(errorData.message || 'Failed to update password');
+            });
         }
+        return response.json();
+    })
+    .then(data => {
+        showNotification(data.message || 'Password updated successfully!', 'success');
+        closePasswordModal();
+        // Clear form
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
     })
     .catch(error => {
         console.error('Error updating password:', error);
@@ -696,14 +696,36 @@ function updateSettingsPasswordStrength() {
     checkSettingsPasswordMatch();
 }
 
+function validatePasswordDetailed(password) {
+    if (!password) {
+        return { valid: false, message: 'Password is required' };
+    }
+    if (password.length < 12) {
+        return { valid: false, message: 'Password must be at least 12 characters long' };
+    }
+    if (!/[A-Z]/.test(password)) {
+        return { valid: false, message: 'Password must contain at least one uppercase letter' };
+    }
+    if (!/[a-z]/.test(password)) {
+        return { valid: false, message: 'Password must contain at least one lowercase letter' };
+    }
+    if (!/\d/.test(password)) {
+        return { valid: false, message: 'Password must contain at least one number' };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+        return { valid: false, message: 'Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)' };
+    }
+    return { valid: true, message: '' };
+}
+
 function updateSettingsPasswordRequirements(password) {
     // Check each requirement and update the icon
     const checks = {
-        'req-length': password.length >= 8,
+        'req-length': password.length >= 12,
         'req-uppercase': /[A-Z]/.test(password),
         'req-lowercase': /[a-z]/.test(password),
         'req-number': /[0-9]/.test(password),
-        'req-special': /[!@#$%^&*]/.test(password)
+        'req-special': /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)
     };
     
     // Update each requirement icon

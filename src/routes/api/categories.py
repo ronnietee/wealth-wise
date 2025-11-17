@@ -3,13 +3,21 @@ Categories API routes.
 """
 
 from flask import Blueprint, request, jsonify
+from marshmallow import ValidationError
 from ...auth import token_required, subscription_required
 from ...services import CategoryService
+from ...schemas import (
+    CategorySchema, CategoryUpdateSchema,
+    SubcategorySchema, SubcategoryUpdateSchema
+)
+from ...utils.validation import handle_validation_error
+from ...extensions import limiter
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 
 @categories_bp.route('/categories', methods=['GET'])
+@limiter.exempt  # Exempt GET requests from rate limiting
 @token_required
 @subscription_required
 def get_categories(current_user):
@@ -23,13 +31,14 @@ def get_categories(current_user):
 @subscription_required
 def create_category(current_user):
     """Create a new category."""
-    data = request.get_json()
-    name = data.get('name', '').strip()
+    schema = CategorySchema()
     
-    if not name:
-        return jsonify({'message': 'Category name is required'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    category = CategoryService.create_category(current_user.id, name)
+    category = CategoryService.create_category(current_user.id, validated_data['name'])
     return jsonify({
         'id': category.id,
         'name': category.name,
@@ -43,14 +52,17 @@ def create_category(current_user):
 @subscription_required
 def create_subcategory(current_user):
     """Create a new subcategory."""
-    data = request.get_json()
-    name = data.get('name', '').strip()
-    category_id = data.get('category_id')
+    schema = SubcategorySchema()
     
-    if not name or not category_id:
-        return jsonify({'message': 'Subcategory name and category ID are required'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    subcategory = CategoryService.create_subcategory(category_id, name)
+    subcategory = CategoryService.create_subcategory(
+        validated_data['category_id'],
+        validated_data['name']
+    )
     return jsonify({
         'id': subcategory.id,
         'name': subcategory.name,
@@ -64,13 +76,14 @@ def create_subcategory(current_user):
 @subscription_required
 def update_category(current_user, category_id):
     """Update a category."""
-    data = request.get_json()
-    name = data.get('name', '').strip()
+    schema = CategoryUpdateSchema()
     
-    if not name:
-        return jsonify({'message': 'Category name is required'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    category = CategoryService.update_category(category_id, current_user.id, name)
+    category = CategoryService.update_category(category_id, current_user.id, validated_data['name'])
     if not category:
         return jsonify({'message': 'Category not found'}), 404
     
@@ -94,15 +107,17 @@ def delete_category(current_user, category_id):
 @subscription_required
 def update_subcategory(current_user, subcategory_id):
     """Update a subcategory."""
-    data = request.get_json()
-    name = data.get('name', '').strip()
+    schema = SubcategoryUpdateSchema()
     
-    if not name:
-        return jsonify({'message': 'Subcategory name is required'}), 400
+    try:
+        validated_data = schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return handle_validation_error(err)
     
-    subcategory = CategoryService.update_subcategory(subcategory_id, name)
+    subcategory = CategoryService.update_subcategory(subcategory_id, validated_data['name'])
     if not subcategory:
-        return jsonify({'message': 'Subcategory not found'}), 404    
+        return jsonify({'message': 'Subcategory not found'}), 404
+    
     return jsonify({'message': 'Subcategory updated successfully'}), 200
 
 
@@ -118,5 +133,6 @@ def delete_subcategory(current_user, subcategory_id):
         
         return jsonify({'message': 'Subcategory deleted successfully'}), 200
     except Exception as e:
-        print(f"Error in delete_subcategory API: {str(e)}")
-        return jsonify({'message': f'Error deleting subcategory: {str(e)}'}), 500
+        from flask import current_app
+        current_app.logger.error(f"Error in delete_subcategory API: {str(e)}")
+        return jsonify({'message': 'Error deleting subcategory'}), 500
