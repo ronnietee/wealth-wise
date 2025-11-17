@@ -127,6 +127,7 @@ Your app will be available at: `https://steward-app.onrender.com`
 
 ### Database Migration
 - On first deploy, migrations run automatically via `flask db upgrade` in build command
+- If you encounter "Multiple head revisions" error, ensure the merge migration (`merge_heads_001`) is included
 - If you need to run migrations manually later, use Render's shell or SSH
 
 ### Environment Variables
