@@ -43,9 +43,14 @@ git push -u origin main
 3. Configure:
    - **Name**: `steward-app`
    - **Environment**: `Python 3`
+   - **Python Version**: `3.11.5` (set in Environment Variables or use runtime.txt)
    - **Build Command**: `pip install -r requirements.txt && flask db upgrade`
    - **Start Command**: `gunicorn app:app`
    - **Plan**: Free
+   
+   **Important**: If Render uses Python 3.13, you may need to:
+   - Set `PYTHON_VERSION=3.11.5` in Environment Variables, OR
+   - Update `psycopg2-binary` to latest version (already updated to 2.9.10)
 
 #### 4. Set Environment Variables
 In the Render dashboard, go to your web service → Environment tab, add:

@@ -2,13 +2,13 @@ services:
   - type: web
     name: steward-app
     env: python
-    buildCommand: pip install -r requirements.txt && flask db upgrade
+    buildCommand: python --version && pip install -r requirements.txt && flask db upgrade
     startCommand: gunicorn app:app
     envVars:
       - key: FLASK_ENV
         value: production
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.5
     healthCheckPath: /
 
 databases:
