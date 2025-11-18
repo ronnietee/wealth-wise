@@ -222,6 +222,13 @@ class OnboardingSchema(Schema):
             if camel_case in data and snake_case not in data:
                 data[snake_case] = data[camel_case]
         
+        # Convert empty strings to None for optional fields
+        # This prevents validation errors when empty strings are sent for optional fields
+        optional_fields = ['username', 'country', 'preferred_name', 'referral_source', 'referral_details']
+        for field in optional_fields:
+            if field in data and data[field] == '':
+                data[field] = None
+        
         return data
     
     @pre_load
