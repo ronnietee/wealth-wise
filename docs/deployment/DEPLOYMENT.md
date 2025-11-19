@@ -45,8 +45,15 @@ git push -u origin main
    - **Environment**: `Python 3`
    - **Python Version**: `3.11.5` (set in Environment Variables or use runtime.txt)
    - **Build Command**: `pip install -r requirements.txt && flask db upgrade`
-   - **Start Command**: `gunicorn app:app`
+   - **Start Command**: `gunicorn --workers 1 --threads 2 --timeout 120 --max-requests 1000 --max-requests-jitter 50 app:app`
    - **Plan**: Free
+   
+   **Note**: The gunicorn command is optimized for Render's free tier (512MB RAM):
+   - `--workers 1`: Single worker to reduce memory usage
+   - `--threads 2`: 2 threads per worker for concurrent requests
+   - `--timeout 120`: 2 minute timeout for long-running requests
+   - `--max-requests 1000`: Restart worker after 1000 requests to prevent memory leaks
+   - `--max-requests-jitter 50`: Randomize restart to avoid all workers restarting at once
    
    **Important**: If Render uses Python 3.13, you may need to:
    - Set `PYTHON_VERSION=3.11.5` in Environment Variables, OR
