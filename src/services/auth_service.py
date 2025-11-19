@@ -78,7 +78,8 @@ class AuthService:
         """Create email verification token for user."""
         # Delete any existing tokens for this user
         # Handle case where verified column might not exist
-        if AuthService._has_verified_column():
+        has_verified = AuthService._has_verified_column()
+        if has_verified:
             EmailVerification.query.filter_by(user_id=user.id, verified=False).delete()
         else:
             # If verified column doesn't exist, delete all tokens for this user
@@ -88,13 +89,31 @@ class AuthService:
         token = secrets.token_urlsafe(32)
         expires_at = datetime.utcnow() + timedelta(hours=24)
         
-        verification_token = EmailVerification(
-            user_id=user.id,
-            token=token,
-            expires_at=expires_at
-        )
-        db.session.add(verification_token)
-        db.session.commit()
+        # If verified column doesn't exist, use raw SQL to insert without it
+        if not has_verified:
+            from sqlalchemy import text
+            db.session.execute(
+                text("""
+                    INSERT INTO email_verification (user_id, token, expires_at, created_at)
+                    VALUES (:user_id, :token, :expires_at, :created_at)
+                """),
+                {
+                    'user_id': user.id,
+                    'token': token,
+                    'expires_at': expires_at,
+                    'created_at': datetime.utcnow()
+                }
+            )
+            db.session.commit()
+        else:
+            # Column exists, use normal ORM
+            verification_token = EmailVerification(
+                user_id=user.id,
+                token=token,
+                expires_at=expires_at
+            )
+            db.session.add(verification_token)
+            db.session.commit()
         
         return token
     
