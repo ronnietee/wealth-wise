@@ -62,10 +62,27 @@ class AuthService:
         return token
     
     @staticmethod
+    def _has_verified_column():
+        """Check if email_verification table has verified column."""
+        try:
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            columns = [col['name'] for col in inspector.get_columns('email_verification')]
+            return 'verified' in columns
+        except Exception:
+            # If check fails, assume column doesn't exist to be safe
+            return False
+    
+    @staticmethod
     def create_email_verification_token(user):
         """Create email verification token for user."""
         # Delete any existing tokens for this user
-        EmailVerification.query.filter_by(user_id=user.id, verified=False).delete()
+        # Handle case where verified column might not exist
+        if AuthService._has_verified_column():
+            EmailVerification.query.filter_by(user_id=user.id, verified=False).delete()
+        else:
+            # If verified column doesn't exist, delete all tokens for this user
+            EmailVerification.query.filter_by(user_id=user.id).delete()
         
         # Create new token
         token = secrets.token_urlsafe(32)
@@ -97,10 +114,15 @@ class AuthService:
     @staticmethod
     def verify_email_token(token):
         """Verify email verification token and return user if valid."""
-        verification_token = EmailVerification.query.filter_by(
-            token=token, 
-            verified=False
-        ).first()
+        # Handle case where verified column might not exist
+        if AuthService._has_verified_column():
+            verification_token = EmailVerification.query.filter_by(
+                token=token, 
+                verified=False
+            ).first()
+        else:
+            # If verified column doesn't exist, just check token
+            verification_token = EmailVerification.query.filter_by(token=token).first()
         
         if not verification_token or verification_token.expires_at < datetime.utcnow():
             return None
@@ -122,7 +144,9 @@ class AuthService:
         """Mark email as verified."""
         verification_token = EmailVerification.query.filter_by(token=token).first()
         if verification_token:
-            verification_token.verified = True
+            # Only set verified if column exists
+            if AuthService._has_verified_column():
+                verification_token.verified = True
             # Get the user by user_id and mark email as verified
             from ..models import User
             user = User.query.get(verification_token.user_id)

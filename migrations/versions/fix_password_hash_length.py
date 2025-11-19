@@ -46,14 +46,24 @@ def upgrade():
             # Column might already be correct, skip
             pass
     
-    # Check if email_verification.verified column exists
+    # Check if email_verification.verified column exists and add it if missing
     try:
         email_verification_columns = [col['name'] for col in inspector.get_columns('email_verification')]
         if 'verified' not in email_verification_columns:
-            with op.batch_alter_table('email_verification', schema=None) as batch_op:
-                batch_op.add_column(sa.Column('verified', sa.Boolean(), nullable=True, server_default='0'))
+            # Use raw SQL with DO block to check and add column safely
+            conn.execute(sa.text("""
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name='email_verification' AND column_name='verified'
+                    ) THEN
+                        ALTER TABLE email_verification ADD COLUMN verified BOOLEAN DEFAULT FALSE;
+                    END IF;
+                END $$;
+            """))
     except Exception as e:
-        # If table doesn't exist or check fails, try to add column anyway
+        # If inspector or SQL fails, try Alembic's batch_alter_table as fallback
         try:
             with op.batch_alter_table('email_verification', schema=None) as batch_op:
                 batch_op.add_column(sa.Column('verified', sa.Boolean(), nullable=True, server_default='0'))
