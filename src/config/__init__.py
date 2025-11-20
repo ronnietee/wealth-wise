@@ -26,6 +26,14 @@ class Config:
     
     # Database configuration
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///wealthwise.db')
+    # Add connection pool settings for better performance and timeout handling
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,  # Verify connections before using
+        'pool_recycle': 300,    # Recycle connections after 5 minutes
+    }
+    # Add connection timeout for PostgreSQL
+    if 'postgresql' in os.environ.get('DATABASE_URL', ''):
+        SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {'connect_timeout': 10}
     
     # JWT configuration
     _jwt_secret = os.environ.get('JWT_SECRET_KEY')

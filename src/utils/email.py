@@ -44,12 +44,18 @@ def send_email(to_email, subject, body, app_config):
         use_ssl = app_config.get('MAIL_USE_SSL', False)
         
         # Use SMTP_SSL for SSL connections (port 465), regular SMTP for TLS (port 587)
+        # Add timeout to prevent hanging (10 seconds for connection, 30 seconds for operations)
         if use_ssl:
-            server = smtplib.SMTP_SSL(mail_server, mail_port)
+            server = smtplib.SMTP_SSL(mail_server, mail_port, timeout=10)
         else:
-            server = smtplib.SMTP(mail_server, mail_port)
+            server = smtplib.SMTP(mail_server, mail_port, timeout=10)
             if use_tls:
                 server.starttls()
+        
+        # Set timeout for all operations (30 seconds total)
+        import socket
+        if hasattr(server, 'sock') and server.sock:
+            server.sock.settimeout(30)
         
         # Only enable debug in development
         if os.environ.get('FLASK_ENV') == 'development':

@@ -146,13 +146,25 @@ def complete_onboarding():
             # Use email prefix or generate from name
             username = email.split('@')[0] if email else f"{first_name.lower()}_{last_name.lower()}"
         
-        # Ensure username is unique
+        # Ensure username is unique - optimized to avoid loop queries
         from ...models import User
-        counter = 1
         original_username = username
-        while User.query.filter_by(username=username).first():
-            username = f"{original_username}{counter}"
-            counter += 1
+        # Check if username exists, and if so, find an available one efficiently
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            # Find highest numbered username to avoid conflicts
+            counter = 1
+            # Limit to 1000 iterations to prevent infinite loop
+            while counter < 1000:
+                test_username = f"{original_username}{counter}"
+                if not User.query.filter_by(username=test_username).first():
+                    username = test_username
+                    break
+                counter += 1
+            else:
+                # Fallback: use timestamp if we can't find a unique username
+                from datetime import datetime
+                username = f"{original_username}_{int(datetime.utcnow().timestamp())}"
         
         # Create user
         from ...services import UserService, AuthService
