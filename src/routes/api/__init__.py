@@ -264,7 +264,11 @@ def complete_onboarding():
         
         # Send verification email
         from flask import current_app
-        EmailService.send_verification_email(user, verification_token, current_app.config)
+        email_sent = EmailService.send_verification_email(user, verification_token, current_app.config)
+        
+        if not email_sent:
+            current_app.logger.error(f"Failed to send verification email to {user.email} during onboarding")
+            # Continue anyway - user can request resend later
         
         response_data = {
             'message': 'Account created successfully! Please check your email to verify your account.',

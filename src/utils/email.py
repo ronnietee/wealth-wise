@@ -10,14 +10,25 @@ from flask import request
 
 def send_email(to_email, subject, body, app_config):
     """Send email using SMTP."""
+    from flask import current_app
+    import os
+    
     try:
         # Validate email configuration
         if not app_config.get('MAIL_SERVER'):
-            print("Error: MAIL_SERVER not configured")
+            error_msg = "Error: MAIL_SERVER not configured"
+            if os.environ.get('FLASK_ENV') == 'production':
+                current_app.logger.error(error_msg)
+            else:
+                print(error_msg)
             return False
         
         if not app_config.get('MAIL_USERNAME') or not app_config.get('MAIL_PASSWORD'):
-            print("Error: MAIL_USERNAME or MAIL_PASSWORD not configured")
+            error_msg = "Error: MAIL_USERNAME or MAIL_PASSWORD not configured"
+            if os.environ.get('FLASK_ENV') == 'production':
+                current_app.logger.error(error_msg)
+            else:
+                print(error_msg)
             return False
         
         msg = MIMEMultipart()
@@ -41,16 +52,19 @@ def send_email(to_email, subject, body, app_config):
                 server.starttls()
         
         # Only enable debug in development
-        import os
         if os.environ.get('FLASK_ENV') == 'development':
             server.set_debuglevel(1)
             print(f"Attempting to connect to SMTP server: {mail_server}:{mail_port}, TLS: {use_tls}, SSL: {use_ssl}")
+        else:
+            current_app.logger.info(f"Connecting to SMTP server: {mail_server}:{mail_port}, TLS: {use_tls}, SSL: {use_ssl}")
         
         username = app_config['MAIL_USERNAME']
         password = app_config['MAIL_PASSWORD']
         
         if os.environ.get('FLASK_ENV') == 'development':
             print(f"Attempting to login with username: {username}")
+        else:
+            current_app.logger.info(f"Logging in to SMTP server with username: {username}")
         
         server.login(username, password)
         
@@ -60,17 +74,31 @@ def send_email(to_email, subject, body, app_config):
         
         if os.environ.get('FLASK_ENV') == 'development':
             print(f"Email sent successfully to {to_email}")
+        else:
+            current_app.logger.info(f"Email sent successfully to {to_email}")
         return True
     except smtplib.SMTPAuthenticationError as e:
-        print(f"SMTP Authentication Error: {str(e)}")
+        error_msg = f"SMTP Authentication Error: {str(e)}"
+        if os.environ.get('FLASK_ENV') == 'production':
+            current_app.logger.error(error_msg, exc_info=True)
+        else:
+            print(error_msg)
         return False
     except smtplib.SMTPException as e:
-        print(f"SMTP Error: {str(e)}")
+        error_msg = f"SMTP Error: {str(e)}"
+        if os.environ.get('FLASK_ENV') == 'production':
+            current_app.logger.error(error_msg, exc_info=True)
+        else:
+            print(error_msg)
         return False
     except Exception as e:
-        print(f"Error sending email: {type(e).__name__}: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        error_msg = f"Error sending email: {type(e).__name__}: {str(e)}"
+        if os.environ.get('FLASK_ENV') == 'production':
+            current_app.logger.error(error_msg, exc_info=True)
+        else:
+            print(error_msg)
+            import traceback
+            traceback.print_exc()
         return False
 
 

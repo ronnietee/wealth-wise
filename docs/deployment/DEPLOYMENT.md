@@ -2,6 +2,14 @@
 
 This guide covers deploying STEWARD to Render (primary platform) and alternative platforms.
 
+## Branch Strategy
+
+**Important**: Render deployments should use the `development` branch, not `master`:
+- **`master`**: Stable, production-ready code
+- **`development`**: Active development and testing branch (deployed to Render)
+
+When setting up Render, connect it to the `development` branch for automatic deployments.
+
 ## Recommended Platform: Render
 
 **Render is the recommended platform** for deploying STEWARD because:
@@ -29,7 +37,12 @@ git remote add origin https://github.com/yourusername/wealth-wise.git
 git push -u origin main
 ```
 
-#### 2. Create PostgreSQL Database on Render
+#### 2. Configure Render to Use Development Branch
+1. In Render dashboard → Your Web Service → Settings
+2. Under "Build & Deploy", set **Branch** to `development`
+3. This ensures Render deploys from the development branch, keeping master stable
+
+#### 3. Create PostgreSQL Database on Render
 1. Go to https://dashboard.render.com
 2. Click "New +" → "PostgreSQL"
 3. Name it: `steward-db`
@@ -37,7 +50,7 @@ git push -u origin main
 5. Click "Create Database"
 6. **Copy the Internal Database URL** (you'll need this)
 
-#### 3. Deploy Web Service
+#### 4. Deploy Web Service
 1. In Render dashboard, click "New +" → "Web Service"
 2. Connect your GitHub repository
 3. Configure:
@@ -52,7 +65,7 @@ git push -u origin main
    - Set `PYTHON_VERSION=3.11.5` in Environment Variables, OR
    - Update `psycopg2-binary` to latest version (already updated to 2.9.10)
 
-#### 4. Set Environment Variables
+#### 5. Set Environment Variables
 In the Render dashboard, go to your web service → Environment tab, add:
 
 **Required Variables:**
