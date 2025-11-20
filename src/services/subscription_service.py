@@ -16,12 +16,18 @@ YEARLY_PRICE_CENTS = 40000
 class SubscriptionService:
     @staticmethod
     def seed_default_plans(currency: str = 'ZAR') -> None:
-        existing = {p.code: p for p in SubscriptionPlan.query.all()}
-        if 'monthly' not in existing:
+        # Use more efficient queries - only check for specific plans
+        monthly_exists = SubscriptionPlan.query.filter_by(code='monthly').first()
+        yearly_exists = SubscriptionPlan.query.filter_by(code='yearly').first()
+        
+        if not monthly_exists:
             db.session.add(SubscriptionPlan(code='monthly', name='Monthly', price_cents=MONTHLY_PRICE_CENTS, currency=currency, interval='month'))
-        if 'yearly' not in existing:
+        if not yearly_exists:
             db.session.add(SubscriptionPlan(code='yearly', name='Yearly', price_cents=YEARLY_PRICE_CENTS, currency=currency, interval='year'))
-        db.session.commit()
+        
+        # Only commit if we added plans
+        if not monthly_exists or not yearly_exists:
+            db.session.commit()
 
     @staticmethod
     def start_trial(user: User, plan_code: str, trial_days: int) -> Subscription:

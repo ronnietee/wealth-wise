@@ -189,13 +189,15 @@ def complete_onboarding():
             return jsonify({'message': error}), 400
         
         # Create categories and subcategories based on user selection
+        # Make this non-blocking - if it fails, user can still complete onboarding
         categories = validated_data.get('categories', [])
         subcategories = validated_data.get('subcategories', [])
         custom_category_names = validated_data.get('custom_category_names', {})
         custom_subcategory_names = validated_data.get('custom_subcategory_names', {})
         
-        try:
-            if categories or subcategories:
+        categories_created = False
+        if categories or subcategories:
+            try:
                 from ...services import CategoryService
                 CategoryService.create_onboarding_categories(
                     user_id=user.id,
@@ -204,13 +206,13 @@ def complete_onboarding():
                     custom_category_names=custom_category_names,
                     custom_subcategory_names=custom_subcategory_names
                 )
-        except Exception as category_error:
-            # If category creation fails, rollback user creation
-            from flask import current_app
-            current_app.logger.error(f"Category creation failed: {str(category_error)}")
-            db.session.delete(user)
-            db.session.commit()
-            return jsonify({'message': 'Error creating categories. Please try again.'}), 500
+                categories_created = True
+            except Exception as category_error:
+                # Log error but don't fail onboarding - user can create categories manually
+                from flask import current_app
+                current_app.logger.error(f"Category creation failed during onboarding: {str(category_error)}", exc_info=True)
+                # Don't rollback user creation - allow onboarding to complete
+                categories_created = False
         
         # Start trial subscription (optional, based on config)
         subscription = None
@@ -228,18 +230,22 @@ def complete_onboarding():
                 plan_code = validated_data.get('plan', 'monthly').lower()
                 subscription = SubscriptionService.start_trial(user, plan_code, current_app.config.get('TRIAL_DAYS', 30))
                 
-                # Send trial started email
+                # Send trial started email (non-blocking - don't fail if it fails)
                 # EmailService is already imported at the top of the file (line 14)
-                trial_days = current_app.config.get('TRIAL_DAYS', 30)
-                EmailService.send_subscription_email(
-                    user=user,
-                    email_type='trial_started',
-                    app_config=current_app.config,
-                    trial_days=trial_days,
-                    trial_start=user.trial_start.isoformat() if user.trial_start else 'N/A',
-                    trial_end=user.trial_end.isoformat() if user.trial_end else 'N/A',
-                    plan=plan_code
-                )
+                try:
+                    trial_days = current_app.config.get('TRIAL_DAYS', 30)
+                    EmailService.send_subscription_email(
+                        user=user,
+                        email_type='trial_started',
+                        app_config=current_app.config,
+                        trial_days=trial_days,
+                        trial_start=user.trial_start.isoformat() if user.trial_start else 'N/A',
+                        trial_end=user.trial_end.isoformat() if user.trial_end else 'N/A',
+                        plan=plan_code
+                    )
+                except Exception as email_err:
+                    current_app.logger.warning(f"Failed to send trial started email: {str(email_err)}")
+                    # Continue - email sending failure shouldn't block onboarding
                 
                 # Build PayFast payload for redirect to hosted payment page
                 # User will enter card details securely on PayFast's platform
@@ -273,13 +279,24 @@ def complete_onboarding():
         else:
             email_sent_status = True
         
+        # Build response message
+        message_parts = []
+        if not categories_created:
+            message_parts.append('Account created successfully!')
+            message_parts.append('Note: Some categories could not be created automatically. You can create them manually in Settings.')
+        elif email_sent_status:
+            message_parts.append('Account created successfully! Please check your email to verify your account.')
+        else:
+            message_parts.append('Account created successfully! However, we were unable to send the verification email. Please use the "Resend Verification Email" button below.')
+        
         response_data = {
-            'message': 'Account created successfully! Please check your email to verify your account.' if email_sent_status else 'Account created successfully! However, we were unable to send the verification email. Please use the "Resend Verification Email" button below.',
+            'message': ' '.join(message_parts),
             'user_id': user.id,
             'success': True,
             'email_verification_required': True,
             'email': user.email,
-            'email_sent': email_sent_status
+            'email_sent': email_sent_status,
+            'categories_created': categories_created
         }
         
         # Only include PayFast redirect if subscriptions are enabled AND payload was created
