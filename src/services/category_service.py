@@ -281,7 +281,8 @@ class CategoryService:
                         custom_category_subcategories[parent_category_id] = []
                     custom_category_subcategories[parent_category_id].append(subcategory_key)
         
-        # Process each selected category
+        # Step 1: Create all categories first (batch operation)
+        category_map = {}  # Map category_key to category object
         for category_key in categories:
             if category_key in category_mapping:
                 # Handle predefined categories
@@ -292,83 +293,77 @@ class CategoryService:
                     is_template=True
                 )
                 db.session.add(category)
-                db.session.flush()  # Flush to get category.id for subcategories
-                
-                # Add selected subcategories for this category (both predefined and custom)
-                # Only process subcategories that belong to this specific category
-                added_subcategories = set()  # Track added subcategories to prevent duplicates
-                
-                for subcategory_key in subcategories:
-                    if subcategory_key in category_data['subcategories']:
-                        # Predefined subcategory - only add if it belongs to this category
-                        subcategory_name = category_data['subcategories'][subcategory_key]
-                        
-                        # Only add if not already in the set (prevents duplicates in this batch)
-                        if subcategory_name not in added_subcategories:
-                            subcategory = Subcategory(
-                                name=subcategory_name,
-                                category_id=category.id
-                            )
-                            db.session.add(subcategory)
-                            added_subcategories.add(subcategory_name)
-                            
-                    elif subcategory_key.startswith(f'custom-subcategory-{category_key}-'):
-                        # Custom subcategory under a predefined category
-                        subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
-                        
-                        # Only add if not already in the set (prevents duplicates in this batch)
-                        if subcategory_name not in added_subcategories:
-                            subcategory = Subcategory(
-                                name=subcategory_name,
-                                category_id=category.id
-                            )
-                            db.session.add(subcategory)
-                            added_subcategories.add(subcategory_name)
-                        
+                category_map[category_key] = category
             elif category_key.startswith('custom-category-'):
                 # Handle custom categories
                 custom_category_name = custom_category_names.get(category_key, f'Custom Category {category_key.split("-")[-1]}')
-                
                 category = Category(
                     name=custom_category_name,
                     user_id=user_id,
                     is_template=False
                 )
                 db.session.add(category)
-                db.session.flush()  # Flush to get category.id for subcategories
+                category_map[category_key] = category
+        
+        # Flush all categories at once to get their IDs
+        if category_map:
+            db.session.flush()
+        
+        # Step 2: Create all subcategories (batch operation)
+        for category_key, category in category_map.items():
+            added_subcategories = set()  # Track added subcategories to prevent duplicates
+            
+            if category_key in category_mapping:
+                # Handle predefined categories
+                category_data = category_mapping[category_key]
                 
-                # Add subcategories for this custom category
-                # First get the numeric part after 'custom-category-'
+                for subcategory_key in subcategories:
+                    if subcategory_key in category_data['subcategories']:
+                        # Predefined subcategory
+                        subcategory_name = category_data['subcategories'][subcategory_key]
+                        if subcategory_name not in added_subcategories:
+                            subcategory = Subcategory(
+                                name=subcategory_name,
+                                category_id=category.id
+                            )
+                            db.session.add(subcategory)
+                            added_subcategories.add(subcategory_name)
+                    elif subcategory_key.startswith(f'custom-subcategory-{category_key}-'):
+                        # Custom subcategory under a predefined category
+                        subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
+                        if subcategory_name not in added_subcategories:
+                            subcategory = Subcategory(
+                                name=subcategory_name,
+                                category_id=category.id
+                            )
+                            db.session.add(subcategory)
+                            added_subcategories.add(subcategory_name)
+            else:
+                # Handle custom categories
                 category_number = category_key.split('-')[-1]
                 matching_custom_subcategory_keys = []
                 
                 # Find all custom subcategories that belong to this custom category
-                # Pattern: custom-subcategory-custom-category-{number}-{counter}
-                # Example: custom-subcategory-custom-category-1-2
                 for subcategory_key in subcategories:
-                    # Check if this subcategory belongs to our custom category
                     if subcategory_key.startswith(f'custom-subcategory-custom-category-{category_number}-'):
                         matching_custom_subcategory_keys.append(subcategory_key)
                 
-                # Also check the grouped custom_category_subcategories (if it exists)
+                # Also check the grouped custom_category_subcategories
                 if category_key in custom_category_subcategories:
-                    # Only add if not already in matching keys to avoid duplicates
                     for sub_key in custom_category_subcategories[category_key]:
                         if sub_key not in matching_custom_subcategory_keys:
                             matching_custom_subcategory_keys.append(sub_key)
                 
-                # Add the found subcategories (avoid duplicates by using set or checking)
-                added_names = set()
+                # Add the found subcategories
                 for subcategory_key in matching_custom_subcategory_keys:
                     subcategory_name = custom_subcategory_names.get(subcategory_key, f"Custom Subcategory {subcategory_key.split('-')[-1]}")
-                    # Avoid adding duplicate subcategories with the same name
-                    if subcategory_name not in added_names:
+                    if subcategory_name not in added_subcategories:
                         subcategory = Subcategory(
                             name=subcategory_name,
                             category_id=category.id
                         )
                         db.session.add(subcategory)
-                        added_names.add(subcategory_name)
+                        added_subcategories.add(subcategory_name)
         
         # Commit all categories and subcategories in a single transaction
         # We flush categories to get IDs, but batch all subcategories per category
