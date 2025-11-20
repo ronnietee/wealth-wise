@@ -120,18 +120,17 @@ def login():
         if not user:
             return jsonify({'message': 'Invalid email/username or password'}), 401
         
-        # Check if email is verified
+        # Allow login even if email is not verified (user can verify later)
+        # But include a warning in the response
+        email_verification_warning = None
         if not user.email_verified:
-            return jsonify({
-                'message': 'Please verify your email before logging in. Check your inbox for the verification email.',
-                'email_verified': False
-            }), 403
+            email_verification_warning = 'Your email is not yet verified. Please verify your email to access all features.'
         
         # Generate JWT token
         from flask import current_app
         token = AuthService.generate_jwt_token(user, current_app.config, request)
         
-        return jsonify({
+        response_data = {
             'message': 'Login successful',
             'token': token,
             'user': {
@@ -145,7 +144,10 @@ def login():
                 'theme': user.theme,
                 'email_verified': user.email_verified
             }
-        }), 200
+        }
+        if email_verification_warning:
+            response_data['warning'] = email_verification_warning
+        return jsonify(response_data), 200
         
     except Exception as e:
         return jsonify({'message': 'Login failed'}), 500
@@ -176,18 +178,17 @@ def frontend_login():
     if not user:
         return jsonify({'message': 'Invalid email/username or password'}), 401
     
-    # Check if email is verified
+    # Allow login even if email is not verified (user can verify later)
+    # But include a warning in the response
+    email_verification_warning = None
     if not user.email_verified:
-        return jsonify({
-            'message': 'Please verify your email before logging in. Check your inbox for the verification email.',
-            'email_verified': False
-        }), 403
+        email_verification_warning = 'Your email is not yet verified. Please verify your email to access all features.'
     
     # Set session
     session['user_id'] = user.id
     session['logged_in'] = True
     
-    return jsonify({
+    response_data = {
         'message': 'Login successful',
         'user': {
             'id': user.id,
@@ -200,7 +201,10 @@ def frontend_login():
             'theme': user.theme,
             'email_verified': user.email_verified
         }
-    }), 200
+    }
+    if email_verification_warning:
+        response_data['warning'] = email_verification_warning
+    return jsonify(response_data), 200
 
 
 @auth_bp.route('/api/csrf-token', methods=['GET'])

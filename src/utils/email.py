@@ -9,14 +9,62 @@ from flask import request
 
 
 def send_email(to_email, subject, body, app_config):
-    """Send email using SMTP."""
+    """Send email using SendGrid (preferred) or SMTP (fallback)."""
     from flask import current_app
     import os
     
+    # Try SendGrid first (works with Render and other platforms)
+    sendgrid_api_key = app_config.get('SENDGRID_API_KEY')
+    if sendgrid_api_key:
+        try:
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
+            
+            from_email = app_config.get('SENDGRID_FROM_EMAIL') or app_config.get('MAIL_DEFAULT_SENDER', 'noreply@steward.com')
+            
+            message = Mail(
+                from_email=from_email,
+                to_emails=to_email,
+                subject=subject,
+                html_content=body
+            )
+            
+            sg = SendGridAPIClient(sendgrid_api_key)
+            response = sg.send(message)
+            
+            if response.status_code in [200, 201, 202]:
+                if os.environ.get('FLASK_ENV') == 'development':
+                    print(f"Email sent successfully via SendGrid to {to_email}")
+                else:
+                    current_app.logger.info(f"Email sent successfully via SendGrid to {to_email}")
+                return True
+            else:
+                error_msg = f"SendGrid API error: Status {response.status_code}"
+                if os.environ.get('FLASK_ENV') == 'production':
+                    current_app.logger.error(error_msg)
+                else:
+                    print(error_msg)
+                # Fall through to SMTP if SendGrid fails
+        except ImportError:
+            error_msg = "SendGrid package not installed. Install with: pip install sendgrid"
+            if os.environ.get('FLASK_ENV') == 'production':
+                current_app.logger.error(error_msg)
+            else:
+                print(error_msg)
+            # Fall through to SMTP
+        except Exception as e:
+            error_msg = f"SendGrid error: {type(e).__name__}: {str(e)}"
+            if os.environ.get('FLASK_ENV') == 'production':
+                current_app.logger.warning(error_msg + " - Falling back to SMTP")
+            else:
+                print(error_msg + " - Falling back to SMTP")
+            # Fall through to SMTP
+    
+    # Fallback to SMTP if SendGrid is not configured or failed
     try:
-        # Validate email configuration
+        # Validate SMTP email configuration
         if not app_config.get('MAIL_SERVER'):
-            error_msg = "Error: MAIL_SERVER not configured"
+            error_msg = "Error: Neither SendGrid nor SMTP configured"
             if os.environ.get('FLASK_ENV') == 'production':
                 current_app.logger.error(error_msg)
             else:

@@ -76,7 +76,16 @@ JWT_SECRET_KEY=your-jwt-secret-key-here (generate a strong random string)
 DATABASE_URL=<from PostgreSQL service - Internal Database URL>
 ```
 
-**Email Configuration:**
+**Email Configuration (Choose one):**
+
+**Option 1: SendGrid (Recommended for Render - works with free tier):**
+```
+SENDGRID_API_KEY=your-sendgrid-api-key
+SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+CONTACT_EMAIL=your-email@gmail.com
+```
+
+**Option 2: SMTP (May not work on Render free tier due to network restrictions):**
 ```
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
@@ -86,6 +95,8 @@ MAIL_PASSWORD=your-app-password
 MAIL_DEFAULT_SENDER=your-email@gmail.com
 CONTACT_EMAIL=your-email@gmail.com
 ```
+
+**Note:** SendGrid is recommended because Render's free tier blocks outbound SMTP connections. SendGrid uses API calls which work fine. Get a free SendGrid account at https://sendgrid.com (100 emails/day free).
 
 **Optional (if using PayFast):**
 ```

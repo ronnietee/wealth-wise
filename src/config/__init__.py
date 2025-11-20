@@ -46,6 +46,11 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = 3600  # 1 hour (reduced from 24 hours)
     
     # Email configuration
+    # SendGrid (preferred for production - works with Render)
+    SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+    SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@steward.com')
+    
+    # SMTP configuration (fallback, may not work on Render free tier)
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
