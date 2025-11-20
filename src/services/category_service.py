@@ -292,7 +292,7 @@ class CategoryService:
                     is_template=True
                 )
                 db.session.add(category)
-                # Don't flush - batch all operations and commit once at the end
+                db.session.flush()  # Flush to get category.id for subcategories
                 
                 # Add selected subcategories for this category (both predefined and custom)
                 # Only process subcategories that belong to this specific category
@@ -335,7 +335,7 @@ class CategoryService:
                     is_template=False
                 )
                 db.session.add(category)
-                # Don't flush - batch all operations and commit once at the end
+                db.session.flush()  # Flush to get category.id for subcategories
                 
                 # Add subcategories for this custom category
                 # First get the numeric part after 'custom-category-'
@@ -371,7 +371,7 @@ class CategoryService:
                         added_names.add(subcategory_name)
         
         # Commit all categories and subcategories in a single transaction
-        # This is much more efficient than flushing after each item
+        # We flush categories to get IDs, but batch all subcategories per category
         try:
             db.session.commit()
         except Exception as e:
