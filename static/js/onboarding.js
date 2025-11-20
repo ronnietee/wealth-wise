@@ -831,10 +831,11 @@ class OnboardingFlow {
                 </div>
                 <h2>Check Your Email</h2>
                 <p class="verification-message">${result.message}</p>
+                ${result.email_sent === false ? '<div class="verification-warning"><i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> The verification email could not be sent automatically. Please use the "Resend Verification Email" button below.</div>' : ''}
                 <div class="verification-details">
-                    <p>We've sent a verification link to:</p>
+                    <p>${result.email_sent === false ? 'A verification link will be sent to:' : 'We\'ve sent a verification link to:'}</p>
                     <p class="email-address">${result.email}</p>
-                    <p class="verification-note">Please check your inbox and click the verification link to complete your account setup.</p>
+                    <p class="verification-note">${result.email_sent === false ? 'Click the button below to send the verification email, then check your inbox and click the verification link to complete your account setup.' : 'Please check your inbox and click the verification link to complete your account setup.'}</p>
                 </div>
                 <div class="verification-actions">
                     <button onclick="resendVerificationEmail('${result.email}')" class="btn btn-secondary">
@@ -925,12 +926,17 @@ function resendVerificationEmail(email) {
         },
         body: JSON.stringify({ email: email })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
     .then(result => {
-        if (result.success) {
+        if (result.success !== false) {
             alert('Verification email sent successfully! Please check your inbox.');
         } else {
-            alert('Error: ' + result.message);
+            alert('Error: ' + (result.message || 'Failed to send verification email'));
         }
     })
     .catch(error => {

@@ -269,13 +269,17 @@ def complete_onboarding():
         if not email_sent:
             current_app.logger.error(f"Failed to send verification email to {user.email} during onboarding")
             # Continue anyway - user can request resend later
+            email_sent_status = False
+        else:
+            email_sent_status = True
         
         response_data = {
-            'message': 'Account created successfully! Please check your email to verify your account.',
+            'message': 'Account created successfully! Please check your email to verify your account.' if email_sent_status else 'Account created successfully! However, we were unable to send the verification email. Please use the "Resend Verification Email" button below.',
             'user_id': user.id,
             'success': True,
             'email_verification_required': True,
-            'email': user.email
+            'email': user.email,
+            'email_sent': email_sent_status
         }
         
         # Only include PayFast redirect if subscriptions are enabled AND payload was created
@@ -318,12 +322,27 @@ def resend_verification():
         
         # Send verification email
         from flask import current_app
-        EmailService.send_verification_email(user, verification_token, current_app.config)
+        email_sent = EmailService.send_verification_email(user, verification_token, current_app.config)
         
-        return jsonify({'message': 'Verification email sent successfully'}), 200
+        if not email_sent:
+            current_app.logger.error(f"Failed to resend verification email to {user.email}")
+            return jsonify({
+                'message': 'Failed to send verification email. Please check your email configuration or try again later.',
+                'success': False
+            }), 500
+        
+        return jsonify({
+            'message': 'Verification email sent successfully',
+            'success': True
+        }), 200
         
     except Exception as e:
-        return jsonify({'message': f'Error sending verification email: {str(e)}'}), 500
+        from flask import current_app
+        current_app.logger.error(f"Error resending verification email: {str(e)}", exc_info=True)
+        return jsonify({
+            'message': f'Error sending verification email: {str(e)}',
+            'success': False
+        }), 500
 
 
 @api_bp.route('/budget/balance-check', methods=['GET'])
