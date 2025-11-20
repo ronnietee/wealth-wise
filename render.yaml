@@ -3,7 +3,7 @@ services:
     name: steward-app
     env: python
     buildCommand: python --version && pip install -r requirements.txt && flask db upgrade
-    startCommand: gunicorn app:app
+    startCommand: gunicorn --timeout 180 app:app
     envVars:
       - key: FLASK_ENV
         value: production
