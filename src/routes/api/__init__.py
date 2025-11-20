@@ -49,9 +49,14 @@ def submit_contact():
         # Send email
         from flask import current_app
         
-        # Check if email is configured
-        if not current_app.config.get('MAIL_SERVER') or not current_app.config.get('MAIL_USERNAME') or not current_app.config.get('MAIL_PASSWORD'):
-            current_app.logger.error("Email configuration is missing. Please check your .env file.")
+        # Check if email is configured (SendGrid or SMTP)
+        has_sendgrid = bool(current_app.config.get('SENDGRID_API_KEY'))
+        has_smtp = bool(current_app.config.get('MAIL_SERVER') and 
+                       current_app.config.get('MAIL_USERNAME') and 
+                       current_app.config.get('MAIL_PASSWORD'))
+        
+        if not has_sendgrid and not has_smtp:
+            current_app.logger.error("Email configuration is missing. Please configure SendGrid or SMTP.")
             return jsonify({'message': 'Email service is not configured. Please contact the administrator.'}), 500
         
         success = EmailService.send_contact_email(
